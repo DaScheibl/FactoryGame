@@ -15,6 +15,13 @@ class UFactoryInventoryComponent;
  *  Stacks can be picked up onto the cursor, dragged, split with the right mouse button and quick moved with shift/ctrl,
  *  and the same actions are on the gamepad face buttons.
  *  A held stack stays in its slot until it is put down, so closing the window never loses items.
+ *
+ *  Aufbau: links die Ausrüstungs-Slots, rechts das Raster mit 10 Spalten (scrollt ab 6 Reihen),
+ *  darunter Detailzeile, Steuerungshinweis und Buttons. Jeder Slot ist ein
+ *  UFactoryInventorySlotWidget, das seine Klicks hierher zurückmeldet.
+ *  "Held" ist der Stapel am Mauszeiger: gemerkt werden nur Inventar, Slot und Anzahl, die Items
+ *  selbst bleiben im Slot. Erst beim Ablegen verschiebt MoveTo() sie wirklich.
+ *  Bei jeder Inventar-Änderung wird das Fenster neu gebaut (HandleInventoryChanged).
  */
 UCLASS()
 class FACTORYGAME_API UFactoryInventoryWidget : public UFactoryMenuWidget

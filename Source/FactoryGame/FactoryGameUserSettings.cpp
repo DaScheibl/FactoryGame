@@ -30,6 +30,7 @@ FString UFactoryGameUserSettings::GetLanguage() const
 
 void UFactoryGameUserSettings::SetLanguage(const FString& InLanguage)
 {
+	// unbekannte Codes werden zu Englisch. Auf die Platte geschrieben wird erst in ApplySettings()
 	Language = GetSupportedLanguages().Contains(InLanguage) ? InLanguage : TEXT("en");
 }
 

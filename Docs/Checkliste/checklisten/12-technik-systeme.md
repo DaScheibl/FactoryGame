@@ -19,6 +19,7 @@ Legende: `PT` Prototyp · `VS` Vertical Slice · `EA` Early Access · `1.0` Rele
 ## Infrastruktur
 
 - [x] **Speichern/Laden + Autosave + Versionsmigration** · `SYS_Save` · `VS` · [Doku](../../Standards/10-items-inventar.md)
+- [x] **Code-Dokumentation: erklärende Kommentare im gesamten eigenen C++-Code** · `SYS_CodeDocs` · `PT` — _Kommentare auf Deutsch; Template-Code (Variant_Horror/Shooter) bleibt unverändert_
 - [ ] **Rendering-LOD/HISM für Gebäude-Massen** · `SYS_Instancing` · `VS`
 - [ ] **Performance-Ziel: 60 FPS bei 2.000 Maschinen (Ziel-Hardware definiert)** · `SYS_PerfTarget` · `EA`
 - [ ] **Co-op-Multiplayer (Entscheidung: ja/nein/später)** · `SYS_Multiplayer` · `EA`

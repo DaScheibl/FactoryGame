@@ -17,11 +17,13 @@ int32 FFactoryItemDefinition::GetStackSize(EFactoryStackClass StackClass)
 
 int32 FFactoryItemDefinition::GetMaxStackSize() const
 {
+	// Stackgröße 0 bedeutet "nicht tragbar"; daran erkennen Inventare, dass Fluide nicht hineindürfen
 	return Form == EFactoryItemForm::Fluid ? 0 : GetStackSize(StackClass);
 }
 
 FText FFactoryItemDefinition::GetDisplayName() const
 {
+	// fehlt die deutsche Übersetzung, wird der englische Name angezeigt
 	return FText::FromString(FactoryLoc::IsGerman() && !NameDE.IsEmpty() ? NameDE : NameEN);
 }
 

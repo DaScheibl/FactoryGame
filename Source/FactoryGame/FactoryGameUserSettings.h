@@ -10,6 +10,10 @@
  *  Project specific user settings.
  *  Extends the engine settings (resolution, window mode, scalability, vsync) with the UI language.
  *  Registered through GameUserSettingsClassName in DefaultEngine.ini.
+ *
+ *  Gespeichert in Saved/Config/<Plattform>/GameUserSettings.ini, also pro Rechner und
+ *  unabhängig von den Spielständen. Die Sprache gilt sofort für alle Texte aus FactoryLoc
+ *  und für Item-Namen (FFactoryItemDefinition::GetDisplayName).
  */
 UCLASS(config=GameUserSettings, configdonotcheckdefaults)
 class FACTORYGAME_API UFactoryGameUserSettings : public UGameUserSettings

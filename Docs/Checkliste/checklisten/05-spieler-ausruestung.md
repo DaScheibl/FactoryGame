@@ -16,7 +16,7 @@ Legende: `PT` Prototyp · `VS` Vertical Slice · `EA` Early Access · `1.0` Rele
 
 ## Charakter
 
-- [ ] **First-Person-Arme (Rig, Handschuhe)** · `CHR_Arms1P` · `PT`
+- [ ] **First-Person-Arme (Rig, Handschuhe)** · `CHR_Arms1P` · `PT` — _Platzhalter: Arme aus dem UE-First-Person-Template_
 - [ ] **Third-Person-Charakter (für Co-op/Fotomodus)** · `CHR_Body3P` · `EA`
 - [ ] **Anzug-Varianten / Kosmetik (3+)** · `CHR_Suits` · `1.0`
 - [ ] **Helm & Visier-Overlay** · `CHR_Helmet` · `VS`

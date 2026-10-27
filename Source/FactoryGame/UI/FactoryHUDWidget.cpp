@@ -26,6 +26,7 @@ void UFactoryHUDWidget::NativeOnInitialized()
 	Super::NativeOnInitialized();
 
 	SetIsFocusable(false);
+	// HitTestInvisible: Mausklicks gehen durch das HUD hindurch
 	SetVisibility(ESlateVisibility::HitTestInvisible);
 }
 
@@ -33,6 +34,8 @@ void UFactoryHUDWidget::NativeTick(const FGeometry& MyGeometry, float InDeltaTim
 {
 	Super::NativeTick(MyGeometry, InDeltaTime);
 
+	// Abgelaufene Einträge entfernen. Neu gebaut wird nur, wenn sich wirklich etwas geändert hat.
+	// Echtzeit (FPlatformTime) statt Weltzeit, damit Meldungen auch während der Pause ablaufen.
 	const double Now = FPlatformTime::Seconds();
 	bool bChanged = Notifications.RemoveAll([Now](const FNotification& Entry) { return Entry.ExpiresAt <= Now; }) > 0;
 
@@ -70,6 +73,8 @@ void UFactoryHUDWidget::ShowItemNotification(FName ItemId, int32 Delta)
 		return;
 	}
 
+	// mehrere "+5 Eisenplatte" kurz hintereinander werden zu "+15 Eisenplatte" zusammengefasst,
+	// die Anzeigedauer beginnt dabei neu
 	FNotification* Entry = Notifications.FindByPredicate([ItemId, Delta](const FNotification& Existing)
 	{
 		return Existing.ItemId == ItemId && FMath::Sign(Existing.ItemDelta) == FMath::Sign(Delta);
@@ -106,6 +111,8 @@ void UFactoryHUDWidget::ShowHint(const FText& Text, float Duration)
 
 UWidget* UFactoryHUDWidget::BuildContent()
 {
+	// Overlay = Ebenen übereinander mit eigener Ausrichtung:
+	// Fadenkreuz in der Mitte, Hinweis + Hotbar unten, Meldungen oben rechts
 	UOverlay* Root = NewWidget<UOverlay>();
 
 	if (UOverlaySlot* CrosshairSlot = Root->AddChildToOverlay(BuildCrosshair()))
@@ -180,6 +187,7 @@ UWidget* UFactoryHUDWidget::BuildHotbar()
 			KeySlot->SetPadding(FMargin(6.0f, 3.0f));
 		}
 
+		// Platzhalter: der Shortcut-Name als Text, bis es Gebäude-Icons gibt
 		if (!Shortcut.IsNone())
 		{
 			UTextBlock* ShortcutText = MakeText(FText::FromName(Shortcut), 10.0f);

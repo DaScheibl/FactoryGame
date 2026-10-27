@@ -32,6 +32,7 @@ UWidget* UPauseMenuWidget::BuildContent()
 		OnResumeRequested.ExecuteIfBound();
 	}, EFactoryButtonType::Primary, 20.0f, ETextJustify::Center), FMargin(0.0f, 5.0f));
 
+	// Speichern zeigt das Ergebnis als Statuszeile unter den Buttons an
 	AddRow(Content, MakeTextButton(FactoryLoc::Get("Pause_Save"), [this]()
 	{
 		UFactoryGameInstance* GameInstance = UFactoryGameInstance::Get(this);
@@ -46,6 +47,7 @@ UWidget* UPauseMenuWidget::BuildContent()
 	{
 		if (UFactoryGameInstance* GameInstance = UFactoryGameInstance::Get(this))
 		{
+			// speichert und lädt die Map mit dem Hauptmenü-Game-Mode neu
 			GameInstance->ReturnToMainMenu();
 		}
 	}, EFactoryButtonType::Normal, 20.0f, ETextJustify::Center), FMargin(0.0f, 5.0f));

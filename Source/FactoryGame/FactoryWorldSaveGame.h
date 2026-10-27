@@ -55,6 +55,11 @@ public:
 	FString LastPlayedSlot;
 };
 
+/*
+ *  Spielstand-Versionierung: Jede Änderung am Speicherformat bekommt hier eine neue Version.
+ *  Beim Laden ruft die Game Instance MigrateToLatest() auf, das alte Stände Schritt für Schritt
+ *  hochrüstet. Stände aus einer neueren Spielversion werden abgelehnt statt überschrieben.
+ */
 /** Versions of the world save format. Add new versions before LatestPlusOne and handle them in MigrateToLatest() */
 enum class EFactoryWorldSaveVersion : int32
 {
@@ -73,6 +78,11 @@ enum class EFactoryWorldSaveVersion : int32
 
 /**
  *  The actual data of one world
+ *
+ *  Alles, was zu einer Welt gespeichert wird (Saved/SaveGames/World_<GUID>.sav).
+ *  Alle Felder sind mit UPROPERTY(SaveGame) markiert, nur solche landen im Spielstand.
+ *  Ändert sich Format oder Bedeutung eines Feldes: EFactoryWorldSaveVersion erhöhen und
+ *  MigrateToLatest() erweitern.
  */
 UCLASS()
 class FACTORYGAME_API UFactoryWorldSaveGame : public USaveGame

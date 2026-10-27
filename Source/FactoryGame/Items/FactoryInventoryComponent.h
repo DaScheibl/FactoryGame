@@ -12,6 +12,14 @@ DECLARE_MULTICAST_DELEGATE(FOnFactoryInventoryChanged);
 /**
  *  Slot based item storage with stack limits from the item database.
  *  Used by the player inventory and equipment, and later by chests and machine buffers.
+ *
+ *  So funktioniert's:
+ *  - Slots ist ein Array fester Länge; ein leerer Slot hat ItemId None. Items behalten
+ *    dadurch ihre Position, bis der Spieler umsortiert.
+ *  - Wie viel in einen Slot passt, kommt aus der Item-Datenbank (Stackklasse des Items).
+ *  - Mit SlotFilters wird die Komponente zur Ausrüstung: Slot i nimmt nur Items an,
+ *    deren EquipSlot gleich SlotFilters[i] ist.
+ *  - Jede Änderung löst OnInventoryChanged aus; UI-Widgets hören darauf und bauen sich neu.
  */
 UCLASS(ClassGroup=(Factory), meta=(BlueprintSpawnableComponent))
 class FACTORYGAME_API UFactoryInventoryComponent : public UActorComponent

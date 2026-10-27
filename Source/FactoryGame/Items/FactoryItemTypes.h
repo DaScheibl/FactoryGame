@@ -9,6 +9,13 @@
 class UTexture2D;
 class UStaticMesh;
 
+/*
+ *  Grundtypen des Item-Systems:
+ *  - FFactoryItemDefinition: die festen Daten eines Item-Typs (eine Zeile in DT_Items.csv)
+ *  - FFactoryItemStack: eine Menge eines Items, z. B. der Inhalt eines Inventar-Slots
+ *  Die Werte (Stackgrößen, Tiers, Ausrüstungs-Slots) sind in Docs/Standards/10-items-inventar.md festgelegt.
+ */
+
 /** Physical form of an item */
 UENUM(BlueprintType)
 enum class EFactoryItemForm : uint8
@@ -122,6 +129,7 @@ struct FACTORYGAME_API FFactoryItemDefinition : public FTableRowBase
 
 /**
  *  A number of items of the same type, e.g. one inventory slot
+ *  Enthält nur ID und Anzahl. Name, Stackgröße usw. kommen über die ItemId aus der Item-Datenbank.
  */
 USTRUCT(BlueprintType)
 struct FACTORYGAME_API FFactoryItemStack

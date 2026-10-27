@@ -33,6 +33,7 @@ AFactoryGamePlayerController::AFactoryGamePlayerController()
 	// console commands for testing
 	CheatClass = UFactoryCheatManager::StaticClass();
 
+	// alle 10 Slots existieren immer, leere Slots enthalten NAME_None
 	HotbarSlots.SetNum(NumHotbarSlots);
 }
 
@@ -47,6 +48,7 @@ void AFactoryGamePlayerController::BeginPlay()
 		SetShowMouseCursor(false);
 	}
 
+	// HUD auf Z-Order 0; Inventar (50) und Pausemenü (100) liegen darüber
 	if (IsLocalPlayerController() && HUDWidgetClass)
 	{
 		HUDWidget = CreateWidget<UFactoryHUDWidget>(this, HUDWidgetClass);
@@ -84,6 +86,7 @@ void AFactoryGamePlayerController::BeginPlay()
 void AFactoryGamePlayerController::EndPlay(const EEndPlayReason::Type EndPlayReason)
 {
 	// save while the pawn still exists when the game is closed
+	// (beim Zurück ins Hauptmenü speichert ReturnToMainMenu schon vorher, deshalb nur Beenden/PIE-Ende)
 	if (EndPlayReason == EEndPlayReason::Quit || EndPlayReason == EEndPlayReason::EndPlayInEditor)
 	{
 		if (UFactoryGameInstance* GameInstance = UFactoryGameInstance::Get(this))
@@ -101,6 +104,7 @@ void AFactoryGamePlayerController::OnPossess(APawn* InPawn)
 
 	if (UFactoryGameInstance* GameInstance = UFactoryGameInstance::Get(this))
 	{
+		// nach dem Laden einer Welt Position, Inventar und Hotbar zurückholen (tut nichts, wenn nichts ansteht)
 		GameInstance->RestorePlayerState(this);
 	}
 }
@@ -109,6 +113,8 @@ void AFactoryGamePlayerController::SetupInputComponent()
 {
 	Super::SetupInputComponent();
 
+	// Feste UI-Tasten werden direkt per BindKey gebunden. Die Bewegung der Spielfigur läuft
+	// dagegen über Enhanced Input (AFactoryGameCharacter::SetupPlayerInputComponent).
 	// pause menu keys. P is also bound because Escape ends Play In Editor by default
 	InputComponent->BindKey(EKeys::Escape, IE_Pressed, this, &AFactoryGamePlayerController::TogglePauseMenu);
 	InputComponent->BindKey(EKeys::P, IE_Pressed, this, &AFactoryGamePlayerController::TogglePauseMenu);
@@ -200,8 +206,10 @@ void AFactoryGamePlayerController::OpenPauseMenu()
 	PauseMenuWidget->RebuildMenu();
 	PauseMenuWidget->AddToPlayerScreen(100);
 
+	// SetPause hält die Welt an (Bewegung, Physik, später Maschinen). Widgets laufen weiter.
 	SetPause(true);
 
+	// UI-Modus: Eingaben gehen nur an das Menü, der Mauszeiger wird sichtbar
 	FInputModeUIOnly InputMode;
 	InputMode.SetWidgetToFocus(PauseMenuWidget->TakeWidget());
 	SetInputMode(InputMode);
@@ -222,6 +230,7 @@ void AFactoryGamePlayerController::ClosePauseMenu()
 
 void AFactoryGamePlayerController::RestoreGameInput()
 {
+	// nur in den Spielmodus zurück, wenn kein anderes Fenster mehr offen ist
 	const bool bPauseOpen = PauseMenuWidget && PauseMenuWidget->IsInViewport();
 	const bool bInventoryOpen = InventoryWidget && InventoryWidget->IsInViewport();
 
@@ -260,6 +269,7 @@ void AFactoryGamePlayerController::OpenInventory()
 		return;
 	}
 
+	// Widget beim ersten Öffnen erzeugen und danach wiederverwenden
 	if (!InventoryWidget)
 	{
 		InventoryWidget = CreateWidget<UFactoryInventoryWidget>(this, InventoryWidgetClass);
@@ -306,6 +316,8 @@ int32 AFactoryGamePlayerController::GiveItems(FName ItemId, int32 Count)
 		return 0;
 	}
 
+	// Zentrale Stelle für "Spieler bekommt Items" (Cheats, später Abbau und Kisten):
+	// legt ins Inventar und zeigt "+N Item" bzw. "Inventar voll" im HUD.
 	const int32 Added = Inventory->AddItem(ItemId, Count);
 
 	if (HUDWidget)
@@ -358,6 +370,7 @@ void AFactoryGamePlayerController::SelectHotbarSlot(int32 Index)
 		return;
 	}
 
+	// erneutes Drücken derselben Taste wählt den Slot wieder ab
 	SelectedHotbarSlot = SelectedHotbarSlot == Index ? INDEX_NONE : Index;
 
 	if (!HUDWidget)
@@ -365,6 +378,8 @@ void AFactoryGamePlayerController::SelectHotbarSlot(int32 Index)
 		return;
 	}
 
+	// Hinweis für leere Slots, solange es noch kein Baumenü gibt, das sie füllt.
+	// (Index + 1) % 10 ergibt die Tastenbeschriftung: Slot 10 liegt auf der 0.
 	if (SelectedHotbarSlot != INDEX_NONE && HotbarSlots[SelectedHotbarSlot].IsNone())
 	{
 		HUDWidget->ShowHint(FactoryLoc::Format("Hotbar_Empty", { FText::AsNumber((SelectedHotbarSlot + 1) % 10) }));
@@ -389,6 +404,7 @@ void AFactoryGamePlayerController::HandleHotbarKey(FKey Key)
 
 void AFactoryGamePlayerController::SelectPreviousHotbarSlot()
 {
+	// D-Pad links/rechts läuft zyklisch durch die Slots; ohne Auswahl beginnt es am Ende bzw. Anfang
 	SelectHotbarSlot(SelectedHotbarSlot == INDEX_NONE ? NumHotbarSlots - 1 : (SelectedHotbarSlot + NumHotbarSlots - 1) % NumHotbarSlots);
 }
 

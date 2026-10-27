@@ -56,6 +56,7 @@ void UFactoryInventoryWidget::SetInventory(UFactoryInventoryComponent* InInvento
 	FocusInventory = Inventory;
 	FocusIndex = 0;
 
+	// nur abonnieren, wenn das Fenster offen ist; sonst übernimmt das NativeConstruct beim Öffnen
 	if (IsInViewport())
 	{
 		if (Inventory.IsValid())
@@ -76,6 +77,8 @@ void UFactoryInventoryWidget::NativeConstruct()
 {
 	Super::NativeConstruct();
 
+	// NativeConstruct läuft bei jedem Öffnen. Erst die alte Bindung entfernen,
+	// damit HandleInventoryChanged nicht doppelt registriert wird.
 	if (Inventory.IsValid())
 	{
 		Inventory->OnInventoryChanged.Remove(InventoryChangedHandle);
@@ -139,6 +142,7 @@ FReply UFactoryInventoryWidget::NativeOnKeyDown(const FGeometry& InGeometry, con
 
 FReply UFactoryInventoryWidget::NativeOnMouseButtonDown(const FGeometry& InGeometry, const FPointerEvent& InMouseEvent)
 {
+	// Klick neben die Slots: gehaltenen Stapel zurücklegen (er hat seinen Slot nie verlassen)
 	if (IsHolding())
 	{
 		ReleaseHeld();
@@ -198,6 +202,8 @@ void UFactoryInventoryWidget::HandleInventoryChanged()
 
 void UFactoryInventoryWidget::ValidateHeld()
 {
+	// Hat sich der Quell-Slot geändert (z. B. durch Sortieren oder Cheats), passt der gehaltene
+	// Stapel nicht mehr dazu und wird verworfen bzw. auf den Slot-Inhalt gekürzt
 	if (!IsHolding())
 	{
 		return;
@@ -301,6 +307,7 @@ void UFactoryInventoryWidget::HandleSlotClick(UFactoryInventorySlotWidget* SlotW
 	FocusInventory = SlotInventory;
 	FocusIndex = Index;
 
+	// Fall 1: ein Stapel wird gehalten -> ablegen (ganz, einzeln oder zurück in den eigenen Slot)
 	if (IsHolding())
 	{
 		UFactoryInventoryComponent* HeldInventory = Held.Inventory.Get();
@@ -333,6 +340,7 @@ void UFactoryInventoryWidget::HandleSlotClick(UFactoryInventorySlotWidget* SlotW
 		return;
 	}
 
+	// Fall 2: nichts gehalten -> aufnehmen oder schnell verschieben
 	const FFactoryItemStack Stack = SlotInventory->GetSlots()[Index];
 
 	if (Stack.IsEmpty())
@@ -352,6 +360,7 @@ void UFactoryInventoryWidget::HandleSlotClick(UFactoryInventorySlotWidget* SlotW
 		break;
 
 	case EFactorySlotClick::Secondary:
+		// halber Stapel, aufgerundet: von 7 Items werden 4 aufgenommen
 		Held = { SlotInventory, Index, Stack.ItemId, (Stack.Count + 1) / 2 };
 		break;
 
@@ -449,6 +458,7 @@ void UFactoryInventoryWidget::UpdateHeldPreviewPosition()
 
 UWidget* UFactoryInventoryWidget::BuildContent()
 {
+	// wird bei jeder Änderung komplett neu aufgebaut, die alten Slot-Widgets werden verworfen
 	SlotWidgets.Reset();
 	HeldPreviewSlot = nullptr;
 
@@ -547,6 +557,7 @@ UWidget* UFactoryInventoryWidget::BuildContent()
 
 	AddRow(Content, Buttons, FMargin(0.0f, 16.0f, 0.0f, 0.0f));
 
+	// Breite = Ausrüstungsspalte + Abstand + 10 Slots + Innenabstand des Panels (2 x 32) + kleine Reserve
 	const float PanelWidth = UFactoryInventorySlotWidget::SlotSize + ColumnGap + NumColumns * SlotPitch + 64.0f + 4.0f;
 
 	if (UOverlaySlot* PanelSlot = Root->AddChildToOverlay(MakeSized(MakePanel(Content), PanelWidth)))

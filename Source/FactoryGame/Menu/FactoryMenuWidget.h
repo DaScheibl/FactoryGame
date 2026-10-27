@@ -16,6 +16,8 @@ class UHorizontalBox;
 
 /**
  *  Wraps a native callback so it can be bound to a UMG button's dynamic OnClicked delegate
+ *  Hintergrund: UButton::OnClicked akzeptiert nur UFUNCTIONs, keine Lambdas. Dieses kleine Objekt
+ *  hält das Lambda und wird mit seiner Execute()-UFUNCTION an den Button gebunden.
  */
 UCLASS()
 class UFactoryMenuAction : public UObject
@@ -42,6 +44,10 @@ enum class EFactoryButtonType : uint8
 /**
  *  Base class for the menus. The widget layout is built in C++, so no Widget Blueprint is needed.
  *  Subclasses implement BuildContent() and call RebuildMenu() whenever their state changes.
+ *
+ *  Prinzip: Der Zustand liegt in Member-Variablen, BuildContent() erzeugt daraus jedes Mal den
+ *  kompletten Widget-Baum neu. Das ist einfach und für die kleinen Menüs schnell genug.
+ *  Die Make...-Helfer sorgen für einheitliche Farben, Schriften und Buttons in allen Menüs.
  */
 UCLASS(abstract)
 class FACTORYGAME_API UFactoryMenuWidget : public UUserWidget

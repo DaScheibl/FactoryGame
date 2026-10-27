@@ -8,6 +8,11 @@
 
 /**
  *  Simple GameMode for a first person game
+ *
+ *  Abstrakte C++-Basis. Benutzt wird der Blueprint BP_FirstPersonGameMode
+ *  (DefaultEngine.ini → GlobalDefaultGameMode), dort sind Pawn- und Controller-Klasse eingetragen.
+ *  Solange keine Welt aktiv ist, ersetzt UFactoryGameInstance::OverrideGameModeClass ihn
+ *  durch AMainMenuGameMode.
  */
 UCLASS(abstract)
 class AFactoryGameGameMode : public AGameModeBase

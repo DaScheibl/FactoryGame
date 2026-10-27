@@ -46,7 +46,7 @@ Legende: `PT` Prototyp · `VS` Vertical Slice · `EA` Early Access · `1.0` Rele
 ## Grafik-Assets
 
 - [ ] **UI-Style-Kit (Panels, Buttons, Rahmen, Schrift)** · `UI_StyleKit` · `VS`
-- [ ] **Schriftarten (Lizenz geprüft, Umlaute!)** · `UI_Fonts` · `PT`
+- [ ] **Schriftarten (Lizenz geprüft, Umlaute!)** · `UI_Fonts` · `PT` — _Vorläufig Engine-Standardschrift (Roboto, Umlaute ok); eigene Schrift offen_
 - [ ] **Icon-Set für Kategorien/Status (~80 Icons)** · `UI_IconSet` · `VS`
 - [ ] **Gamepad-Glyphen (Xbox, PS, Deck)** · `UI_Glyphs` · `EA`
 - [ ] **Ladebildschirme + Tipps** · `UI_Loading` · `EA`

@@ -23,6 +23,8 @@ void UFactoryItemDatabase::Initialize(FSubsystemCollectionBase& Collection)
 
 void UFactoryItemDatabase::Reload()
 {
+	// Leere DataTable im Speicher anlegen, Zeilenformat ist FFactoryItemDefinition.
+	// Die erste CSV-Spalte ist der Zeilenname (= Item-ID), die übrigen heißen wie die Properties.
 	ItemTable = NewObject<UDataTable>(this, TEXT("DT_Items"));
 	ItemTable->RowStruct = FFactoryItemDefinition::StaticStruct();
 	SortedItemIds.Reset();
@@ -36,6 +38,7 @@ void UFactoryItemDatabase::Reload()
 		return;
 	}
 
+	// Fehler in der CSV (falscher Enum-Wert, unbekannte Spalte ...) erscheinen als Warnung im Log
 	for (const FString& Problem : ItemTable->CreateTableFromCSVString(Csv))
 	{
 		UE_LOG(LogFactoryGame, Warning, TEXT("Item table: %s"), *Problem);

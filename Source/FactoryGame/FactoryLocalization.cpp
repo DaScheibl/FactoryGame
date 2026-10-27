@@ -5,13 +5,15 @@
 
 namespace FactoryLoc
 {
+	// ein Tabelleneintrag: derselbe Text in beiden Sprachen
 	struct FEntry
 	{
 		const TCHAR* English;
 		const TCHAR* German;
 	};
 
-	// German umlauts are written as unicode escapes to stay independent of the source file encoding
+	// Umlaute stehen direkt im Quelltext, die Datei muss deshalb als UTF-8 gespeichert bleiben.
+	// Spalten: Schlüssel, Englisch, Deutsch. {0}, {1} ... sind Platzhalter für FactoryLoc::Format.
 	static const TMap<FName, FEntry>& GetTable()
 	{
 		static const TMap<FName, FEntry> Table = {

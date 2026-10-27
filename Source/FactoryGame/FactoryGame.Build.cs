@@ -8,6 +8,9 @@ public class FactoryGame : ModuleRules
 	{
 		PCHUsage = PCHUsageMode.UseExplicitOrSharedPCHs;
 
+		// Engine-Module, gegen die das Spiel linkt: Kern (Core, Engine, InputCore), EnhancedInput für
+		// die Steuerung, AIModule/StateTree für die Template-Varianten und UMG/Slate/SlateCore,
+		// weil alle Menüs und das HUD in C++ aufgebaut werden.
 		PublicDependencyModuleNames.AddRange(new string[] {
 			"Core",
 			"CoreUObject",
@@ -24,6 +27,8 @@ public class FactoryGame : ModuleRules
 
 		PrivateDependencyModuleNames.AddRange(new string[] { });
 
+		// Unterordner als Include-Pfade: dadurch reicht z. B. #include "FactoryInventoryComponent.h"
+		// ohne "Items/" davor. Neue Unterordner hier eintragen.
 		PublicIncludePaths.AddRange(new string[] {
 			"FactoryGame",
 			"FactoryGame/Menu",

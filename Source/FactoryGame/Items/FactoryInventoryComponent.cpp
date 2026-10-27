@@ -6,6 +6,8 @@
 UFactoryInventoryComponent::UFactoryInventoryComponent()
 {
 	PrimaryComponentTick.bCanEverTick = false;
+	// Inventare ändern sich nur durch Aufrufe und müssen nicht ticken.
+	// InitializeComponent wird gebraucht, um die Slots anzulegen.
 	bWantsInitializeComponent = true;
 }
 
@@ -17,6 +19,7 @@ void UFactoryInventoryComponent::InitializeComponent()
 	{
 		Slots.SetNum(SlotFilters.Num());
 	}
+	// sonst Standardgröße, falls noch nichts gesetzt wurde
 	else if (Slots.Num() == 0)
 	{
 		Slots.SetNum(DefaultNumSlots);
@@ -35,6 +38,7 @@ bool UFactoryInventoryComponent::CanHold(int32 Index, FName ItemId) const
 		return false;
 	}
 
+	// normale Inventare nehmen jedes tragbare Item, Ausrüstungs-Slots nur den passenden Typ
 	if (!HasSlotFilters())
 	{
 		return true;
@@ -55,6 +59,7 @@ TArray<FFactoryItemStack> UFactoryInventoryComponent::SetNumSlots(int32 NewNumSl
 
 	NewNumSlots = FMath::Max(1, NewNumSlots);
 
+	// beim Verkleinern: Inhalt der wegfallenden Slots einsammeln
 	TArray<FFactoryItemStack> Removed;
 
 	for (int32 Index = NewNumSlots; Index < Slots.Num(); ++Index)
@@ -135,6 +140,7 @@ int32 UFactoryInventoryComponent::AddItem(FName ItemId, int32 Count)
 		for (int32 Index = 0; Index < Slots.Num(); ++Index)
 		{
 			FFactoryItemStack& Stack = Slots[Index];
+			// Durchgang 0: Stapel desselben Items auffüllen, Durchgang 1: leere Slots belegen, die das Item annehmen
 			const bool bMatches = Pass == 0 ? (!Stack.IsEmpty() && Stack.ItemId == ItemId) : (Stack.IsEmpty() && CanHold(Index, ItemId));
 
 			if (!bMatches)
@@ -235,6 +241,7 @@ int32 UFactoryInventoryComponent::MoveTo(int32 FromIndex, UFactoryInventoryCompo
 
 	int32 Moved = 0;
 
+	// Ziel leer oder gleiches Item: so viel verschieben, wie auf den Zielstapel passt
 	if (To.IsEmpty() || To.ItemId == From.ItemId)
 	{
 		if (!Target->CanHold(ToIndex, From.ItemId))
@@ -288,6 +295,7 @@ int32 UFactoryInventoryComponent::TransferStack(int32 Index, UFactoryInventoryCo
 		return 0;
 	}
 
+	// Shift+Klick: erst normal auf passende Stapel und freie Slots des Ziels verteilen
 	const FFactoryItemStack Stack = Slots[Index];
 	const int32 Added = Target->AddItem(Stack.ItemId, Stack.Count);
 
@@ -412,6 +420,7 @@ void UFactoryInventoryComponent::Clear()
 
 void UFactoryInventoryComponent::SetSlots(const TArray<FFactoryItemStack>& NewSlots, int32 NumSlots)
 {
+	// die Ausrüstung behält immer einen Slot pro Filter, egal wie viele der Spielstand enthält
 	Slots = NewSlots;
 	Slots.SetNum(HasSlotFilters() ? SlotFilters.Num() : FMath::Max(1, NumSlots));
 

@@ -12,6 +12,12 @@ class UDataTable;
 /**
  *  Read-only access to all item definitions.
  *  The items are loaded from a CSV file in Content/FactoryGame/Core/Data, so they can be edited in a spreadsheet and diffed in git.
+ *
+ *  Als Game Instance Subsystem existiert die Datenbank genau einmal, wird beim Spielstart
+ *  automatisch erzeugt und überlebt Levelwechsel. Zugriff von überall mit UFactoryItemDatabase::Get(this).
+ *  Die CSV wird zur Laufzeit gelesen und nicht als .uasset importiert; DefaultGame.ini packt
+ *  den Ordner deshalb mit ins fertige Spiel.
+ *  Neues Item: Zeile in DT_Items.csv ergänzen, im laufenden Spiel mit "ReloadItems" neu laden.
  */
 UCLASS(config=Game)
 class FACTORYGAME_API UFactoryItemDatabase : public UGameInstanceSubsystem

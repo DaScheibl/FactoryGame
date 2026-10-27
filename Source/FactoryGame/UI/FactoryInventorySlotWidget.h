@@ -13,6 +13,8 @@ class UFactoryInventoryWidget;
 
 /**
  *  A stack being dragged from an inventory slot
+ *  Wird beim Ziehen mit der Maus erzeugt und beim Loslassen an den Ziel-Slot übergeben (NativeOnDrop).
+ *  Die Items bleiben während des Ziehens im Quell-Slot; verschoben wird erst beim Ablegen.
  */
 UCLASS()
 class FACTORYGAME_API UFactoryItemDragOperation : public UDragDropOperation
@@ -48,6 +50,10 @@ enum class EFactorySlotClick : uint8
 
 /**
  *  One slot of the inventory window. Also used as the drag and cursor visual of a held stack.
+ *
+ *  Der Slot zeigt nur an und meldet Eingaben weiter: Maus und Gamepad werden in EFactorySlotClick
+ *  übersetzt und an UFactoryInventoryWidget::HandleSlotClick gereicht. Die eigentliche Logik
+ *  (aufnehmen, ablegen, verschieben) steckt im Inventarfenster.
  */
 UCLASS()
 class FACTORYGAME_API UFactoryInventorySlotWidget : public UFactoryMenuWidget

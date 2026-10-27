@@ -10,6 +10,10 @@ class UFactoryInventoryComponent;
 
 /**
  *  Console commands for testing. Available in the editor and in development builds.
+ *
+ *  Benutzung: im Spiel die Konsole mit ^ (bzw. `) öffnen und z. B. "GiveItem IronPlate 50" eingeben.
+ *  Jede UFUNCTION(Exec) in dieser Klasse wird automatisch zum Konsolenbefehl.
+ *  In Shipping-Builds gibt es keinen Cheat Manager, die Befehle fehlen dort also.
  */
 UCLASS()
 class FACTORYGAME_API UFactoryCheatManager : public UCheatManager

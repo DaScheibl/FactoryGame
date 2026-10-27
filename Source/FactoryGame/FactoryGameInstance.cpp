@@ -14,6 +14,8 @@
 
 UFactoryGameInstance::UFactoryGameInstance()
 {
+	// Vorläufig ist die Template-Map Spielwelt und Menü-Hintergrund zugleich.
+	// Beide Properties sind "Config" und lassen sich in DefaultGame.ini überschreiben.
 	GameplayMap = TSoftObjectPtr<UWorld>(FSoftObjectPath(TEXT("/Game/FirstPerson/Lvl_FirstPerson.Lvl_FirstPerson")));
 	MainMenuMap = GameplayMap;
 }
@@ -27,6 +29,7 @@ void UFactoryGameInstance::Init()
 {
 	Super::Init();
 
+	// Liste der gespeicherten Welten einlesen, damit das Hauptmenü sie sofort anzeigen kann
 	LoadWorldIndex();
 
 	// apply the stored user settings, this also selects the UI language
@@ -35,6 +38,8 @@ void UFactoryGameInstance::Init()
 		Settings->ApplySettings(false);
 	}
 
+	// Der Core Ticker läuft unabhängig von Levelwechseln und Pause. Gespeichert wird aber nur,
+	// wenn gerade eine Welt aktiv ist (siehe SaveCurrentWorld).
 	if (AutosaveInterval > 0.0f)
 	{
 		AutosaveTickerHandle = FTSTicker::GetCoreTicker().AddTicker(FTickerDelegate::CreateUObject(this, &UFactoryGameInstance::HandleAutosave), AutosaveInterval);
@@ -102,6 +107,8 @@ bool UFactoryGameInstance::CreateNewWorld(const FString& DisplayName)
 	SaveGame->DisplayName = TrimmedName;
 	SaveGame->SaveVersion = static_cast<int32>(EFactoryWorldSaveVersion::Latest);
 
+	// Eine GUID als Slot-Name erlaubt mehrere Welten mit gleichem Namen und späteres Umbenennen,
+	// ohne die Datei zu verschieben.
 	const FString SlotName = FString::Printf(TEXT("World_%s"), *FGuid::NewGuid().ToString(EGuidFormats::Digits));
 
 	if (!UGameplayStatics::SaveGameToSlot(SaveGame, SlotName, 0))
@@ -227,16 +234,19 @@ void UFactoryGameInstance::RestorePlayerState(APlayerController* PlayerControlle
 		return;
 	}
 
+	// TeleportPhysics: kein Sweep und keine Geschwindigkeit aus dem Positionssprung
 	Pawn->SetActorLocationAndRotation(CurrentWorldSave->PlayerTransform.GetLocation(), CurrentWorldSave->PlayerTransform.GetRotation(), false, nullptr, ETeleportType::TeleportPhysics);
 	PlayerController->SetControlRotation(CurrentWorldSave->ControlRotation);
 
 	if (const AFactoryGameCharacter* Character = Cast<AFactoryGameCharacter>(Pawn))
 	{
+		// 0 Slots = Welt ohne gespeichertes Inventar, dann bleibt das leere Start-Inventar
 		if (CurrentWorldSave->InventoryNumSlots > 0)
 		{
 			Character->GetInventory()->SetSlots(CurrentWorldSave->InventorySlots, CurrentWorldSave->InventoryNumSlots);
 		}
 
+		// die Ausrüstung hat feste Slots, die Anzahl wird deshalb ignoriert
 		Character->GetEquipment()->SetSlots(CurrentWorldSave->EquipmentSlots, 0);
 	}
 
@@ -292,6 +302,7 @@ void UFactoryGameInstance::StartWorld(const FString& SlotName, UFactoryWorldSave
 {
 	CurrentWorldSlot = SlotName;
 	CurrentWorldSave = SaveGame;
+	// eine neue Welt hat noch keine Spielerdaten, dann bleibt die Figur am PlayerStart
 	bPendingPlayerRestore = SaveGame->bHasPlayerData;
 	PlayTimeCounterStart = FPlatformTime::Seconds();
 
@@ -304,6 +315,8 @@ void UFactoryGameInstance::StartWorld(const FString& SlotName, UFactoryWorldSave
 
 	SaveWorldIndex();
 
+	// Der Levelwechsel passiert erst im nächsten Frame. Den Spieler stellt danach
+	// AFactoryGamePlayerController::OnPossess wieder her.
 	OpenMap(GameplayMap);
 }
 
@@ -337,6 +350,7 @@ void UFactoryGameInstance::CapturePlayerState()
 
 void UFactoryGameInstance::OpenMap(const TSoftObjectPtr<UWorld>& Map)
 {
+	// beim Laden der Map fragt die Engine OverrideGameModeClass(), welcher Game Mode gilt
 	UGameplayStatics::OpenLevelBySoftObjectPtr(this, Map);
 }
 

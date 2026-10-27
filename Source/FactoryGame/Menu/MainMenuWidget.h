@@ -20,6 +20,11 @@ enum class EMainMenuPage : uint8
 
 /**
  *  Main menu with Continue, New World, Load World, Settings and Quit
+ *
+ *  Links die Navigation, daneben die gerade geöffnete Seite (Neue Welt, Laden, Einstellungen).
+ *  Welche Seite offen ist, steht in ActivePage; jede Änderung baut das Menü neu (RebuildMenu).
+ *  Die eigentliche Arbeit erledigen UFactoryGameInstance (Welten anlegen/laden/löschen) und
+ *  UFactoryGameUserSettings (Einstellungen).
  */
 UCLASS()
 class FACTORYGAME_API UMainMenuWidget : public UFactoryMenuWidget

@@ -7,6 +7,12 @@
 /**
  *  Minimal UI string table for English and German.
  *  The language is taken from UFactoryGameUserSettings.
+ *
+ *  Bewusst einfach gehalten: alle UI-Texte stehen als Tabelle (Schlüssel → Englisch/Deutsch)
+ *  in FactoryLocalization.cpp. Neue Texte dort eintragen und mit FactoryLoc::Get("Schlüssel")
+ *  abrufen. Fehlende Schlüssel erscheinen im Spiel als <Schlüssel> und fallen so sofort auf.
+ *  Die Sprache wird bei jedem Aufruf neu abgefragt; nach einem Sprachwechsel reicht daher
+ *  ein RebuildMenu() der offenen Widgets.
  */
 namespace FactoryLoc
 {

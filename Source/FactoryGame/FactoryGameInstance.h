@@ -14,6 +14,18 @@ class APlayerController;
  *  Game Instance that manages the saved worlds.
  *  As long as no world is active, every map is started with the main menu game mode.
  *  Starting, loading or continuing a world opens the gameplay map with the regular game mode.
+ *
+ *  Ablauf:
+ *  - Die Game Instance lebt vom Programmstart bis zum Beenden, also über Levelwechsel hinweg.
+ *    Deshalb merkt sie sich, welche Welt gerade gespielt wird.
+ *  - Jede Welt liegt in einem eigenen Save-Slot "World_<GUID>" (UFactoryWorldSaveGame).
+ *    Dazu kommt der Slot "WorldIndex" mit der Liste aller Welten für das Ladefenster.
+ *  - Welt starten/laden: StartWorld() merkt sich Slot und Daten und öffnet die Gameplay-Map.
+ *    Sobald der Controller dort die Spielfigur übernimmt (OnPossess), ruft er
+ *    RestorePlayerState() auf und Position, Inventar und Hotbar werden wiederhergestellt.
+ *  - Gespeichert wird per Autosave (AutosaveInterval), im Pausemenü, beim Zurückkehren ins
+ *    Hauptmenü und beim Beenden.
+ *  - Leerer CurrentWorldSlot = Hauptmenü. Dann startet jede Map mit AMainMenuGameMode.
  */
 UCLASS(config=Game)
 class FACTORYGAME_API UFactoryGameInstance : public UGameInstance

@@ -18,6 +18,14 @@ DECLARE_LOG_CATEGORY_EXTERN(LogTemplateCharacter, Log, All);
 
 /**
  *  A basic first person character
+ *
+ *  Spielfigur in der Ego-Perspektive.
+ *  - FirstPersonMesh: die Arme, die nur der eigene Spieler sieht. Der normale Mesh (GetMesh)
+ *    ist der Ganzkörper für Schatten und andere Spieler und wird für den Besitzer ausgeblendet.
+ *  - Inventory: Rucksack mit 20 Slots (erweiterbar), siehe UFactoryInventoryComponent.
+ *  - Equipment: zweite Inventar-Komponente mit festen Slots für Kopf, Körper, Rücken und Hand.
+ *  Eingaben kommen über Enhanced Input (Input Actions im Blueprint eingetragen) und werden an
+ *  die Do...-Funktionen weitergereicht, damit Touch-UI und Tastatur denselben Code nutzen.
  */
 UCLASS(abstract)
 class AFactoryGameCharacter : public ACharacter

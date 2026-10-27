@@ -5,6 +5,7 @@
 
 AMainMenuGameMode::AMainMenuGameMode()
 {
+	// keine Spielfigur im Menü; der Controller zeigt nur das Menü und die Hintergrundkamera
 	DefaultPawnClass = nullptr;
 	PlayerControllerClass = AMainMenuPlayerController::StaticClass();
 }

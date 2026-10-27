@@ -21,6 +21,8 @@ AFactoryGameCharacter::AFactoryGameCharacter()
 
 	FirstPersonMesh->SetupAttachment(GetMesh());
 	FirstPersonMesh->SetOnlyOwnerSee(true);
+	// FirstPerson-Primitive werden mit eigenem FOV und eigener Skalierung gerendert (siehe Kamera),
+	// dadurch ragen die Arme nicht in Wände hinein.
 	FirstPersonMesh->FirstPersonPrimitiveType = EFirstPersonPrimitiveType::FirstPerson;
 	FirstPersonMesh->SetCollisionProfileName(FName("NoCollision"));
 
@@ -28,6 +30,8 @@ AFactoryGameCharacter::AFactoryGameCharacter()
 	FirstPersonCameraComponent = CreateDefaultSubobject<UCameraComponent>(TEXT("First Person Camera"));
 	FirstPersonCameraComponent->SetupAttachment(FirstPersonMesh, FName("head"));
 	FirstPersonCameraComponent->SetRelativeLocationAndRotation(FVector(-2.8f, 5.89f, 0.0f), FRotator(0.0f, 90.0f, -90.0f));
+	// Die Kamera hängt am Kopf-Bone der Arme und folgt der Controller-Rotation (Maus/Stick).
+	// FirstPersonFieldOfView/Scale gelten nur für die Arme, nicht für die Welt.
 	FirstPersonCameraComponent->bUsePawnControlRotation = true;
 	FirstPersonCameraComponent->bEnableFirstPersonFieldOfView = true;
 	FirstPersonCameraComponent->bEnableFirstPersonScale = true;
@@ -38,21 +42,29 @@ AFactoryGameCharacter::AFactoryGameCharacter()
 	Inventory = CreateDefaultSubobject<UFactoryInventoryComponent>(TEXT("Inventory"));
 
 	Equipment = CreateDefaultSubobject<UFactoryInventoryComponent>(TEXT("Equipment"));
+	// Ausrüstung = Inventar mit Slot-Filtern: ein Slot pro Eintrag, der nur passende Items annimmt.
+	// Die Reihenfolge ist auch die Reihenfolge im Spielstand (EquipmentSlots), also nicht umsortieren.
 	Equipment->SetSlotFilters({ EFactoryEquipSlot::Head, EFactoryEquipSlot::Body, EFactoryEquipSlot::Back, EFactoryEquipSlot::Hand });
 
 	// configure the character comps
 	GetMesh()->SetOwnerNoSee(true);
 	GetMesh()->FirstPersonPrimitiveType = EFirstPersonPrimitiveType::WorldSpaceRepresentation;
 
+	// überschreibt die Größe vom Anfang des Konstruktors (Template-Überbleibsel):
+	// 34 cm Radius, 96 cm halbe Höhe
 	GetCapsuleComponent()->SetCapsuleSize(34.0f, 96.0f);
 
 	// Configure character movement
+	// starkes Abbremsen in der Luft und etwas Luftsteuerung für ein direktes Sprunggefühl
 	GetCharacterMovement()->BrakingDecelerationFalling = 1500.0f;
 	GetCharacterMovement()->AirControl = 0.5f;
 }
 
 void AFactoryGameCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 {	
+	// Wird beim Possess aufgerufen und bindet die Input Actions (im Blueprint zugewiesen) an Funktionen.
+	// Started/Completed = Taste gedrückt/losgelassen, Triggered = jeden Frame, solange aktiv.
+	// Menü-, Inventar- und Hotbar-Tasten bindet dagegen AFactoryGamePlayerController.
 	// Set up action bindings
 	if (UEnhancedInputComponent* EnhancedInputComponent = Cast<UEnhancedInputComponent>(PlayerInputComponent))
 	{

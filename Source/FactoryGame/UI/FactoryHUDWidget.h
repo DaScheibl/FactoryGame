@@ -17,6 +17,10 @@ enum class EFactoryNotificationType : uint8
 /**
  *  In-game HUD: crosshair, build hotbar, hint line and notifications.
  *  Never takes input, so it stays visible below the inventory and the pause menu.
+ *
+ *  Wie alle Menüs wird das HUD komplett in C++ gebaut (UFactoryMenuWidget) und bei jeder
+ *  Änderung (neue Meldung, Hotbar-Auswahl, abgelaufener Hinweis) per RebuildMenu() neu erzeugt.
+ *  Erzeugt wird es vom AFactoryGamePlayerController in BeginPlay.
  */
 UCLASS()
 class FACTORYGAME_API UFactoryHUDWidget : public UFactoryMenuWidget

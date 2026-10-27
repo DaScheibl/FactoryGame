@@ -53,6 +53,8 @@ UWidget* UFactoryInventorySlotWidget::BuildContent()
 	int32 Count = PreviewCount;
 	bool bHeldHere = false;
 
+	// Im Vorschau-Modus kommen ID und Anzahl aus SetupPreview, sonst aus dem Inventar-Slot.
+	// Aufgenommene Items liegen weiter im Slot und werden hier nur von der Anzeige abgezogen.
 	if (Inventory.IsValid() && Inventory->GetSlots().IsValidIndex(Index))
 	{
 		const FFactoryItemStack& Stack = Inventory->GetSlots()[Index];
@@ -216,6 +218,8 @@ FReply UFactoryInventorySlotWidget::NativeOnMouseButtonDown(const FGeometry& InG
 		return FReply::Handled();
 	}
 
+	// DetectDragIfPressed: bewegt sich die Maus mit gedrückter Taste, startet Unreal ein Drag
+	// (NativeOnDragDetected), sonst wird es beim Loslassen ein Klick (NativeOnMouseButtonUp)
 	bLeftPressed = true;
 	return UWidgetBlueprintLibrary::DetectDragIfPressed(InMouseEvent, this, EKeys::LeftMouseButton).NativeReply;
 }
@@ -249,6 +253,7 @@ void UFactoryInventorySlotWidget::NativeOnDragDetected(const FGeometry& InGeomet
 	Operation->ItemId = Stack.ItemId;
 	Operation->Count = Stack.Count;
 
+	// das Bild am Mauszeiger ist ein zweites Slot-Widget im Vorschau-Modus
 	UFactoryInventorySlotWidget* Visual = CreateWidget<UFactoryInventorySlotWidget>(Owner.Get(), UFactoryInventorySlotWidget::StaticClass());
 	Visual->SetupPreview(Stack.ItemId, Stack.Count);
 
@@ -302,6 +307,8 @@ void UFactoryInventorySlotWidget::NativeOnAddedToFocusPath(const FFocusEvent& In
 {
 	Super::NativeOnAddedToFocusPath(InFocusEvent);
 
+	// Fokus = Auswahl per Gamepad/Tastatur. Das Fenster merkt sich den Slot, damit er nach
+	// einem Neuaufbau wieder fokussiert wird.
 	bFocused = true;
 	UpdateBackground();
 
@@ -329,6 +336,7 @@ FReply UFactoryInventorySlotWidget::NativeOnKeyDown(const FGeometry& InGeometry,
 		UpdateBackground();
 	}
 
+	// Gamepad auf dieselben Aktionen wie die Maus abbilden: A = Linksklick, X = Rechtsklick, Y = Shift+Klick
 	if (Key == EKeys::Gamepad_FaceButton_Bottom || Key == EKeys::Enter || Key == EKeys::SpaceBar)
 	{
 		Click(EFactorySlotClick::Primary);

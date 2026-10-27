@@ -37,6 +37,7 @@ void AMainMenuPlayerController::BeginPlay()
 	FActorSpawnParameters SpawnParams;
 	SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
 
+	// eigene Kamera spawnen und als Sicht setzen, weil es keinen Pawn mit Kamera gibt
 	BackdropCamera = GetWorld()->SpawnActor<ACameraActor>(CameraLocation, FRotator(CameraPitch, CameraYaw, 0.0f), SpawnParams);
 
 	if (BackdropCamera)
@@ -53,6 +54,7 @@ void AMainMenuPlayerController::BeginPlay()
 
 		FInputModeUIOnly InputMode;
 		InputMode.SetWidgetToFocus(MenuWidget->TakeWidget());
+		// nur UI-Eingaben; die Maus darf das Fenster verlassen
 		InputMode.SetLockMouseToViewportBehavior(EMouseLockMode::DoNotLock);
 		SetInputMode(InputMode);
 	}
@@ -64,6 +66,7 @@ void AMainMenuPlayerController::Tick(float DeltaSeconds)
 
 	if (BackdropCamera)
 	{
+		// langsam um die Hochachse drehen (CameraYawSpeed Grad pro Sekunde)
 		BackdropCamera->AddActorWorldRotation(FRotator(0.0f, CameraYawSpeed * DeltaSeconds, 0.0f));
 	}
 }

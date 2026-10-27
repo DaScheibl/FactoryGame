@@ -24,6 +24,7 @@ namespace
 {
 	const float CornerRadius = 6.0f;
 
+	// Button-Aussehen: Normal = dunkel, Primary = orange (Hauptaktion), Selected = dunkel mit orangem Rand
 	FButtonStyle MakeButtonStyle(EFactoryButtonType Type)
 	{
 		const FLinearColor Accent = UFactoryMenuWidget::AccentColor;
@@ -137,6 +138,8 @@ UButton* UFactoryMenuWidget::MakeButton(UWidget* Content, TFunction<void()> OnCl
 		ButtonSlot->SetVerticalAlignment(VAlign_Center);
 	}
 
+	// Callback in ein UObject packen (siehe UFactoryMenuAction) und in Actions festhalten,
+	// damit der Garbage Collector es nicht wegräumt, solange der Button existiert
 	UFactoryMenuAction* Action = NewObject<UFactoryMenuAction>(this);
 	Action->Callback = MoveTemp(OnClicked);
 	Actions.Add(Action);
@@ -204,6 +207,7 @@ UWidget* UFactoryMenuWidget::MakeCycleRow(const FText& Label, const FText& Value
 
 	AddColumn(Row, MakeText(Label, 18.0f), true);
 
+	// beide Pfeil-Buttons teilen sich denselben Callback, deshalb als Shared Pointer
 	const TSharedRef<TFunction<void(int32)>> Step = MakeShared<TFunction<void(int32)>>(MoveTemp(OnStep));
 
 	AddColumn(Row, MakeSized(MakeTextButton(FText::FromString(TEXT("<")), [Step]() { (*Step)(-1); }, EFactoryButtonType::Normal, 18.0f, ETextJustify::Center), 44.0f, 40.0f));

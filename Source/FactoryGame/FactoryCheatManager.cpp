@@ -25,6 +25,7 @@ void UFactoryCheatManager::GiveItem(FName ItemId, int32 Count)
 		return;
 	}
 
+	// Kurzform erlauben: "IronPlate" wird zu "ITM_IronPlate"
 	if (!Database->FindItem(ItemId))
 	{
 		ItemId = FName(TEXT("ITM_") + ItemId.ToString());
@@ -53,6 +54,7 @@ void UFactoryCheatManager::GiveAllItems(int32 MaxTier)
 	{
 		const FFactoryItemDefinition* Item = Database->FindItem(ItemId);
 
+		// Fluide (Stackgröße 0) lassen sich nicht tragen und werden übersprungen
 		if (Item->Tier <= MaxTier && Item->GetMaxStackSize() > 0)
 		{
 			PlayerController->GiveItems(ItemId, Item->GetMaxStackSize());
@@ -113,6 +115,7 @@ void UFactoryCheatManager::SetHotbar(int32 SlotNumber, FName Shortcut)
 {
 	if (AFactoryGamePlayerController* PlayerController = Cast<AFactoryGamePlayerController>(GetPlayerController()))
 	{
+		// die Konsole zählt ab 1 wie die Tasten, intern beginnen die Slots bei 0
 		PlayerController->SetHotbarSlot(SlotNumber - 1, Shortcut);
 	}
 }

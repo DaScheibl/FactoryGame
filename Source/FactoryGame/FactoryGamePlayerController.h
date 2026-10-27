@@ -16,6 +16,13 @@ class UFactoryInventoryWidget;
  *  Simple first person Player Controller
  *  Manages the input mapping context.
  *  Overrides the Player Camera Manager class.
+ *
+ *  Zentrale Stelle für alles, was der Spieler im Spiel bedient:
+ *  - erzeugt HUD, Pausemenü und Inventarfenster (C++-Widgets, kein Widget Blueprint)
+ *  - bindet die festen Tasten: Esc/P = Pause, Tab/I = Inventar, 1-0 = Hotbar
+ *  - verwaltet die Hotbar (10 Slots mit Bau-Shortcuts), die mit der Welt gespeichert wird
+ *  - schaltet zwischen Spiel-Eingabe (Maus dreht Kamera) und UI-Eingabe (Mauszeiger) um
+ *  - registriert den Cheat Manager für Konsolenbefehle zum Testen
  */
 UCLASS(abstract, config="Game")
 class FACTORYGAME_API AFactoryGamePlayerController : public APlayerController
@@ -131,6 +138,7 @@ public:
 	/** Returns the HUD, may be nullptr */
 	UFactoryHUDWidget* GetHUDWidget() const { return HUDWidget; }
 
+	/** Anzahl der Hotbar-Slots: Tasten 1-9 und 0 */
 	static constexpr int32 NumHotbarSlots = 10;
 
 	/** Returns the shortcut on the given hotbar slot */
@@ -145,6 +153,7 @@ public:
 	/** Replaces all hotbar shortcuts, used for loading */
 	void SetHotbarSlots(const TArray<FName>& InSlots);
 
+	/** Gewählter Hotbar-Slot, INDEX_NONE wenn keiner gewählt ist */
 	int32 GetSelectedHotbarSlot() const { return SelectedHotbarSlot; }
 
 	/** Selects a hotbar slot, or deselects it if it's already selected */

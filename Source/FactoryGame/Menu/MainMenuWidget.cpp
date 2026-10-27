@@ -275,6 +275,7 @@ UWidget* UMainMenuWidget::BuildSettingsPage()
 
 	AddRow(Page, MakeText(FactoryLoc::Get("Settings_Header"), 30.0f, TextColor, true), FMargin(0.0f, 0.0f, 0.0f, 20.0f));
 
+	// Änderungen landen zunächst nur in den Pending...-Variablen und gelten erst mit "Übernehmen"
 	AddRow(Page, MakeCycleRow(FactoryLoc::Get("Settings_Language"), FactoryLoc::Get(*(TEXT("Language_") + Languages[PendingLanguage])), [this](int32 Step)
 	{
 		PendingLanguage = WrapIndex(PendingLanguage + Step, UFactoryGameUserSettings::GetSupportedLanguages().Num());
@@ -359,6 +360,7 @@ void UMainMenuWidget::SetStatus(const FText& Message, bool bIsError)
 
 void UMainMenuWidget::Refresh()
 {
+	// der Neuaufbau erzeugt ein neues Textfeld, deshalb den eingetippten Namen vorher sichern
 	if (WorldNameBox)
 	{
 		PendingWorldName = WorldNameBox->GetText().ToString();
@@ -447,6 +449,7 @@ void UMainMenuWidget::CreateWorld()
 
 	UFactoryGameInstance* GameInstance = UFactoryGameInstance::Get(this);
 
+	// bei Erfolg wird sofort die Spiel-Map geladen und dieses Menü verschwindet
 	if (!GameInstance || !GameInstance->CreateNewWorld(Name))
 	{
 		SetStatus(FactoryLoc::Get("NewWorld_Failed"), true);
