@@ -129,6 +129,9 @@ private:
 
 	FHeldStack Held;
 
+	/** True while a click or drop moves items. The change events of that move are ignored, the click handler validates and refreshes itself afterwards */
+	bool bApplyingMove = false;
+
 	/** Slot that gets the focus after a rebuild */
 	TWeakObjectPtr<UFactoryInventoryComponent> FocusInventory;
 	int32 FocusIndex = 0;

@@ -8,6 +8,7 @@
 #include "Components/TextRenderComponent.h"
 #include "Engine/StaticMesh.h"
 #include "Materials/MaterialInstanceDynamic.h"
+#include "Materials/MaterialInterface.h"
 #include "Camera/PlayerCameraManager.h"
 #include "GameFramework/PlayerController.h"
 #include "Kismet/GameplayStatics.h"
@@ -58,6 +59,14 @@ AFactoryMachine::AFactoryMachine()
 	if (CubeMesh.Succeeded())
 	{
 		Mesh->SetStaticMesh(CubeMesh.Object);
+	}
+
+	// der Würfel hat standardmäßig das WorldGridMaterial ohne Farbparameter, deshalb BasicShapeMaterial setzen
+	static ConstructorHelpers::FObjectFinder<UMaterialInterface> ColorMaterial(TEXT("/Engine/BasicShapes/BasicShapeMaterial.BasicShapeMaterial"));
+
+	if (ColorMaterial.Succeeded())
+	{
+		Mesh->SetMaterial(0, ColorMaterial.Object);
 	}
 
 	Label = CreateDefaultSubobject<UTextRenderComponent>(TEXT("Label"));

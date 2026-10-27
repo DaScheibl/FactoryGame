@@ -196,6 +196,13 @@ void UFactoryInventoryWidget::SetUsingGamepad(bool bInUsingGamepad)
 
 void UFactoryInventoryWidget::HandleInventoryChanged()
 {
+	// Änderungen durch den eigenen Klick: MoveTo meldet sich noch mitten im Klick-Code.
+	// Würde ValidateHeld hier den gehaltenen Stapel verwerfen, rechnet der Klick danach mit Index -1 weiter (Absturz).
+	if (bApplyingMove)
+	{
+		return;
+	}
+
 	ValidateHeld();
 	Refresh();
 }
@@ -307,6 +314,9 @@ void UFactoryInventoryWidget::HandleSlotClick(UFactoryInventorySlotWidget* SlotW
 	FocusInventory = SlotInventory;
 	FocusIndex = Index;
 
+	// ValidateHeld und Refresh laufen am Ende selbst, nicht schon in den Change-Events von MoveTo
+	TGuardValue<bool> MoveGuard(bApplyingMove, true);
+
 	// Fall 1: ein Stapel wird gehalten -> ablegen (ganz, einzeln oder zurück in den eigenen Slot)
 	if (IsHolding())
 	{
@@ -384,6 +394,7 @@ void UFactoryInventoryWidget::HandleSlotDrop(UFactoryInventorySlotWidget* SlotWi
 	// the slot may have changed while dragging, e.g. by picking something up
 	if (SourceInventory && TargetInventory && SourceInventory->GetSlots().IsValidIndex(Operation->SourceIndex) && SourceInventory->GetSlots()[Operation->SourceIndex].ItemId == Operation->ItemId)
 	{
+		TGuardValue<bool> MoveGuard(bApplyingMove, true);
 		SourceInventory->MoveTo(Operation->SourceIndex, TargetInventory, SlotWidget->GetIndex(), Operation->Count);
 	}
 
