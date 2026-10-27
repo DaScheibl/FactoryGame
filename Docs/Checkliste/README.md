@@ -9,7 +9,7 @@ Unreal Engine 5 · Blender · Ziel: Steam Early Access → 1.0.
 <!-- PROGRESS:START -->
 | Bereich | Erledigt | Fortschritt |
 |---|---|---|
-| [Asset-Pipeline & Standards](checklisten/00-pipeline-standards.md) | 0/18 | `░░░░░░░░░░░░░░░░░░░░`  0.0% |
+| [Asset-Pipeline & Standards](checklisten/00-pipeline-standards.md) | 8/18 | `█████████░░░░░░░░░░░` 44.4% |
 | [Progression & Tech-Tree](checklisten/01-progression.md) | 0/17 | `░░░░░░░░░░░░░░░░░░░░`  0.0% |
 | [Ressourcen & Items](checklisten/02-ressourcen-items.md) | 0/141 | `░░░░░░░░░░░░░░░░░░░░`  0.0% |
 | [Gebäude & Produktionsmaschinen](checklisten/03-gebaeude.md) | 0/631 | `░░░░░░░░░░░░░░░░░░░░`  0.0% |
@@ -23,11 +23,11 @@ Unreal Engine 5 · Blender · Ziel: Steam Early Access → 1.0.
 | [Story, Text & Cinematics](checklisten/11-story-cinematics.md) | 0/8 | `░░░░░░░░░░░░░░░░░░░░`  0.0% |
 | [Technik & Systeme (nicht-Asset, aber 1.0-relevant)](checklisten/12-technik-systeme.md) | 0/17 | `░░░░░░░░░░░░░░░░░░░░`  0.0% |
 | [Release, Marketing & Recht](checklisten/13-release-marketing.md) | 0/30 | `░░░░░░░░░░░░░░░░░░░░`  0.0% |
-| **Gesamt** | **0/1039** | `░░░░░░░░░░░░░░░░░░░░`  0.0% |
+| **Gesamt** | **8/1039** | `░░░░░░░░░░░░░░░░░░░░`  0.8% |
 
 | Meilenstein | Assets fertig | Fortschritt |
 |---|---|---|
-| `PT` Prototyp | 0/42 | `░░░░░░░░░░░░░░░░░░░░`  0.0% |
+| `PT` Prototyp | 8/42 | `████░░░░░░░░░░░░░░░░` 19.0% |
 | `VS` Vertical Slice | 0/107 | `░░░░░░░░░░░░░░░░░░░░`  0.0% |
 | `EA` Early Access | 0/171 | `░░░░░░░░░░░░░░░░░░░░`  0.0% |
 | `1.0` Release 1.0 | 0/75 | `░░░░░░░░░░░░░░░░░░░░`  0.0% |
@@ -69,7 +69,7 @@ Jeder Eintrag trägt ein Kürzel, **wann** er fertig sein muss:
 
 - Checkboxen direkt auf GitHub anklicken (in `.md`-Dateien im Web-Editor `[ ]` → `[x]`) oder lokal in Rider/VS Code.
 - Für größere Brocken ein Issue mit der Vorlage **„Asset“** anlegen und die Asset-ID (z. B. `BLD_Drill_Mk1`) in den Titel schreiben.
-- Asset-IDs = spätere Dateinamen in Unreal. Präfixe: `BLD_` Gebäude · `ITM_` Item · `RES_` Ressource · `LOG_` Logistik · `STR_` Bauteile · `VEH_` Fahrzeug · `EQP_` Ausrüstung · `ENV_` Umgebung · `UI_` · `SFX_` · `MUS_` · `VFX_` · `MAT_`.
+- Asset-IDs = Ordnername in Unreal, Dateien bekommen davor den Typpräfix (`SM_BLD_Drill_Mk1`, siehe [Naming](../Standards/01-naming.md)). Präfixe: `BLD_` Gebäude · `ITM_` Item · `RES_` Ressource · `LOG_` Logistik · `STR_` Bauteile · `VEH_` Fahrzeug · `EQP_` Ausrüstung · `ENV_` Umgebung · `UI_` · `SFX_` · `MUS_` · `VFX_` · `MAT_`.
 - Reihenfolge-Tipp: immer erst **Blockout einer ganzen Tier**, dann spielen, dann Hero-Assets.
 
 ## Annahmen (bitte prüfen)
