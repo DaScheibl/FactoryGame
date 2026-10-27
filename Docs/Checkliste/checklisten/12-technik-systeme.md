@@ -8,7 +8,7 @@ Legende: `PT` Prototyp · `VS` Vertical Slice · `EA` Early Access · `1.0` Rele
 
 - [ ] **Deterministische Simulation getrennt vom Rendering (Tick-basiert)** · `SYS_Sim` · `PT`
 - [ ] **Segment-basierte Band-Simulation (nicht pro Item)** · `SYS_BeltSim` · `PT`
-- [ ] **Rezept-/Item-Datenbank aus DataTables** · `SYS_Recipes` · `PT` · [Doku](../../Standards/10-items-inventar.md) — _Item-Datenbank steht (70 Items, CSV → DataTable); Rezepte fehlen noch_
+- [ ] **Rezept-/Item-Datenbank aus DataTables** · `SYS_Recipes` · `PT` · [Doku](../../Standards/11-rezepte.md) — _Items (CSV → DataTable) und Rezepte Tier 0–2 (25, mit Prüfung beim Laden) stehen. Rezeptwerte = Entwurf, Freigabe offen; Tier 3–8 fehlen_
 - [ ] **Strom-Netz-Berechnung** · `SYS_Power` · `VS`
 - [ ] **Fluid-Simulation (vereinfacht)** · `SYS_Fluids` · `EA`
 - [ ] **Zug-Pathfinding & Signale** · `SYS_Trains` · `EA`

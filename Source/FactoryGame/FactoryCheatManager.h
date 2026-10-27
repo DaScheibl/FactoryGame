@@ -46,9 +46,17 @@ public:
 	UFUNCTION(Exec)
 	void ListItems();
 
-	/** Reloads the item table from disk */
+	/** Reloads the item table from disk (and re-checks the recipes against it) */
 	UFUNCTION(Exec)
 	void ReloadItems();
+
+	/** Prints all recipes to the log. Optional filter by building or item: "ListRecipes Constructor", "ListRecipes IronPlate" */
+	UFUNCTION(Exec)
+	void ListRecipes(FName Filter = NAME_None);
+
+	/** Reloads the recipe table from disk and checks it against the item table */
+	UFUNCTION(Exec)
+	void ReloadRecipes();
 
 	/** Puts a shortcut on a hotbar slot (1-10) to test the HUD */
 	UFUNCTION(Exec)

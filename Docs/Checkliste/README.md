@@ -10,7 +10,7 @@ Unreal Engine 5 · Blender · Ziel: Steam Early Access → 1.0.
 | Bereich | Erledigt | Fortschritt |
 |---|---|---|
 | [Asset-Pipeline & Standards](checklisten/00-pipeline-standards.md) | 8/18 | `█████████░░░░░░░░░░░` 44.4% |
-| [Progression & Tech-Tree](checklisten/01-progression.md) | 0/17 | `░░░░░░░░░░░░░░░░░░░░`  0.0% |
+| [Progression & Tech-Tree](checklisten/01-progression.md) | 1/17 | `█░░░░░░░░░░░░░░░░░░░`  5.9% |
 | [Ressourcen & Items](checklisten/02-ressourcen-items.md) | 0/141 | `░░░░░░░░░░░░░░░░░░░░`  0.0% |
 | [Gebäude & Produktionsmaschinen](checklisten/03-gebaeude.md) | 0/643 | `░░░░░░░░░░░░░░░░░░░░`  0.0% |
 | [Logistik, Strom, Fahrzeuge & Bauteile](checklisten/04-logistik-bau.md) | 0/49 | `░░░░░░░░░░░░░░░░░░░░`  0.0% |
@@ -23,7 +23,7 @@ Unreal Engine 5 · Blender · Ziel: Steam Early Access → 1.0.
 | [Story, Text & Cinematics](checklisten/11-story-cinematics.md) | 0/8 | `░░░░░░░░░░░░░░░░░░░░`  0.0% |
 | [Technik & Systeme (nicht-Asset, aber 1.0-relevant)](checklisten/12-technik-systeme.md) | 2/18 | `██░░░░░░░░░░░░░░░░░░` 11.1% |
 | [Release, Marketing & Recht](checklisten/13-release-marketing.md) | 0/30 | `░░░░░░░░░░░░░░░░░░░░`  0.0% |
-| **Gesamt** | **10/1052** | `░░░░░░░░░░░░░░░░░░░░`  1.0% |
+| **Gesamt** | **11/1052** | `░░░░░░░░░░░░░░░░░░░░`  1.0% |
 
 | Meilenstein | Assets fertig | Fortschritt |
 |---|---|---|

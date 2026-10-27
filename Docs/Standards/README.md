@@ -15,6 +15,7 @@ Wenn ein Standard geändert wird: hier anpassen **und** im Änderungsprotokoll u
 | [08 Platzhalter](08-platzhalter.md) | Genutzte Fremd-Assets, Ersatzplan | `DOC_FabPlaceholders`, `DOC_ReplacePlan` |
 | [09 Git & LFS](09-git-lfs.md) | Was ins Repo gehört, LFS-Regeln | `TOOL_GitLFS` |
 | [10 Items, Inventar & Hotbar](10-items-inventar.md) | Item-IDs, Stapelgrößen, Item-Tabelle, Inventar/HUD-Bedienung, Speicherformat | `SYS_Recipes`, `UI_Inventory`, `UI_HUD` |
+| [11 Rezepte](11-rezepte.md) | Rezept-Tabelle, Format, Werte Tier 0–2 | `SYS_Recipes` |
 
 ## Entscheidungen auf einen Blick
 
@@ -32,9 +33,10 @@ Wenn ein Standard geändert wird: hier anpassen **und** im Änderungsprotokoll u
 | Export | FBX |
 | Template-Inhalte | Bleiben als Platzhalter bis zum geplanten Ersatz |
 | Item-IDs | Englisch, `ITM_IronPlate`, Forschungspakete `ITM_SciencePack_01` … `_07` |
-| Inventar | 18 Slots, später erweiterbar |
+| Inventar | 20 Slots, +10 pro Forschungsstufe bis 60 |
 | Stapelgrößen | Nach Item-Klasse: 500 / 100 / 50 / 20 |
 | Hotbar | 10 Bau-Shortcuts (Tasten 1–0) |
+| Rezepte | CSV mit festen Spalten (4 Eingänge, 2 Ausgänge), Werte Satisfactory-ähnlich |
 
 ## Änderungsprotokoll
 
@@ -42,3 +44,4 @@ Wenn ein Standard geändert wird: hier anpassen **und** im Änderungsprotokoll u
 |---|---|
 | 2026-10-27 | Erstfassung aller Standards |
 | 2026-10-27 | 10 Items, Inventar & Hotbar ergänzt; Item-IDs in der Checkliste auf Englisch umgestellt |
+| 2026-10-27 | 11 Rezepte ergänzt (Tabelle Tier 0–2); Inventar-Zeile auf 20 Slots korrigiert |
