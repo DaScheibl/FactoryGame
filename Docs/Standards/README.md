@@ -16,6 +16,7 @@ Wenn ein Standard geändert wird: hier anpassen **und** im Änderungsprotokoll u
 | [09 Git & LFS](09-git-lfs.md) | Was ins Repo gehört, LFS-Regeln | `TOOL_GitLFS` |
 | [10 Items, Inventar & Hotbar](10-items-inventar.md) | Item-IDs, Stapelgrößen, Item-Tabelle, Inventar/HUD-Bedienung, Speicherformat | `SYS_Recipes`, `UI_Inventory`, `UI_HUD` |
 | [11 Rezepte](11-rezepte.md) | Rezept-Tabelle, Format, Werte Tier 0–2 | `SYS_Recipes` |
+| [12 Simulation](12-simulation.md) | Fester Takt, Maschinen-Ablauf, Puffer, Graybox-Maschine | `SYS_Sim` |
 
 ## Entscheidungen auf einen Blick
 
@@ -36,6 +37,7 @@ Wenn ein Standard geändert wird: hier anpassen **und** im Änderungsprotokoll u
 | Inventar | 20 Slots, +10 pro Forschungsstufe bis 60 |
 | Stapelgrößen | Nach Item-Klasse: 500 / 100 / 50 / 20 |
 | Hotbar | 10 Bau-Shortcuts (Tasten 1–0) |
+| Simulation | 20 Ticks/s fest, Aufholen max. 0,25 s, Maschinenpuffer 1 Stapel |
 | Rezepte | CSV mit festen Spalten (4 Eingänge, 2 Ausgänge), Werte Satisfactory-ähnlich |
 
 ## Änderungsprotokoll
@@ -45,3 +47,4 @@ Wenn ein Standard geändert wird: hier anpassen **und** im Änderungsprotokoll u
 | 2026-10-27 | Erstfassung aller Standards |
 | 2026-10-27 | 10 Items, Inventar & Hotbar ergänzt; Item-IDs in der Checkliste auf Englisch umgestellt |
 | 2026-10-27 | 11 Rezepte ergänzt (Tabelle Tier 0–2); Inventar-Zeile auf 20 Slots korrigiert |
+| 2026-10-27 | 12 Simulation ergänzt |

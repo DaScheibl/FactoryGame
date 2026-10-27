@@ -34,6 +34,8 @@ public class FactoryGame : ModuleRules
 			"FactoryGame/Menu",
 			"FactoryGame/Items",
 			"FactoryGame/UI",
+			"FactoryGame/Simulation",
+			"FactoryGame/Buildings",
 			"FactoryGame/Variant_Horror",
 			"FactoryGame/Variant_Horror/UI",
 			"FactoryGame/Variant_Shooter",

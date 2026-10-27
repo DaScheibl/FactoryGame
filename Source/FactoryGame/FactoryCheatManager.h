@@ -7,6 +7,7 @@
 #include "FactoryCheatManager.generated.h"
 
 class UFactoryInventoryComponent;
+class AFactoryMachine;
 
 /**
  *  Console commands for testing. Available in the editor and in development builds.
@@ -62,7 +63,45 @@ public:
 	UFUNCTION(Exec)
 	void SetHotbar(int32 SlotNumber, FName Shortcut);
 
+	/** Spawns a graybox machine in front of the player. Prefixes are optional: "SpawnMachine Smelter IronIngot" */
+	UFUNCTION(Exec)
+	void SpawnMachine(FName BuildingId, FName RecipeId = NAME_None);
+
+	/** Changes the recipe of the machine in view. Items inside go to the player inventory */
+	UFUNCTION(Exec)
+	void SetMachineRecipe(FName RecipeId);
+
+	/** Puts items into the machine in view. Without arguments all input buffers are filled up */
+	UFUNCTION(Exec)
+	void FeedMachine(FName ItemId = NAME_None, int32 Count = 0);
+
+	/** Moves the output of the machine in view into the player inventory */
+	UFUNCTION(Exec)
+	void TakeOutput();
+
+	/** Prints the state of the machine in view to the log */
+	UFUNCTION(Exec)
+	void MachineInfo();
+
+	/** Removes the machine in view */
+	UFUNCTION(Exec)
+	void DestroyMachine();
+
+	/** Prints simulation statistics to the log */
+	UFUNCTION(Exec)
+	void SimStats();
+
+	/** Speeds up the simulation for testing, 1 = real time */
+	UFUNCTION(Exec)
+	void SimSpeed(float Speed = 1.0f);
+
 private:
 
 	UFactoryInventoryComponent* GetPlayerInventory() const;
+
+	/** Returns the machine under the crosshair, or else the nearest machine within 20 m */
+	AFactoryMachine* GetTargetMachine() const;
+
+	/** Adds a prefix like ITM_ if the id doesn't have it yet */
+	static FName WithPrefix(FName Id, const TCHAR* Prefix);
 };

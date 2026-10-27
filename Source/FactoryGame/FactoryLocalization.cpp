@@ -93,6 +93,12 @@ namespace FactoryLoc
 			{ TEXT("Notify_ItemsAdded"),		{ TEXT("+{0} {1}"),						TEXT("+{0} {1}") } },
 			{ TEXT("Notify_ItemsRemoved"),		{ TEXT("-{0} {1}"),						TEXT("-{0} {1}") } },
 
+			// machines
+			{ TEXT("Machine_NoRecipe"),			{ TEXT("No recipe"),					TEXT("Kein Rezept") } },
+			{ TEXT("Machine_WaitingForInput"),	{ TEXT("Waiting for input"),			TEXT("Wartet auf Zutaten") } },
+			{ TEXT("Machine_Working"),			{ TEXT("Working {0} %"),				TEXT("Arbeitet {0} %") } },
+			{ TEXT("Machine_OutputFull"),		{ TEXT("Output full"),					TEXT("Ausgang voll") } },
+
 			// common
 			{ TEXT("Common_On"),				{ TEXT("On"),							TEXT("An") } },
 			{ TEXT("Common_Off"),				{ TEXT("Off"),							TEXT("Aus") } },
