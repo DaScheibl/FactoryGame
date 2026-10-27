@@ -27,6 +27,8 @@ public class FactoryGame : ModuleRules
 		PublicIncludePaths.AddRange(new string[] {
 			"FactoryGame",
 			"FactoryGame/Menu",
+			"FactoryGame/Items",
+			"FactoryGame/UI",
 			"FactoryGame/Variant_Horror",
 			"FactoryGame/Variant_Horror/UI",
 			"FactoryGame/Variant_Shooter",

@@ -13,6 +13,8 @@ Alle Rohstoffe und Zwischenprodukte. Items sind auf Bändern sichtbar (wie in Sa
 
 </details>
 
+**Item-Tabelle & Regeln (IDs, Stapelgrößen):** [Standards/10 Items & Inventar](../../Standards/10-items-inventar.md) · Daten: `Content/FactoryGame/Core/Data/DT_Items.csv`
+
 Legende: `PT` Prototyp · `VS` Vertical Slice · `EA` Early Access · `1.0` Release
 
 ## Ressourcen-Vorkommen (Welt)
@@ -96,91 +98,91 @@ _Pro Ressource: Vorkommen-Mesh in 3 Varianten + Reinheitsstufen (unrein/normal/r
 
 ### Tier 0 – Notlandung
 
-- [ ] **Eisenbarren** · `ITM_Eisenbarren` · `PT`
-- [ ] **Kupferbarren** · `ITM_Kupferbarren` · `PT`
-- [ ] **Eisenplatte** · `ITM_Eisenplatte` · `PT`
-- [ ] **Eisenstange** · `ITM_Eisenstange` · `PT`
-- [ ] **Schraube** · `ITM_Schraube` · `VS`
-- [ ] **Kupferdraht** · `ITM_Kupferdraht` · `VS`
+- [ ] **Eisenbarren** · `ITM_IronIngot` · `PT`
+- [ ] **Kupferbarren** · `ITM_CopperIngot` · `PT`
+- [ ] **Eisenplatte** · `ITM_IronPlate` · `PT`
+- [ ] **Eisenstange** · `ITM_IronRod` · `PT`
+- [ ] **Schraube** · `ITM_Screw` · `VS`
+- [ ] **Kupferdraht** · `ITM_CopperWire` · `VS`
 
 ### Tier 1 – Dampf & Kohle
 
-- [ ] **Kabel** · `ITM_Kabel` · `VS`
-- [ ] **Beton** · `ITM_Beton` · `VS`
-- [ ] **Biomasse** · `ITM_Biomasse` · `VS`
-- [ ] **Verstärkte Eisenplatte** · `ITM_VerstärkteEisenplatte` · `VS`
-- [ ] **Forschungspaket I (Rot)** · `ITM_ForschungspaketIRot` · `VS`
+- [ ] **Kabel** · `ITM_Cable` · `VS`
+- [ ] **Beton** · `ITM_Concrete` · `VS`
+- [ ] **Biomasse** · `ITM_Biomass` · `VS`
+- [ ] **Verstärkte Eisenplatte** · `ITM_ReinforcedIronPlate` · `VS`
+- [ ] **Forschungspaket I (Rot)** · `ITM_SciencePack_01` · `VS`
 
 ### Tier 2 – Stahl & Montage
 
-- [ ] **Stahlbarren** · `ITM_Stahlbarren` · `VS`
-- [ ] **Stahlträger** · `ITM_Stahlträger` · `VS`
-- [ ] **Stahlrohr** · `ITM_Stahlrohr` · `VS`
-- [ ] **Zahnrad** · `ITM_Zahnrad` · `VS`
+- [ ] **Stahlbarren** · `ITM_SteelIngot` · `VS`
+- [ ] **Stahlträger** · `ITM_SteelBeam` · `VS`
+- [ ] **Stahlrohr** · `ITM_SteelPipe` · `VS`
+- [ ] **Zahnrad** · `ITM_Gear` · `VS`
 - [ ] **Rotor** · `ITM_Rotor` · `VS`
 - [ ] **Stator** · `ITM_Stator` · `VS`
 - [ ] **Motor** · `ITM_Motor` · `VS`
-- [ ] **Quarzkristall** · `ITM_Quarzkristall` · `VS`
-- [ ] **Kieselerde** · `ITM_Kieselerde` · `VS`
-- [ ] **Forschungspaket II (Grün)** · `ITM_ForschungspaketIiGrün` · `VS`
+- [ ] **Quarzkristall** · `ITM_QuartzCrystal` · `VS`
+- [ ] **Kieselerde** · `ITM_Silica` · `VS`
+- [ ] **Forschungspaket II (Grün)** · `ITM_SciencePack_02` · `VS`
 
 ### Tier 3 – Öl & Chemie
 
-- [ ] **Kunststoff** · `ITM_Kunststoff` · `EA`
-- [ ] **Gummi** · `ITM_Gummi` · `EA`
-- [ ] **Petrolkoks** · `ITM_Petrolkoks` · `EA`
-- [ ] **Schwefelsäure** · `ITM_Schwefelsäure` · `EA`
-- [ ] **Treibstoff** · `ITM_Treibstoff` · `EA`
-- [ ] **Schweröl-Rückstand** · `ITM_SchwerölRückstand` · `EA`
-- [ ] **Leerer Kanister** · `ITM_LeererKanister` · `EA`
-- [ ] **Forschungspaket III (Blau)** · `ITM_ForschungspaketIiiBlau` · `EA`
+- [ ] **Kunststoff** · `ITM_Plastic` · `EA`
+- [ ] **Gummi** · `ITM_Rubber` · `EA`
+- [ ] **Petrolkoks** · `ITM_PetroleumCoke` · `EA`
+- [ ] **Schwefelsäure** · `ITM_SulfuricAcid` · `EA`
+- [ ] **Treibstoff** · `ITM_Fuel` · `EA`
+- [ ] **Schweröl-Rückstand** · `ITM_HeavyOilResidue` · `EA`
+- [ ] **Leerer Kanister** · `ITM_EmptyCanister` · `EA`
+- [ ] **Forschungspaket III (Blau)** · `ITM_SciencePack_03` · `EA`
 
 ### Tier 4 – Elektronik & Logik
 
-- [ ] **Siliziumwafer** · `ITM_Siliziumwafer` · `EA`
-- [ ] **Schaltkreis** · `ITM_Schaltkreis` · `EA`
-- [ ] **Platine** · `ITM_Platine` · `EA`
-- [ ] **Kondensator** · `ITM_Kondensator` · `EA`
-- [ ] **Batterie** · `ITM_Batterie` · `EA`
+- [ ] **Siliziumwafer** · `ITM_SiliconWafer` · `EA`
+- [ ] **Schaltkreis** · `ITM_Circuit` · `EA`
+- [ ] **Platine** · `ITM_CircuitBoard` · `EA`
+- [ ] **Kondensator** · `ITM_Capacitor` · `EA`
+- [ ] **Batterie** · `ITM_Battery` · `EA`
 - [ ] **Computer** · `ITM_Computer` · `EA`
-- [ ] **Logikmodul** · `ITM_Logikmodul` · `EA`
-- [ ] **Forschungspaket IV (Gelb)** · `ITM_ForschungspaketIvGelb` · `EA`
+- [ ] **Logikmodul** · `ITM_LogicModule` · `EA`
+- [ ] **Forschungspaket IV (Gelb)** · `ITM_SciencePack_04` · `EA`
 
 ### Tier 5 – Massenlogistik
 
-- [ ] **Schienenstück** · `ITM_Schienenstück` · `EA`
-- [ ] **Drohnen-Bausatz** · `ITM_DrohnenBausatz` · `EA`
-- [ ] **Kühlsystem** · `ITM_Kühlsystem` · `EA`
-- [ ] **Schwerer Modularrahmen** · `ITM_SchwererModularrahmen` · `EA`
-- [ ] **Forschungspaket V (Lila)** · `ITM_ForschungspaketVLila` · `EA`
+- [ ] **Schienenstück** · `ITM_RailSection` · `EA`
+- [ ] **Drohnen-Bausatz** · `ITM_DroneKit` · `EA`
+- [ ] **Kühlsystem** · `ITM_CoolingSystem` · `EA`
+- [ ] **Schwerer Modularrahmen** · `ITM_HeavyModularFrame` · `EA`
+- [ ] **Forschungspaket V (Lila)** · `ITM_SciencePack_05` · `EA`
 
 ### Tier 6 – Fortgeschrittene Materialien
 
-- [ ] **Aluminiumbarren** · `ITM_Aluminiumbarren` · `1.0`
-- [ ] **Aluminiumblech** · `ITM_Aluminiumblech` · `1.0`
-- [ ] **Kühlkörper** · `ITM_Kühlkörper` · `1.0`
-- [ ] **Verbundplatte** · `ITM_Verbundplatte` · `1.0`
-- [ ] **Supraleiter** · `ITM_Supraleiter` · `1.0`
-- [ ] **Turbomotor** · `ITM_Turbomotor` · `1.0`
-- [ ] **KI-Kern** · `ITM_KiKern` · `1.0`
-- [ ] **Forschungspaket VI (Weiß)** · `ITM_ForschungspaketViWeiß` · `1.0`
+- [ ] **Aluminiumbarren** · `ITM_AluminumIngot` · `1.0`
+- [ ] **Aluminiumblech** · `ITM_AluminumSheet` · `1.0`
+- [ ] **Kühlkörper** · `ITM_HeatSink` · `1.0`
+- [ ] **Verbundplatte** · `ITM_CompositePlate` · `1.0`
+- [ ] **Supraleiter** · `ITM_Superconductor` · `1.0`
+- [ ] **Turbomotor** · `ITM_TurboMotor` · `1.0`
+- [ ] **KI-Kern** · `ITM_AICore` · `1.0`
+- [ ] **Forschungspaket VI (Weiß)** · `ITM_SciencePack_06` · `1.0`
 
 ### Tier 7 – Hochenergie
 
-- [ ] **Uranbrennstab** · `ITM_Uranbrennstab` · `1.0`
-- [ ] **Fusionszelle** · `ITM_Fusionszelle` · `1.0`
-- [ ] **Abgereichertes Material** · `ITM_AbgereichertesMaterial` · `1.0`
-- [ ] **Xeno-Legierung** · `ITM_XenoLegierung` · `1.0`
-- [ ] **Forschungspaket VII (Schwarz)** · `ITM_ForschungspaketViiSchwarz` · `1.0`
+- [ ] **Uranbrennstab** · `ITM_UraniumFuelRod` · `1.0`
+- [ ] **Fusionszelle** · `ITM_FusionCell` · `1.0`
+- [ ] **Abgereichertes Material** · `ITM_DepletedMaterial` · `1.0`
+- [ ] **Xeno-Legierung** · `ITM_XenoAlloy` · `1.0`
+- [ ] **Forschungspaket VII (Schwarz)** · `ITM_SciencePack_07` · `1.0`
 
 ### Tier 8 – Exodus Mars
 
-- [ ] **Raketentreibstoff** · `ITM_Raketentreibstoff` · `1.0`
-- [ ] **Hitzeschild** · `ITM_Hitzeschild` · `1.0`
-- [ ] **Navigationsmodul** · `ITM_Navigationsmodul` · `1.0`
-- [ ] **Lebenserhaltungsmodul** · `ITM_Lebenserhaltungsmodul` · `1.0`
-- [ ] **Kolonistenkapsel** · `ITM_Kolonistenkapsel` · `1.0`
-- [ ] **Raketensegment** · `ITM_Raketensegment` · `1.0`
+- [ ] **Raketentreibstoff** · `ITM_RocketFuel` · `1.0`
+- [ ] **Hitzeschild** · `ITM_HeatShield` · `1.0`
+- [ ] **Navigationsmodul** · `ITM_NavigationModule` · `1.0`
+- [ ] **Lebenserhaltungsmodul** · `ITM_LifeSupportModule` · `1.0`
+- [ ] **Kolonistenkapsel** · `ITM_ColonistPod` · `1.0`
+- [ ] **Raketensegment** · `ITM_RocketSegment` · `1.0`
 
 ## Fluide
 

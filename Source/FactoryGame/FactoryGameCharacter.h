@@ -10,6 +10,7 @@
 class UInputComponent;
 class USkeletalMeshComponent;
 class UCameraComponent;
+class UFactoryInventoryComponent;
 class UInputAction;
 struct FInputActionValue;
 
@@ -30,6 +31,14 @@ class AFactoryGameCharacter : public ACharacter
 	/** First person camera */
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="Components", meta = (AllowPrivateAccess = "true"))
 	UCameraComponent* FirstPersonCameraComponent;
+
+	/** Items carried by the player */
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="Components", meta = (AllowPrivateAccess = "true"))
+	UFactoryInventoryComponent* Inventory;
+
+	/** Worn equipment: head, body, back and hand slot */
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="Components", meta = (AllowPrivateAccess = "true"))
+	UFactoryInventoryComponent* Equipment;
 
 protected:
 
@@ -89,6 +98,12 @@ public:
 
 	/** Returns first person camera component **/
 	UCameraComponent* GetFirstPersonCameraComponent() const { return FirstPersonCameraComponent; }
+
+	/** Returns the player inventory **/
+	UFactoryInventoryComponent* GetInventory() const { return Inventory; }
+
+	/** Returns the worn equipment **/
+	UFactoryInventoryComponent* GetEquipment() const { return Equipment; }
 
 };
 

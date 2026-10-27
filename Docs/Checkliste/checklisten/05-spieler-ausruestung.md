@@ -39,7 +39,7 @@ Legende: `PT` Prototyp · `VS` Vertical Slice · `EA` Early Access · `1.0` Rele
 - [ ] **Gleiter / Fallschirm** · `EQP_Glider` · `EA`
 - [ ] **Seilrutsche (an Stromleitungen)** · `EQP_Zipline` · `EA`
 - [ ] **Hover-Pack** · `EQP_Hoverpack` · `1.0`
-- [ ] **Inventar-Erweiterung / Rucksack** · `EQP_Backpack` · `VS`
+- [ ] **Inventar-Erweiterung** · `EQP_Backpack` · `VS` — _Entschieden: nur über Forschung (+10 je Stufe, 20 → 60), kein Rucksack-Item. Code steht (`UpgradeInventory`), fehlt: Forschungs-Freischaltung_
 - [ ] **Taschenlampe / Stirnlampe** · `EQP_Flashlight` · `VS`
 - [ ] **Atemmaske (Gift-/Strahlungszonen)** · `EQP_GasMask` · `EA`
 - [ ] **Verteidigungswaffe (nur falls Bedrohung aktiv)** · `EQP_Weapon` · `EA`

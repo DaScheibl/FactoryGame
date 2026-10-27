@@ -7,6 +7,9 @@
 #include "Kismet/GameplayStatics.h"
 #include "GameFramework/PlayerController.h"
 #include "GameFramework/Pawn.h"
+#include "FactoryGamePlayerController.h"
+#include "FactoryInventoryComponent.h"
+#include "FactoryGameCharacter.h"
 #include "Misc/Guid.h"
 
 UFactoryGameInstance::UFactoryGameInstance()
@@ -97,6 +100,7 @@ bool UFactoryGameInstance::CreateNewWorld(const FString& DisplayName)
 	// create the world save game
 	UFactoryWorldSaveGame* SaveGame = Cast<UFactoryWorldSaveGame>(UGameplayStatics::CreateSaveGameObject(UFactoryWorldSaveGame::StaticClass()));
 	SaveGame->DisplayName = TrimmedName;
+	SaveGame->SaveVersion = static_cast<int32>(EFactoryWorldSaveVersion::Latest);
 
 	const FString SlotName = FString::Printf(TEXT("World_%s"), *FGuid::NewGuid().ToString(EGuidFormats::Digits));
 
@@ -129,6 +133,12 @@ bool UFactoryGameInstance::LoadWorld(const FString& SlotName)
 	if (!SaveGame)
 	{
 		UE_LOG(LogFactoryGame, Error, TEXT("Could not load world from slot '%s'."), *SlotName);
+		return false;
+	}
+
+	// refuse saves from newer game versions instead of overwriting them with less data
+	if (!SaveGame->MigrateToLatest())
+	{
 		return false;
 	}
 
@@ -220,6 +230,21 @@ void UFactoryGameInstance::RestorePlayerState(APlayerController* PlayerControlle
 	Pawn->SetActorLocationAndRotation(CurrentWorldSave->PlayerTransform.GetLocation(), CurrentWorldSave->PlayerTransform.GetRotation(), false, nullptr, ETeleportType::TeleportPhysics);
 	PlayerController->SetControlRotation(CurrentWorldSave->ControlRotation);
 
+	if (const AFactoryGameCharacter* Character = Cast<AFactoryGameCharacter>(Pawn))
+	{
+		if (CurrentWorldSave->InventoryNumSlots > 0)
+		{
+			Character->GetInventory()->SetSlots(CurrentWorldSave->InventorySlots, CurrentWorldSave->InventoryNumSlots);
+		}
+
+		Character->GetEquipment()->SetSlots(CurrentWorldSave->EquipmentSlots, 0);
+	}
+
+	if (AFactoryGamePlayerController* FactoryController = Cast<AFactoryGamePlayerController>(PlayerController))
+	{
+		FactoryController->SetHotbarSlots(CurrentWorldSave->HotbarSlots);
+	}
+
 	bPendingPlayerRestore = false;
 }
 
@@ -296,6 +321,18 @@ void UFactoryGameInstance::CapturePlayerState()
 	CurrentWorldSave->bHasPlayerData = true;
 	CurrentWorldSave->PlayerTransform = Pawn->GetActorTransform();
 	CurrentWorldSave->ControlRotation = PlayerController->GetControlRotation();
+
+	if (const AFactoryGameCharacter* Character = Cast<AFactoryGameCharacter>(Pawn))
+	{
+		CurrentWorldSave->InventorySlots = Character->GetInventory()->GetSlots();
+		CurrentWorldSave->InventoryNumSlots = Character->GetInventory()->GetNumSlots();
+		CurrentWorldSave->EquipmentSlots = Character->GetEquipment()->GetSlots();
+	}
+
+	if (const AFactoryGamePlayerController* FactoryController = Cast<AFactoryGamePlayerController>(PlayerController))
+	{
+		CurrentWorldSave->HotbarSlots = FactoryController->GetHotbarSlots();
+	}
 }
 
 void UFactoryGameInstance::OpenMap(const TSoftObjectPtr<UWorld>& Map)

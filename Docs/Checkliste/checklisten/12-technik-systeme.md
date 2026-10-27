@@ -8,7 +8,7 @@ Legende: `PT` Prototyp · `VS` Vertical Slice · `EA` Early Access · `1.0` Rele
 
 - [ ] **Deterministische Simulation getrennt vom Rendering (Tick-basiert)** · `SYS_Sim` · `PT`
 - [ ] **Segment-basierte Band-Simulation (nicht pro Item)** · `SYS_BeltSim` · `PT`
-- [ ] **Rezept-/Item-Datenbank aus DataTables** · `SYS_Recipes` · `PT`
+- [ ] **Rezept-/Item-Datenbank aus DataTables** · `SYS_Recipes` · `PT` · [Doku](../../Standards/10-items-inventar.md) — _Item-Datenbank steht (70 Items, CSV → DataTable); Rezepte fehlen noch_
 - [ ] **Strom-Netz-Berechnung** · `SYS_Power` · `VS`
 - [ ] **Fluid-Simulation (vereinfacht)** · `SYS_Fluids` · `EA`
 - [ ] **Zug-Pathfinding & Signale** · `SYS_Trains` · `EA`
@@ -18,7 +18,7 @@ Legende: `PT` Prototyp · `VS` Vertical Slice · `EA` Early Access · `1.0` Rele
 
 ## Infrastruktur
 
-- [ ] **Speichern/Laden + Autosave + Versionsmigration** · `SYS_Save` · `VS`
+- [x] **Speichern/Laden + Autosave + Versionsmigration** · `SYS_Save` · `VS` · [Doku](../../Standards/10-items-inventar.md)
 - [ ] **Rendering-LOD/HISM für Gebäude-Massen** · `SYS_Instancing` · `VS`
 - [ ] **Performance-Ziel: 60 FPS bei 2.000 Maschinen (Ziel-Hardware definiert)** · `SYS_PerfTarget` · `EA`
 - [ ] **Co-op-Multiplayer (Entscheidung: ja/nein/später)** · `SYS_Multiplayer` · `EA`

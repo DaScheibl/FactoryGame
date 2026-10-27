@@ -69,6 +69,28 @@ namespace FactoryLoc
 			{ TEXT("Pause_SaveFailed"),			{ TEXT("Saving failed!"),				TEXT("Speichern fehlgeschlagen!") } },
 			{ TEXT("Pause_MainMenu"),			{ TEXT("Save & main menu"),				TEXT("Speichern & Hauptmenü") } },
 
+			// inventory
+			{ TEXT("Inv_Header"),				{ TEXT("Inventory"),					TEXT("Inventar") } },
+			{ TEXT("Inv_SlotsUsed"),			{ TEXT("{0} / {1} slots used"),			TEXT("{0} / {1} Slots belegt") } },
+			{ TEXT("Inv_Sort"),					{ TEXT("Sort"),							TEXT("Sortieren") } },
+			{ TEXT("Inv_Close"),				{ TEXT("Close"),						TEXT("Schließen") } },
+			{ TEXT("Inv_Equipment"),			{ TEXT("Equipment"),					TEXT("Ausrüstung") } },
+			{ TEXT("Inv_HintMouse"),			{ TEXT("Click: pick up / put down   ·   Right click: half stack / put down one   ·   Drag & drop   ·   Shift+click: quick move   ·   Ctrl+click: move all of this item"), TEXT("Klick: aufnehmen / ablegen   ·   Rechtsklick: halber Stapel / einzeln ablegen   ·   Ziehen & Ablegen   ·   Shift+Klick: schnell verschieben   ·   Strg+Klick: alle dieser Sorte verschieben") } },
+			{ TEXT("Inv_HintGamepad"),			{ TEXT("A: pick up / put down   ·   X: half stack / put down one   ·   Y: quick move   ·   B: cancel / close"), TEXT("A: aufnehmen / ablegen   ·   X: halber Stapel / einzeln ablegen   ·   Y: schnell verschieben   ·   B: abbrechen / schließen") } },
+			{ TEXT("Equip_Head"),				{ TEXT("Head"),							TEXT("Kopf") } },
+			{ TEXT("Equip_Body"),				{ TEXT("Body"),							TEXT("Körper") } },
+			{ TEXT("Equip_Back"),				{ TEXT("Back"),							TEXT("Rücken") } },
+			{ TEXT("Equip_Hand"),				{ TEXT("Hand"),							TEXT("Hand") } },
+			{ TEXT("Inv_StackInfo"),			{ TEXT("{0} / {1} per stack   ·   {2} in total"), TEXT("{0} / {1} pro Stapel   ·   {2} insgesamt") } },
+			{ TEXT("Inv_Tier"),					{ TEXT("Tier {0}"),						TEXT("Tier {0}") } },
+			{ TEXT("Inv_Unknown"),				{ TEXT("Unknown item"),					TEXT("Unbekanntes Item") } },
+
+			// hud
+			{ TEXT("Hotbar_Empty"),				{ TEXT("Hotbar slot {0} is empty. Buildings from the build menu can be placed here."), TEXT("Hotbar-Slot {0} ist leer. Hier kommen Gebäude aus dem Baumenü hin.") } },
+			{ TEXT("Notify_InventoryFull"),		{ TEXT("Inventory full"),				TEXT("Inventar voll") } },
+			{ TEXT("Notify_ItemsAdded"),		{ TEXT("+{0} {1}"),						TEXT("+{0} {1}") } },
+			{ TEXT("Notify_ItemsRemoved"),		{ TEXT("-{0} {1}"),						TEXT("-{0} {1}") } },
+
 			// common
 			{ TEXT("Common_On"),				{ TEXT("On"),							TEXT("An") } },
 			{ TEXT("Common_Off"),				{ TEXT("Off"),							TEXT("Aus") } },
@@ -77,7 +99,7 @@ namespace FactoryLoc
 		return Table;
 	}
 
-	static bool IsGerman()
+	bool IsGerman()
 	{
 		const UFactoryGameUserSettings* Settings = UFactoryGameUserSettings::GetFactoryGameUserSettings();
 		return Settings && Settings->GetLanguage() == TEXT("de");

@@ -9,6 +9,7 @@
 #include "InputActionValue.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "FactoryGame.h"
+#include "FactoryInventoryComponent.h"
 
 AFactoryGameCharacter::AFactoryGameCharacter()
 {
@@ -32,6 +33,12 @@ AFactoryGameCharacter::AFactoryGameCharacter()
 	FirstPersonCameraComponent->bEnableFirstPersonScale = true;
 	FirstPersonCameraComponent->FirstPersonFieldOfView = 70.0f;
 	FirstPersonCameraComponent->FirstPersonScale = 0.6f;
+
+	// Create the player inventory
+	Inventory = CreateDefaultSubobject<UFactoryInventoryComponent>(TEXT("Inventory"));
+
+	Equipment = CreateDefaultSubobject<UFactoryInventoryComponent>(TEXT("Equipment"));
+	Equipment->SetSlotFilters({ EFactoryEquipSlot::Head, EFactoryEquipSlot::Body, EFactoryEquipSlot::Back, EFactoryEquipSlot::Hand });
 
 	// configure the character comps
 	GetMesh()->SetOwnerNoSee(true);

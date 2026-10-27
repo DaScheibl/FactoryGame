@@ -17,18 +17,18 @@ Legende: `PT` Prototyp · `VS` Vertical Slice · `EA` Early Access · `1.0` Rele
 
 ## Menüs
 
-- [ ] **Hauptmenü + Hintergrund-Szene** · `UI_MainMenu` · `VS`
+- [ ] **Hauptmenü + Hintergrund-Szene** · `UI_MainMenu` · `VS` — _Menü steht (Fortsetzen, Neue Welt, Laden, Einstellungen), Hintergrund-Szene fehlt_
 - [ ] **Neues Spiel (Weltoptionen, Seed, Bedrohung)** · `UI_NewGame` · `VS`
-- [ ] **Speichern/Laden mit Vorschaubild** · `UI_SaveLoad` · `VS`
-- [ ] **Einstellungen: Grafik, Audio, Steuerung, Gameplay, Barrierefreiheit** · `UI_Settings` · `VS`
+- [ ] **Speichern/Laden mit Vorschaubild** · `UI_SaveLoad` · `VS` — _Laden, Löschen, Fortsetzen, Autosave stehen; Vorschaubild fehlt_
+- [ ] **Einstellungen: Grafik, Audio, Steuerung, Gameplay, Barrierefreiheit** · `UI_Settings` · `VS` — _Grafik + Sprache stehen; Audio, Steuerung, Gameplay, Barrierefreiheit fehlen_
 - [ ] **Tastenbelegung (rebindbar)** · `UI_Keybinds` · `EA`
-- [ ] **Pause-Menü** · `UI_Pause` · `PT`
+- [ ] **Pause-Menü** · `UI_Pause` · `PT` — _Umgesetzt (Weiterspielen, Speichern, Hauptmenü), Gamepad geht; nur UI-SFX fehlen (`SFX_UI`)_
 - [ ] **Credits** · `UI_Credits` · `1.0`
 
 ## Ingame
 
-- [ ] **HUD: Fadenkreuz, Hotbar, Hinweise** · `UI_HUD` · `PT`
-- [ ] **Inventar** · `UI_Inventory` · `PT`
+- [ ] **HUD: Fadenkreuz, Hotbar, Hinweise** · `UI_HUD` · `PT` · [Doku](../../Standards/10-items-inventar.md) — _Umgesetzt: Fadenkreuz, 10er-Hotbar, Hinweiszeile. Layout = Entwurf, Freigabe offen_
+- [ ] **Inventar** · `UI_Inventory` · `PT` · [Doku](../../Standards/10-items-inventar.md) — _Umgesetzt: Ausrüstung (Kopf/Körper/Rücken/Hand) + 20er-Raster (bis 60 über Forschung), Stapel am Cursor, Rechtsklick halb/einzeln, Shift-/Strg-Klick, Drag & Drop, Sortieren, Maus + Gamepad. Tasten/Layout = Entwurf, Freigabe offen; Icons kommen mit `TOOL_IconRig`_
 - [ ] **Baumenü mit Kategorien & Suche** · `UI_BuildMenu` · `PT`
 - [ ] **Maschinen-Panel (Rezept, Status, Overclock)** · `UI_MachinePanel` · `PT`
 - [ ] **Tech-Tree / Forschung** · `UI_Research` · `VS`
@@ -40,7 +40,7 @@ Legende: `PT` Prototyp · `VS` Vertical Slice · `EA` Early Access · `1.0` Rele
 - [ ] **Blueprint-Bibliothek** · `UI_Blueprints` · `EA`
 - [ ] **Kodex / Enzyklopädie** · `UI_Codex` · `1.0`
 - [ ] **Tutorial-/Hinweis-System** · `UI_Tutorial` · `EA`
-- [ ] **Benachrichtigungen (Kein Strom, Band voll …)** · `UI_Notifications` · `VS`
+- [ ] **Benachrichtigungen (Kein Strom, Band voll …)** · `UI_Notifications` · `VS` · [Doku](../../Standards/10-items-inventar.md) — _System steht (+Items, Inventar voll); Strom-/Band-Meldungen kommen mit den jeweiligen Systemen_
 - [ ] **Fotomodus** · `UI_PhotoMode` · `1.0`
 
 ## Grafik-Assets

@@ -12,7 +12,7 @@ Unreal Engine 5 · Blender · Ziel: Steam Early Access → 1.0.
 | [Asset-Pipeline & Standards](checklisten/00-pipeline-standards.md) | 8/18 | `█████████░░░░░░░░░░░` 44.4% |
 | [Progression & Tech-Tree](checklisten/01-progression.md) | 0/17 | `░░░░░░░░░░░░░░░░░░░░`  0.0% |
 | [Ressourcen & Items](checklisten/02-ressourcen-items.md) | 0/141 | `░░░░░░░░░░░░░░░░░░░░`  0.0% |
-| [Gebäude & Produktionsmaschinen](checklisten/03-gebaeude.md) | 0/631 | `░░░░░░░░░░░░░░░░░░░░`  0.0% |
+| [Gebäude & Produktionsmaschinen](checklisten/03-gebaeude.md) | 0/643 | `░░░░░░░░░░░░░░░░░░░░`  0.0% |
 | [Logistik, Strom, Fahrzeuge & Bauteile](checklisten/04-logistik-bau.md) | 0/49 | `░░░░░░░░░░░░░░░░░░░░`  0.0% |
 | [Spieler & Ausrüstung](checklisten/05-spieler-ausruestung.md) | 0/21 | `░░░░░░░░░░░░░░░░░░░░`  0.0% |
 | [Welt & Umgebung](checklisten/06-welt-umgebung.md) | 0/27 | `░░░░░░░░░░░░░░░░░░░░`  0.0% |
@@ -21,14 +21,14 @@ Unreal Engine 5 · Blender · Ziel: Steam Early Access → 1.0.
 | [Audio](checklisten/09-audio.md) | 0/21 | `░░░░░░░░░░░░░░░░░░░░`  0.0% |
 | [VFX](checklisten/10-vfx.md) | 0/15 | `░░░░░░░░░░░░░░░░░░░░`  0.0% |
 | [Story, Text & Cinematics](checklisten/11-story-cinematics.md) | 0/8 | `░░░░░░░░░░░░░░░░░░░░`  0.0% |
-| [Technik & Systeme (nicht-Asset, aber 1.0-relevant)](checklisten/12-technik-systeme.md) | 0/17 | `░░░░░░░░░░░░░░░░░░░░`  0.0% |
+| [Technik & Systeme (nicht-Asset, aber 1.0-relevant)](checklisten/12-technik-systeme.md) | 1/17 | `█░░░░░░░░░░░░░░░░░░░`  5.9% |
 | [Release, Marketing & Recht](checklisten/13-release-marketing.md) | 0/30 | `░░░░░░░░░░░░░░░░░░░░`  0.0% |
-| **Gesamt** | **8/1039** | `░░░░░░░░░░░░░░░░░░░░`  0.8% |
+| **Gesamt** | **9/1051** | `░░░░░░░░░░░░░░░░░░░░`  0.9% |
 
 | Meilenstein | Assets fertig | Fortschritt |
 |---|---|---|
 | `PT` Prototyp | 8/42 | `████░░░░░░░░░░░░░░░░` 19.0% |
-| `VS` Vertical Slice | 0/107 | `░░░░░░░░░░░░░░░░░░░░`  0.0% |
+| `VS` Vertical Slice | 1/108 | `░░░░░░░░░░░░░░░░░░░░`  0.9% |
 | `EA` Early Access | 0/171 | `░░░░░░░░░░░░░░░░░░░░`  0.0% |
 | `1.0` Release 1.0 | 0/75 | `░░░░░░░░░░░░░░░░░░░░`  0.0% |
 <!-- PROGRESS:END -->

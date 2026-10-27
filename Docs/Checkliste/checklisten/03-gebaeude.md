@@ -60,6 +60,18 @@ _Handarbeit, erste Brennstoff-Maschinen_
   - [ ] Icon (256 px) + Bau-Hologramm/Vorschau
   - [ ] UI-Panel (Rezeptwahl, Status, Ein-/Ausgabe-Slots)
   - [ ] Ingame integriert, Rezepte verknüpft, Performance geprüft
+- [ ] **Recycler (Items vernichten)** · `BLD_Recycler` · `VS` — _Ersetzt den Mülleimer im Inventar. Entwurf: Tier 0 und Funktion (Items rein → weg, evtl. kleiner Rest als Schrott) freizugeben_
+  - [ ] Blockout (Graybox, Footprint im Raster, Ein-/Ausgänge markiert)
+  - [ ] Konzept/Paintover & Silhouette freigegeben
+  - [ ] High-Detail-Mesh (Nanite, Fallback-Mesh geprüft)
+  - [ ] Kollision, Snap-Punkte & Port-Sockets (Band/Rohr/Strom)
+  - [ ] Materialien (Master-Material-Instanzen, Farb-/Lackier-Slots)
+  - [ ] Animationen (Idle, Arbeiten, Stillstand/Fehler, Bau-Einblendung)
+  - [ ] VFX (Arbeitsbetrieb, Abgas/Funken, Bau, Abriss)
+  - [ ] SFX (Loop an/aus, Start/Stop, Bau/Abriss, Distanz-Attenuation)
+  - [ ] Icon (256 px) + Bau-Hologramm/Vorschau
+  - [ ] UI-Panel (Rezeptwahl, Status, Ein-/Ausgabe-Slots)
+  - [ ] Ingame integriert, Rezepte verknüpft, Performance geprüft
 - [ ] **Notunterkunft / HUB (Startgebäude)** · `BLD_Hub` · `PT`
   - [ ] Blockout (Graybox, Footprint im Raster, Ein-/Ausgänge markiert)
   - [ ] Konzept/Paintover & Silhouette freigegeben

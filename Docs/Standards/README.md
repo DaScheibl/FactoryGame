@@ -14,6 +14,7 @@ Wenn ein Standard geändert wird: hier anpassen **und** im Änderungsprotokoll u
 | [07 Materialien & Texturen](07-materialien.md) | Master-Materialien, Trim-Sheets, Textur-Packing | `MAT_Masters`, `TEX_TrimSheets` |
 | [08 Platzhalter](08-platzhalter.md) | Genutzte Fremd-Assets, Ersatzplan | `DOC_FabPlaceholders`, `DOC_ReplacePlan` |
 | [09 Git & LFS](09-git-lfs.md) | Was ins Repo gehört, LFS-Regeln | `TOOL_GitLFS` |
+| [10 Items, Inventar & Hotbar](10-items-inventar.md) | Item-IDs, Stapelgrößen, Item-Tabelle, Inventar/HUD-Bedienung, Speicherformat | `SYS_Recipes`, `UI_Inventory`, `UI_HUD` |
 
 ## Entscheidungen auf einen Blick
 
@@ -30,9 +31,14 @@ Wenn ein Standard geändert wird: hier anpassen **und** im Änderungsprotokoll u
 | Texturing | Blender + Trim-Sheets, Abnutzung im Master-Material; Substance später optional für Hero-Assets |
 | Export | FBX |
 | Template-Inhalte | Bleiben als Platzhalter bis zum geplanten Ersatz |
+| Item-IDs | Englisch, `ITM_IronPlate`, Forschungspakete `ITM_SciencePack_01` … `_07` |
+| Inventar | 18 Slots, später erweiterbar |
+| Stapelgrößen | Nach Item-Klasse: 500 / 100 / 50 / 20 |
+| Hotbar | 10 Bau-Shortcuts (Tasten 1–0) |
 
 ## Änderungsprotokoll
 
 | Datum | Änderung |
 |---|---|
 | 2026-10-27 | Erstfassung aller Standards |
+| 2026-10-27 | 10 Items, Inventar & Hotbar ergänzt; Item-IDs in der Checkliste auf Englisch umgestellt |

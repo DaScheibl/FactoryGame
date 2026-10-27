@@ -17,7 +17,7 @@ Factorio-Prinzip: Jede Tier wird über ein neues **Forschungspaket** freigeschal
 ## Design-Checkliste
 
 - [ ] Vollständiger Rezeptgraph (Tabelle/Spreadsheet) – jedes Item hat Quelle und Verwendung
-- [ ] Rezeptgraph als DataTables in UE importierbar
+- [ ] Rezeptgraph als DataTables in UE importierbar — _Format für Items steht (`DT_Items.csv`), Rezepte folgen im selben Schema_
 - [ ] Taktzeiten & Durchsätze balanciert (ganze Verhältnisse wie 1:2, 2:3 bevorzugen)
 - [ ] Alternative Rezepte (Satisfactory-Style) – mind. 2 pro Tier ab Tier 2
 - [ ] Forschungs-UI: Tech-Tree-Graph mit Abhängigkeiten

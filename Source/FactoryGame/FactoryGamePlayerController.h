@@ -9,6 +9,8 @@
 class UInputMappingContext;
 class UUserWidget;
 class UPauseMenuWidget;
+class UFactoryHUDWidget;
+class UFactoryInventoryWidget;
 
 /**
  *  Simple first person Player Controller
@@ -55,6 +57,29 @@ protected:
 	UPROPERTY()
 	TObjectPtr<UPauseMenuWidget> PauseMenuWidget;
 
+	/** HUD widget to spawn */
+	UPROPERTY(EditAnywhere, Category="UI")
+	TSubclassOf<UFactoryHUDWidget> HUDWidgetClass;
+
+	/** Pointer to the HUD widget */
+	UPROPERTY()
+	TObjectPtr<UFactoryHUDWidget> HUDWidget;
+
+	/** Inventory widget to spawn */
+	UPROPERTY(EditAnywhere, Category="UI")
+	TSubclassOf<UFactoryInventoryWidget> InventoryWidgetClass;
+
+	/** Pointer to the inventory widget */
+	UPROPERTY()
+	TObjectPtr<UFactoryInventoryWidget> InventoryWidget;
+
+	/** Build shortcuts on the hotbar, None for an empty slot */
+	UPROPERTY()
+	TArray<FName> HotbarSlots;
+
+	/** Selected hotbar slot, INDEX_NONE if nothing is selected */
+	int32 SelectedHotbarSlot = INDEX_NONE;
+
 	/** Gameplay initialization */
 	virtual void BeginPlay() override;
 
@@ -70,6 +95,16 @@ protected:
 	/** Returns true if the player should use UMG touch controls */
 	bool ShouldUseTouchControls() const;
 
+	/** Selects the hotbar slot of a number key */
+	void HandleHotbarKey(FKey Key);
+
+	/** Selects the previous or next hotbar slot */
+	void SelectPreviousHotbarSlot();
+	void SelectNextHotbarSlot();
+
+	/** Switches back to game input if no menu is open */
+	void RestoreGameInput();
+
 public:
 
 	/** Opens or closes the pause menu */
@@ -80,4 +115,38 @@ public:
 
 	/** Hides the pause menu and resumes the game */
 	void ClosePauseMenu();
+
+	/** Opens or closes the inventory */
+	void ToggleInventory();
+
+	/** Shows the inventory of the controlled pawn */
+	void OpenInventory();
+
+	/** Hides the inventory */
+	void CloseInventory();
+
+	/** Adds items to the pawn's inventory and shows a notification. Returns the number of items that fit */
+	int32 GiveItems(FName ItemId, int32 Count);
+
+	/** Returns the HUD, may be nullptr */
+	UFactoryHUDWidget* GetHUDWidget() const { return HUDWidget; }
+
+	static constexpr int32 NumHotbarSlots = 10;
+
+	/** Returns the shortcut on the given hotbar slot */
+	FName GetHotbarSlot(int32 Index) const { return HotbarSlots.IsValidIndex(Index) ? HotbarSlots[Index] : NAME_None; }
+
+	/** Puts a shortcut on a hotbar slot */
+	void SetHotbarSlot(int32 Index, FName Shortcut);
+
+	/** Returns all hotbar shortcuts, used for saving */
+	const TArray<FName>& GetHotbarSlots() const { return HotbarSlots; }
+
+	/** Replaces all hotbar shortcuts, used for loading */
+	void SetHotbarSlots(const TArray<FName>& InSlots);
+
+	int32 GetSelectedHotbarSlot() const { return SelectedHotbarSlot; }
+
+	/** Selects a hotbar slot, or deselects it if it's already selected */
+	void SelectHotbarSlot(int32 Index);
 };
