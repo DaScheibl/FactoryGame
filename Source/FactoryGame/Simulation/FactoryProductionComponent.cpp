@@ -233,6 +233,20 @@ float UFactoryProductionComponent::GetProgress() const
 	return CycleLength > 0 ? FMath::Clamp(float(Progress) / CycleLength, 0.0f, 1.0f) : 0.0f;
 }
 
+float UFactoryProductionComponent::GetDisplayProgress() const
+{
+	const UFactorySimulationSubsystem* Simulation = UFactorySimulationSubsystem::Get(this);
+
+	if (State != EFactoryMachineState::Working || CycleLength <= 0 || !Simulation)
+	{
+		return GetProgress();
+	}
+
+	// der Fortschritt springt nur alle 1/20 s; dazwischen den Anteil bis zum nächsten Tick dazurechnen
+	const float Estimated = Progress + Simulation->GetTickAlpha() * SpeedPercent;
+	return FMath::Clamp(Estimated / CycleLength, 0.0f, 1.0f);
+}
+
 int32 UFactoryProductionComponent::GetInputSpace(FName ItemId) const
 {
 	for (const FFactoryItemStack& Input : Inputs)

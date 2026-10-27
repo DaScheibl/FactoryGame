@@ -6,7 +6,7 @@ Legende: `PT` Prototyp · `VS` Vertical Slice · `EA` Early Access · `1.0` Rele
 
 ## Kern
 
-- [ ] **Deterministische Simulation getrennt vom Rendering (Tick-basiert)** · `SYS_Sim` · `PT` · [Doku](../../Standards/12-simulation.md) — _Umgesetzt: 20 Ticks/s, Produktions-Komponente, Graybox-Maschine + Cheats. Test im Spiel offen; Maschinen werden noch nicht gespeichert_
+- [x] **Deterministische Simulation getrennt vom Rendering (Tick-basiert)** · `SYS_Sim` · `PT` · [Doku](../../Standards/12-simulation.md) — _20 Ticks/s, Produktions-Komponente, Graybox-Maschine + Cheats, im Spiel getestet. Maschinen werden noch nicht gespeichert (kommt mit dem Bausystem)_
 - [ ] **Segment-basierte Band-Simulation (nicht pro Item)** · `SYS_BeltSim` · `PT`
 - [ ] **Rezept-/Item-Datenbank aus DataTables** · `SYS_Recipes` · `PT` · [Doku](../../Standards/11-rezepte.md) — _Items (CSV → DataTable) und Rezepte Tier 0–2 (25, mit Prüfung beim Laden) stehen. Rezeptwerte = Entwurf, Freigabe offen; Tier 3–8 fehlen_
 - [ ] **Strom-Netz-Berechnung** · `SYS_Power` · `VS`

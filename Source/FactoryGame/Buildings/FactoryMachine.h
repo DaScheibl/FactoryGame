@@ -16,7 +16,7 @@ class UMaterialInstanceDynamic;
  *
  *  Die Logik steckt komplett in der UFactoryProductionComponent (Simulations-Takt).
  *  Der Actor ist nur die Optik: er hört auf OnStateChanged, färbt den Würfel ein und
- *  aktualisiert ein paar Mal pro Sekunde den Text darüber. Farben (Graybox, nicht final):
+ *  aktualisiert jedes Bild den Text darüber. Farben (Graybox, nicht final):
  *  grau = kein Rezept, gelb = wartet auf Zutaten, grün = arbeitet, rot = Ausgang voll.
  *  Zum Testen: Konsole "SpawnMachine Smelter IronIngot", siehe Docs/Standards/12-simulation.md
  */
@@ -62,6 +62,9 @@ private:
 
 	UPROPERTY(VisibleAnywhere, Category="Components")
 	TObjectPtr<UFactoryProductionComponent> Production;
+
+	/** Text currently shown by the label */
+	FString LabelText;
 
 	/** Material instance of the cube, to change its color */
 	UPROPERTY()

@@ -53,6 +53,12 @@ public:
 	/** Returns the number of simulation ticks since the world started */
 	int64 GetTickCount() const { return TickCount; }
 
+	/**
+	 *  Returns how far the game time is between the last and the next simulation tick (0-1).
+	 *  Only for visuals, e.g. smooth progress bars. Never use it inside SimTick
+	 */
+	float GetTickAlpha() const { return FMath::Clamp(float(PendingSeconds * TicksPerSecond), 0.0f, 1.0f); }
+
 	/** Returns the number of registered objects */
 	int32 GetNumSimulated() const;
 

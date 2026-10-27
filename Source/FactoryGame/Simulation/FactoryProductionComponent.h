@@ -74,6 +74,9 @@ public:
 	/** Returns the progress of the running cycle from 0 to 1 */
 	float GetProgress() const;
 
+	/** Like GetProgress, but estimated between two simulation ticks so displays move smoothly. Only for visuals */
+	float GetDisplayProgress() const;
+
 	/** Returns the input buffers, one per recipe input */
 	const TArray<FFactoryItemStack>& GetInputs() const { return Inputs; }
 

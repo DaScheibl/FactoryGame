@@ -18,6 +18,8 @@ Wenn ein Standard geändert wird: hier anpassen **und** im Änderungsprotokoll u
 | [11 Rezepte](11-rezepte.md) | Rezept-Tabelle, Format, Werte Tier 0–2 | `SYS_Recipes` |
 | [12 Simulation](12-simulation.md) | Fester Takt, Maschinen-Ablauf, Puffer, Graybox-Maschine | `SYS_Sim` |
 
+Alle Konsolenbefehle zum Testen: [Cheatsheet](../Cheatsheet.md)
+
 ## Entscheidungen auf einen Blick
 
 | Thema | Entscheidung |

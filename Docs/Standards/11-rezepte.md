@@ -73,6 +73,8 @@ Ohne Rezept (werden abgebaut bzw. gesammelt): Eisenerz, Kupfererz, Kalkstein, Ko
 
 ## Test-Befehle (Konsole)
 
+Alle Befehle auf einen Blick: [Cheatsheet](../Cheatsheet.md)
+
 | Befehl | Wirkung |
 |---|---|
 | `ListRecipes` | Alle Rezepte mit Mengen und Werten pro Minute ins Output-Log |

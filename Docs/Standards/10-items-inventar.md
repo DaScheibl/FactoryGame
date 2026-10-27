@@ -92,6 +92,8 @@ Inventar, Ausrüstung und Hotbar werden mit der Welt gespeichert (seit Version 2
 
 ## Test-Befehle (Konsole, nur Editor/Development)
 
+Alle Befehle auf einen Blick: [Cheatsheet](../Cheatsheet.md)
+
 Konsole öffnen: Taste `~` (auf deutscher Tastatur meist `Ö` oder `^`).
 
 | Befehl | Wirkung |

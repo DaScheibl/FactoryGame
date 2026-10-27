@@ -43,6 +43,8 @@ Maschinen werden **noch nicht gespeichert**, das kommt mit dem Bausystem.
 
 ## Test-Befehle (Konsole)
 
+Alle Befehle auf einen Blick: [Cheatsheet](../Cheatsheet.md)
+
 | Befehl | Wirkung |
 |---|---|
 | `SpawnMachine Smelter IronIngot` | Maschine 8 m vor dir aufstellen (Präfixe `BLD_`/`RCP_` optional) |

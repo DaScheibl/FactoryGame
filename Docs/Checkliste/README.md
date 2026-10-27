@@ -21,13 +21,13 @@ Unreal Engine 5 · Blender · Ziel: Steam Early Access → 1.0.
 | [Audio](checklisten/09-audio.md) | 0/21 | `░░░░░░░░░░░░░░░░░░░░`  0.0% |
 | [VFX](checklisten/10-vfx.md) | 0/15 | `░░░░░░░░░░░░░░░░░░░░`  0.0% |
 | [Story, Text & Cinematics](checklisten/11-story-cinematics.md) | 0/8 | `░░░░░░░░░░░░░░░░░░░░`  0.0% |
-| [Technik & Systeme (nicht-Asset, aber 1.0-relevant)](checklisten/12-technik-systeme.md) | 2/18 | `██░░░░░░░░░░░░░░░░░░` 11.1% |
+| [Technik & Systeme (nicht-Asset, aber 1.0-relevant)](checklisten/12-technik-systeme.md) | 3/18 | `███░░░░░░░░░░░░░░░░░` 16.7% |
 | [Release, Marketing & Recht](checklisten/13-release-marketing.md) | 0/30 | `░░░░░░░░░░░░░░░░░░░░`  0.0% |
-| **Gesamt** | **11/1052** | `░░░░░░░░░░░░░░░░░░░░`  1.0% |
+| **Gesamt** | **12/1052** | `░░░░░░░░░░░░░░░░░░░░`  1.1% |
 
 | Meilenstein | Assets fertig | Fortschritt |
 |---|---|---|
-| `PT` Prototyp | 9/43 | `████░░░░░░░░░░░░░░░░` 20.9% |
+| `PT` Prototyp | 10/43 | `█████░░░░░░░░░░░░░░░` 23.3% |
 | `VS` Vertical Slice | 1/108 | `░░░░░░░░░░░░░░░░░░░░`  0.9% |
 | `EA` Early Access | 0/171 | `░░░░░░░░░░░░░░░░░░░░`  0.0% |
 | `1.0` Release 1.0 | 0/75 | `░░░░░░░░░░░░░░░░░░░░`  0.0% |
@@ -66,6 +66,8 @@ Jeder Eintrag trägt ein Kürzel, **wann** er fertig sein muss:
 | `1.0` | Release | Tier 0–8 bis Raketenstart, alle Biome, Story, Polish, Achievements. |
 
 ## Arbeitsweise
+
+- Konsolenbefehle zum Testen: [Cheatsheet](../Cheatsheet.md)
 
 - Checkboxen direkt auf GitHub anklicken (in `.md`-Dateien im Web-Editor `[ ]` → `[x]`) oder lokal in Rider/VS Code.
 - Für größere Brocken ein Issue mit der Vorlage **„Asset“** anlegen und die Asset-ID (z. B. `BLD_Drill_Mk1`) in den Titel schreiben.

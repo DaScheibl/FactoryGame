@@ -44,9 +44,9 @@ namespace
 
 AFactoryMachine::AFactoryMachine()
 {
-	// der Actor-Tick ist nur für den Text da, die Produktion läuft im Simulations-Takt
+	// der Actor-Tick ist nur für den Text da (jedes Bild, damit die Prozente flüssig zählen),
+	// die Produktion läuft im Simulations-Takt
 	PrimaryActorTick.bCanEverTick = true;
-	PrimaryActorTick.TickInterval = 0.2f;
 
 	Root = CreateDefaultSubobject<USceneComponent>(TEXT("Root"));
 	SetRootComponent(Root);
@@ -137,7 +137,7 @@ void AFactoryMachine::UpdateLabel()
 	switch (Production->GetState())
 	{
 	case EFactoryMachineState::WaitingForInput:	StateText = FactoryLoc::Get(TEXT("Machine_WaitingForInput")); break;
-	case EFactoryMachineState::Working:			StateText = FactoryLoc::Format(TEXT("Machine_Working"), { FMath::FloorToInt32(Production->GetProgress() * 100.0f) }); break;
+	case EFactoryMachineState::Working:			StateText = FactoryLoc::Format(TEXT("Machine_Working"), { FMath::FloorToInt32(Production->GetDisplayProgress() * 100.0f) }); break;
 	case EFactoryMachineState::OutputFull:		StateText = FactoryLoc::Get(TEXT("Machine_OutputFull")); break;
 	default:									StateText = FactoryLoc::Get(TEXT("Machine_NoRecipe")); break;
 	}
@@ -156,5 +156,10 @@ void AFactoryMachine::UpdateLabel()
 		Text += TEXT("\n") + StateText.ToString();
 	}
 
-	Label->SetText(FText::FromString(Text));
+	// nur neu setzen, wenn sich etwas geändert hat; SetText baut den Text-Mesh jedes Mal neu
+	if (Text != LabelText)
+	{
+		LabelText = Text;
+		Label->SetText(FText::FromString(Text));
+	}
 }
