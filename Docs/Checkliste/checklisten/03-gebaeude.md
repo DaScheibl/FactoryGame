@@ -1,0 +1,686 @@
+# Gebäude & Produktionsmaschinen
+
+Das Herzstück: jede Maschine ist ein Hero-Asset auf Satisfactory-Niveau. Darum hat jede Maschine ihre eigene Unter-Checkliste. Reihenfolge = Freischaltung im Spiel.
+
+Legende: `PT` Prototyp · `VS` Vertical Slice · `EA` Early Access · `1.0` Release
+
+> Tipp: Zuerst **alle Blockouts** einer Tier fertig machen und spielbar testen, erst dann Hero-Meshes. Spart dir Arbeit, falls sich Maße/Ports noch ändern.
+
+## Tier 0 – Notlandung
+
+_Handarbeit, erste Brennstoff-Maschinen_
+
+- [ ] **Werkbank (Handcrafting)** · `BLD_Workbench` · `VS`
+  - [ ] Blockout (Graybox, Footprint im Raster, Ein-/Ausgänge markiert)
+  - [ ] Konzept/Paintover & Silhouette freigegeben
+  - [ ] High-Detail-Mesh LOD0 + LOD1–LOD3 (+ Fern-Imposter)
+  - [ ] Kollision, Snap-Punkte & Port-Sockets (Band/Rohr/Strom)
+  - [ ] Materialien (Master-Material-Instanzen, Farb-/Lackier-Slots)
+  - [ ] Animationen (Idle, Arbeiten, Stillstand/Fehler, Bau-Einblendung)
+  - [ ] VFX (Arbeitsbetrieb, Abgas/Funken, Bau, Abriss)
+  - [ ] SFX (Loop an/aus, Start/Stop, Bau/Abriss, Distanz-Attenuation)
+  - [ ] Icon (256 px) + Bau-Hologramm/Vorschau
+  - [ ] UI-Panel (Rezeptwahl, Status, Ein-/Ausgabe-Slots)
+  - [ ] Ingame integriert, Rezepte verknüpft, Performance geprüft
+- [ ] **Tragbarer Erzbohrer** · `BLD_PortableMiner` · `VS`
+  - [ ] Blockout (Graybox, Footprint im Raster, Ein-/Ausgänge markiert)
+  - [ ] Konzept/Paintover & Silhouette freigegeben
+  - [ ] High-Detail-Mesh LOD0 + LOD1–LOD3 (+ Fern-Imposter)
+  - [ ] Kollision, Snap-Punkte & Port-Sockets (Band/Rohr/Strom)
+  - [ ] Materialien (Master-Material-Instanzen, Farb-/Lackier-Slots)
+  - [ ] Animationen (Idle, Arbeiten, Stillstand/Fehler, Bau-Einblendung)
+  - [ ] VFX (Arbeitsbetrieb, Abgas/Funken, Bau, Abriss)
+  - [ ] SFX (Loop an/aus, Start/Stop, Bau/Abriss, Distanz-Attenuation)
+  - [ ] Icon (256 px) + Bau-Hologramm/Vorschau
+  - [ ] UI-Panel (Rezeptwahl, Status, Ein-/Ausgabe-Slots)
+  - [ ] Ingame integriert, Rezepte verknüpft, Performance geprüft
+- [ ] **Brennstoff-Schmelze** · `BLD_BurnerSmelter` · `VS`
+  - [ ] Blockout (Graybox, Footprint im Raster, Ein-/Ausgänge markiert)
+  - [ ] Konzept/Paintover & Silhouette freigegeben
+  - [ ] High-Detail-Mesh LOD0 + LOD1–LOD3 (+ Fern-Imposter)
+  - [ ] Kollision, Snap-Punkte & Port-Sockets (Band/Rohr/Strom)
+  - [ ] Materialien (Master-Material-Instanzen, Farb-/Lackier-Slots)
+  - [ ] Animationen (Idle, Arbeiten, Stillstand/Fehler, Bau-Einblendung)
+  - [ ] VFX (Arbeitsbetrieb, Abgas/Funken, Bau, Abriss)
+  - [ ] SFX (Loop an/aus, Start/Stop, Bau/Abriss, Distanz-Attenuation)
+  - [ ] Icon (256 px) + Bau-Hologramm/Vorschau
+  - [ ] UI-Panel (Rezeptwahl, Status, Ein-/Ausgabe-Slots)
+  - [ ] Ingame integriert, Rezepte verknüpft, Performance geprüft
+- [ ] **Kleine Lagerkiste** · `BLD_ChestSmall` · `VS`
+  - [ ] Blockout (Graybox, Footprint im Raster, Ein-/Ausgänge markiert)
+  - [ ] Konzept/Paintover & Silhouette freigegeben
+  - [ ] High-Detail-Mesh LOD0 + LOD1–LOD3 (+ Fern-Imposter)
+  - [ ] Kollision, Snap-Punkte & Port-Sockets (Band/Rohr/Strom)
+  - [ ] Materialien (Master-Material-Instanzen, Farb-/Lackier-Slots)
+  - [ ] Animationen (Idle, Arbeiten, Stillstand/Fehler, Bau-Einblendung)
+  - [ ] VFX (Arbeitsbetrieb, Abgas/Funken, Bau, Abriss)
+  - [ ] SFX (Loop an/aus, Start/Stop, Bau/Abriss, Distanz-Attenuation)
+  - [ ] Icon (256 px) + Bau-Hologramm/Vorschau
+  - [ ] UI-Panel (Rezeptwahl, Status, Ein-/Ausgabe-Slots)
+  - [ ] Ingame integriert, Rezepte verknüpft, Performance geprüft
+- [ ] **Notunterkunft / HUB (Startgebäude)** · `BLD_Hub` · `PT`
+  - [ ] Blockout (Graybox, Footprint im Raster, Ein-/Ausgänge markiert)
+  - [ ] Konzept/Paintover & Silhouette freigegeben
+  - [ ] High-Detail-Mesh LOD0 + LOD1–LOD3 (+ Fern-Imposter)
+  - [ ] Kollision, Snap-Punkte & Port-Sockets (Band/Rohr/Strom)
+  - [ ] Materialien (Master-Material-Instanzen, Farb-/Lackier-Slots)
+  - [ ] Animationen (Idle, Arbeiten, Stillstand/Fehler, Bau-Einblendung)
+  - [ ] VFX (Arbeitsbetrieb, Abgas/Funken, Bau, Abriss)
+  - [ ] SFX (Loop an/aus, Start/Stop, Bau/Abriss, Distanz-Attenuation)
+  - [ ] Icon (256 px) + Bau-Hologramm/Vorschau
+  - [ ] UI-Panel (Rezeptwahl, Status, Ein-/Ausgabe-Slots)
+  - [ ] Ingame integriert, Rezepte verknüpft, Performance geprüft
+
+## Tier 1 – Dampf & Kohle
+
+_Erste Automatisierung, Strom, Forschungspaket I_
+
+- [ ] **Bergbaubohrer Mk1** · `BLD_Drill_Mk1` · `PT`
+  - [ ] Blockout (Graybox, Footprint im Raster, Ein-/Ausgänge markiert)
+  - [ ] Konzept/Paintover & Silhouette freigegeben
+  - [ ] High-Detail-Mesh LOD0 + LOD1–LOD3 (+ Fern-Imposter)
+  - [ ] Kollision, Snap-Punkte & Port-Sockets (Band/Rohr/Strom)
+  - [ ] Materialien (Master-Material-Instanzen, Farb-/Lackier-Slots)
+  - [ ] Animationen (Idle, Arbeiten, Stillstand/Fehler, Bau-Einblendung)
+  - [ ] VFX (Arbeitsbetrieb, Abgas/Funken, Bau, Abriss)
+  - [ ] SFX (Loop an/aus, Start/Stop, Bau/Abriss, Distanz-Attenuation)
+  - [ ] Icon (256 px) + Bau-Hologramm/Vorschau
+  - [ ] UI-Panel (Rezeptwahl, Status, Ein-/Ausgabe-Slots)
+  - [ ] Ingame integriert, Rezepte verknüpft, Performance geprüft
+- [ ] **Schmelzofen** · `BLD_Smelter` · `PT`
+  - [ ] Blockout (Graybox, Footprint im Raster, Ein-/Ausgänge markiert)
+  - [ ] Konzept/Paintover & Silhouette freigegeben
+  - [ ] High-Detail-Mesh LOD0 + LOD1–LOD3 (+ Fern-Imposter)
+  - [ ] Kollision, Snap-Punkte & Port-Sockets (Band/Rohr/Strom)
+  - [ ] Materialien (Master-Material-Instanzen, Farb-/Lackier-Slots)
+  - [ ] Animationen (Idle, Arbeiten, Stillstand/Fehler, Bau-Einblendung)
+  - [ ] VFX (Arbeitsbetrieb, Abgas/Funken, Bau, Abriss)
+  - [ ] SFX (Loop an/aus, Start/Stop, Bau/Abriss, Distanz-Attenuation)
+  - [ ] Icon (256 px) + Bau-Hologramm/Vorschau
+  - [ ] UI-Panel (Rezeptwahl, Status, Ein-/Ausgabe-Slots)
+  - [ ] Ingame integriert, Rezepte verknüpft, Performance geprüft
+- [ ] **Konstruktor (1 Eingang)** · `BLD_Constructor` · `PT`
+  - [ ] Blockout (Graybox, Footprint im Raster, Ein-/Ausgänge markiert)
+  - [ ] Konzept/Paintover & Silhouette freigegeben
+  - [ ] High-Detail-Mesh LOD0 + LOD1–LOD3 (+ Fern-Imposter)
+  - [ ] Kollision, Snap-Punkte & Port-Sockets (Band/Rohr/Strom)
+  - [ ] Materialien (Master-Material-Instanzen, Farb-/Lackier-Slots)
+  - [ ] Animationen (Idle, Arbeiten, Stillstand/Fehler, Bau-Einblendung)
+  - [ ] VFX (Arbeitsbetrieb, Abgas/Funken, Bau, Abriss)
+  - [ ] SFX (Loop an/aus, Start/Stop, Bau/Abriss, Distanz-Attenuation)
+  - [ ] Icon (256 px) + Bau-Hologramm/Vorschau
+  - [ ] UI-Panel (Rezeptwahl, Status, Ein-/Ausgabe-Slots)
+  - [ ] Ingame integriert, Rezepte verknüpft, Performance geprüft
+- [ ] **Kohlegenerator** · `BLD_GenCoal` · `VS`
+  - [ ] Blockout (Graybox, Footprint im Raster, Ein-/Ausgänge markiert)
+  - [ ] Konzept/Paintover & Silhouette freigegeben
+  - [ ] High-Detail-Mesh LOD0 + LOD1–LOD3 (+ Fern-Imposter)
+  - [ ] Kollision, Snap-Punkte & Port-Sockets (Band/Rohr/Strom)
+  - [ ] Materialien (Master-Material-Instanzen, Farb-/Lackier-Slots)
+  - [ ] Animationen (Idle, Arbeiten, Stillstand/Fehler, Bau-Einblendung)
+  - [ ] VFX (Arbeitsbetrieb, Abgas/Funken, Bau, Abriss)
+  - [ ] SFX (Loop an/aus, Start/Stop, Bau/Abriss, Distanz-Attenuation)
+  - [ ] Icon (256 px) + Bau-Hologramm/Vorschau
+  - [ ] UI-Panel (Rezeptwahl, Status, Ein-/Ausgabe-Slots)
+  - [ ] Ingame integriert, Rezepte verknüpft, Performance geprüft
+- [ ] **Wasserpumpe** · `BLD_WaterPump` · `VS`
+  - [ ] Blockout (Graybox, Footprint im Raster, Ein-/Ausgänge markiert)
+  - [ ] Konzept/Paintover & Silhouette freigegeben
+  - [ ] High-Detail-Mesh LOD0 + LOD1–LOD3 (+ Fern-Imposter)
+  - [ ] Kollision, Snap-Punkte & Port-Sockets (Band/Rohr/Strom)
+  - [ ] Materialien (Master-Material-Instanzen, Farb-/Lackier-Slots)
+  - [ ] Animationen (Idle, Arbeiten, Stillstand/Fehler, Bau-Einblendung)
+  - [ ] VFX (Arbeitsbetrieb, Abgas/Funken, Bau, Abriss)
+  - [ ] SFX (Loop an/aus, Start/Stop, Bau/Abriss, Distanz-Attenuation)
+  - [ ] Icon (256 px) + Bau-Hologramm/Vorschau
+  - [ ] UI-Panel (Rezeptwahl, Status, Ein-/Ausgabe-Slots)
+  - [ ] Ingame integriert, Rezepte verknüpft, Performance geprüft
+- [ ] **Forschungslabor** · `BLD_Lab` · `VS`
+  - [ ] Blockout (Graybox, Footprint im Raster, Ein-/Ausgänge markiert)
+  - [ ] Konzept/Paintover & Silhouette freigegeben
+  - [ ] High-Detail-Mesh LOD0 + LOD1–LOD3 (+ Fern-Imposter)
+  - [ ] Kollision, Snap-Punkte & Port-Sockets (Band/Rohr/Strom)
+  - [ ] Materialien (Master-Material-Instanzen, Farb-/Lackier-Slots)
+  - [ ] Animationen (Idle, Arbeiten, Stillstand/Fehler, Bau-Einblendung)
+  - [ ] VFX (Arbeitsbetrieb, Abgas/Funken, Bau, Abriss)
+  - [ ] SFX (Loop an/aus, Start/Stop, Bau/Abriss, Distanz-Attenuation)
+  - [ ] Icon (256 px) + Bau-Hologramm/Vorschau
+  - [ ] UI-Panel (Rezeptwahl, Status, Ein-/Ausgabe-Slots)
+  - [ ] Ingame integriert, Rezepte verknüpft, Performance geprüft
+- [ ] **Lagerkiste** · `BLD_Chest` · `VS`
+  - [ ] Blockout (Graybox, Footprint im Raster, Ein-/Ausgänge markiert)
+  - [ ] Konzept/Paintover & Silhouette freigegeben
+  - [ ] High-Detail-Mesh LOD0 + LOD1–LOD3 (+ Fern-Imposter)
+  - [ ] Kollision, Snap-Punkte & Port-Sockets (Band/Rohr/Strom)
+  - [ ] Materialien (Master-Material-Instanzen, Farb-/Lackier-Slots)
+  - [ ] Animationen (Idle, Arbeiten, Stillstand/Fehler, Bau-Einblendung)
+  - [ ] VFX (Arbeitsbetrieb, Abgas/Funken, Bau, Abriss)
+  - [ ] SFX (Loop an/aus, Start/Stop, Bau/Abriss, Distanz-Attenuation)
+  - [ ] Icon (256 px) + Bau-Hologramm/Vorschau
+  - [ ] UI-Panel (Rezeptwahl, Status, Ein-/Ausgabe-Slots)
+  - [ ] Ingame integriert, Rezepte verknüpft, Performance geprüft
+- [ ] **Biomasse-Brenner** · `BLD_GenBiomass` · `VS`
+  - [ ] Blockout (Graybox, Footprint im Raster, Ein-/Ausgänge markiert)
+  - [ ] Konzept/Paintover & Silhouette freigegeben
+  - [ ] High-Detail-Mesh LOD0 + LOD1–LOD3 (+ Fern-Imposter)
+  - [ ] Kollision, Snap-Punkte & Port-Sockets (Band/Rohr/Strom)
+  - [ ] Materialien (Master-Material-Instanzen, Farb-/Lackier-Slots)
+  - [ ] Animationen (Idle, Arbeiten, Stillstand/Fehler, Bau-Einblendung)
+  - [ ] VFX (Arbeitsbetrieb, Abgas/Funken, Bau, Abriss)
+  - [ ] SFX (Loop an/aus, Start/Stop, Bau/Abriss, Distanz-Attenuation)
+  - [ ] Icon (256 px) + Bau-Hologramm/Vorschau
+  - [ ] UI-Panel (Rezeptwahl, Status, Ein-/Ausgabe-Slots)
+  - [ ] Ingame integriert, Rezepte verknüpft, Performance geprüft
+
+## Tier 2 – Stahl & Montage
+
+_Assembler, Logistik-Grundlagen, Forschungspaket II_
+
+- [ ] **Assembler (2 Eingänge)** · `BLD_Assembler` · `VS`
+  - [ ] Blockout (Graybox, Footprint im Raster, Ein-/Ausgänge markiert)
+  - [ ] Konzept/Paintover & Silhouette freigegeben
+  - [ ] High-Detail-Mesh LOD0 + LOD1–LOD3 (+ Fern-Imposter)
+  - [ ] Kollision, Snap-Punkte & Port-Sockets (Band/Rohr/Strom)
+  - [ ] Materialien (Master-Material-Instanzen, Farb-/Lackier-Slots)
+  - [ ] Animationen (Idle, Arbeiten, Stillstand/Fehler, Bau-Einblendung)
+  - [ ] VFX (Arbeitsbetrieb, Abgas/Funken, Bau, Abriss)
+  - [ ] SFX (Loop an/aus, Start/Stop, Bau/Abriss, Distanz-Attenuation)
+  - [ ] Icon (256 px) + Bau-Hologramm/Vorschau
+  - [ ] UI-Panel (Rezeptwahl, Status, Ein-/Ausgabe-Slots)
+  - [ ] Ingame integriert, Rezepte verknüpft, Performance geprüft
+- [ ] **Gießerei (Stahl)** · `BLD_Foundry` · `VS`
+  - [ ] Blockout (Graybox, Footprint im Raster, Ein-/Ausgänge markiert)
+  - [ ] Konzept/Paintover & Silhouette freigegeben
+  - [ ] High-Detail-Mesh LOD0 + LOD1–LOD3 (+ Fern-Imposter)
+  - [ ] Kollision, Snap-Punkte & Port-Sockets (Band/Rohr/Strom)
+  - [ ] Materialien (Master-Material-Instanzen, Farb-/Lackier-Slots)
+  - [ ] Animationen (Idle, Arbeiten, Stillstand/Fehler, Bau-Einblendung)
+  - [ ] VFX (Arbeitsbetrieb, Abgas/Funken, Bau, Abriss)
+  - [ ] SFX (Loop an/aus, Start/Stop, Bau/Abriss, Distanz-Attenuation)
+  - [ ] Icon (256 px) + Bau-Hologramm/Vorschau
+  - [ ] UI-Panel (Rezeptwahl, Status, Ein-/Ausgabe-Slots)
+  - [ ] Ingame integriert, Rezepte verknüpft, Performance geprüft
+- [ ] **Bergbaubohrer Mk2** · `BLD_Drill_Mk2` · `VS`
+  - [ ] Blockout (Graybox, Footprint im Raster, Ein-/Ausgänge markiert)
+  - [ ] Konzept/Paintover & Silhouette freigegeben
+  - [ ] High-Detail-Mesh LOD0 + LOD1–LOD3 (+ Fern-Imposter)
+  - [ ] Kollision, Snap-Punkte & Port-Sockets (Band/Rohr/Strom)
+  - [ ] Materialien (Master-Material-Instanzen, Farb-/Lackier-Slots)
+  - [ ] Animationen (Idle, Arbeiten, Stillstand/Fehler, Bau-Einblendung)
+  - [ ] VFX (Arbeitsbetrieb, Abgas/Funken, Bau, Abriss)
+  - [ ] SFX (Loop an/aus, Start/Stop, Bau/Abriss, Distanz-Attenuation)
+  - [ ] Icon (256 px) + Bau-Hologramm/Vorschau
+  - [ ] UI-Panel (Rezeptwahl, Status, Ein-/Ausgabe-Slots)
+  - [ ] Ingame integriert, Rezepte verknüpft, Performance geprüft
+- [ ] **Akku-Stromspeicher** · `BLD_PowerStorage` · `VS`
+  - [ ] Blockout (Graybox, Footprint im Raster, Ein-/Ausgänge markiert)
+  - [ ] Konzept/Paintover & Silhouette freigegeben
+  - [ ] High-Detail-Mesh LOD0 + LOD1–LOD3 (+ Fern-Imposter)
+  - [ ] Kollision, Snap-Punkte & Port-Sockets (Band/Rohr/Strom)
+  - [ ] Materialien (Master-Material-Instanzen, Farb-/Lackier-Slots)
+  - [ ] Animationen (Idle, Arbeiten, Stillstand/Fehler, Bau-Einblendung)
+  - [ ] VFX (Arbeitsbetrieb, Abgas/Funken, Bau, Abriss)
+  - [ ] SFX (Loop an/aus, Start/Stop, Bau/Abriss, Distanz-Attenuation)
+  - [ ] Icon (256 px) + Bau-Hologramm/Vorschau
+  - [ ] UI-Panel (Rezeptwahl, Status, Ein-/Ausgabe-Slots)
+  - [ ] Ingame integriert, Rezepte verknüpft, Performance geprüft
+- [ ] **Große Lagerkiste** · `BLD_ChestLarge` · `VS`
+  - [ ] Blockout (Graybox, Footprint im Raster, Ein-/Ausgänge markiert)
+  - [ ] Konzept/Paintover & Silhouette freigegeben
+  - [ ] High-Detail-Mesh LOD0 + LOD1–LOD3 (+ Fern-Imposter)
+  - [ ] Kollision, Snap-Punkte & Port-Sockets (Band/Rohr/Strom)
+  - [ ] Materialien (Master-Material-Instanzen, Farb-/Lackier-Slots)
+  - [ ] Animationen (Idle, Arbeiten, Stillstand/Fehler, Bau-Einblendung)
+  - [ ] VFX (Arbeitsbetrieb, Abgas/Funken, Bau, Abriss)
+  - [ ] SFX (Loop an/aus, Start/Stop, Bau/Abriss, Distanz-Attenuation)
+  - [ ] Icon (256 px) + Bau-Hologramm/Vorschau
+  - [ ] UI-Panel (Rezeptwahl, Status, Ein-/Ausgabe-Slots)
+  - [ ] Ingame integriert, Rezepte verknüpft, Performance geprüft
+- [ ] **Ausrüstungswerkstatt** · `BLD_EquipWorkshop` · `VS`
+  - [ ] Blockout (Graybox, Footprint im Raster, Ein-/Ausgänge markiert)
+  - [ ] Konzept/Paintover & Silhouette freigegeben
+  - [ ] High-Detail-Mesh LOD0 + LOD1–LOD3 (+ Fern-Imposter)
+  - [ ] Kollision, Snap-Punkte & Port-Sockets (Band/Rohr/Strom)
+  - [ ] Materialien (Master-Material-Instanzen, Farb-/Lackier-Slots)
+  - [ ] Animationen (Idle, Arbeiten, Stillstand/Fehler, Bau-Einblendung)
+  - [ ] VFX (Arbeitsbetrieb, Abgas/Funken, Bau, Abriss)
+  - [ ] SFX (Loop an/aus, Start/Stop, Bau/Abriss, Distanz-Attenuation)
+  - [ ] Icon (256 px) + Bau-Hologramm/Vorschau
+  - [ ] UI-Panel (Rezeptwahl, Status, Ein-/Ausgabe-Slots)
+  - [ ] Ingame integriert, Rezepte verknüpft, Performance geprüft
+
+## Tier 3 – Öl & Chemie
+
+_Fluide, Kunststoff, Gummi, Forschungspaket III_
+
+- [ ] **Ölpumpe** · `BLD_OilExtractor` · `EA`
+  - [ ] Blockout (Graybox, Footprint im Raster, Ein-/Ausgänge markiert)
+  - [ ] Konzept/Paintover & Silhouette freigegeben
+  - [ ] High-Detail-Mesh LOD0 + LOD1–LOD3 (+ Fern-Imposter)
+  - [ ] Kollision, Snap-Punkte & Port-Sockets (Band/Rohr/Strom)
+  - [ ] Materialien (Master-Material-Instanzen, Farb-/Lackier-Slots)
+  - [ ] Animationen (Idle, Arbeiten, Stillstand/Fehler, Bau-Einblendung)
+  - [ ] VFX (Arbeitsbetrieb, Abgas/Funken, Bau, Abriss)
+  - [ ] SFX (Loop an/aus, Start/Stop, Bau/Abriss, Distanz-Attenuation)
+  - [ ] Icon (256 px) + Bau-Hologramm/Vorschau
+  - [ ] UI-Panel (Rezeptwahl, Status, Ein-/Ausgabe-Slots)
+  - [ ] Ingame integriert, Rezepte verknüpft, Performance geprüft
+- [ ] **Raffinerie** · `BLD_Refinery` · `EA`
+  - [ ] Blockout (Graybox, Footprint im Raster, Ein-/Ausgänge markiert)
+  - [ ] Konzept/Paintover & Silhouette freigegeben
+  - [ ] High-Detail-Mesh LOD0 + LOD1–LOD3 (+ Fern-Imposter)
+  - [ ] Kollision, Snap-Punkte & Port-Sockets (Band/Rohr/Strom)
+  - [ ] Materialien (Master-Material-Instanzen, Farb-/Lackier-Slots)
+  - [ ] Animationen (Idle, Arbeiten, Stillstand/Fehler, Bau-Einblendung)
+  - [ ] VFX (Arbeitsbetrieb, Abgas/Funken, Bau, Abriss)
+  - [ ] SFX (Loop an/aus, Start/Stop, Bau/Abriss, Distanz-Attenuation)
+  - [ ] Icon (256 px) + Bau-Hologramm/Vorschau
+  - [ ] UI-Panel (Rezeptwahl, Status, Ein-/Ausgabe-Slots)
+  - [ ] Ingame integriert, Rezepte verknüpft, Performance geprüft
+- [ ] **Chemieanlage** · `BLD_ChemPlant` · `EA`
+  - [ ] Blockout (Graybox, Footprint im Raster, Ein-/Ausgänge markiert)
+  - [ ] Konzept/Paintover & Silhouette freigegeben
+  - [ ] High-Detail-Mesh LOD0 + LOD1–LOD3 (+ Fern-Imposter)
+  - [ ] Kollision, Snap-Punkte & Port-Sockets (Band/Rohr/Strom)
+  - [ ] Materialien (Master-Material-Instanzen, Farb-/Lackier-Slots)
+  - [ ] Animationen (Idle, Arbeiten, Stillstand/Fehler, Bau-Einblendung)
+  - [ ] VFX (Arbeitsbetrieb, Abgas/Funken, Bau, Abriss)
+  - [ ] SFX (Loop an/aus, Start/Stop, Bau/Abriss, Distanz-Attenuation)
+  - [ ] Icon (256 px) + Bau-Hologramm/Vorschau
+  - [ ] UI-Panel (Rezeptwahl, Status, Ein-/Ausgabe-Slots)
+  - [ ] Ingame integriert, Rezepte verknüpft, Performance geprüft
+- [ ] **Verpacker (Fluid ↔ Kanister)** · `BLD_Packager` · `EA`
+  - [ ] Blockout (Graybox, Footprint im Raster, Ein-/Ausgänge markiert)
+  - [ ] Konzept/Paintover & Silhouette freigegeben
+  - [ ] High-Detail-Mesh LOD0 + LOD1–LOD3 (+ Fern-Imposter)
+  - [ ] Kollision, Snap-Punkte & Port-Sockets (Band/Rohr/Strom)
+  - [ ] Materialien (Master-Material-Instanzen, Farb-/Lackier-Slots)
+  - [ ] Animationen (Idle, Arbeiten, Stillstand/Fehler, Bau-Einblendung)
+  - [ ] VFX (Arbeitsbetrieb, Abgas/Funken, Bau, Abriss)
+  - [ ] SFX (Loop an/aus, Start/Stop, Bau/Abriss, Distanz-Attenuation)
+  - [ ] Icon (256 px) + Bau-Hologramm/Vorschau
+  - [ ] UI-Panel (Rezeptwahl, Status, Ein-/Ausgabe-Slots)
+  - [ ] Ingame integriert, Rezepte verknüpft, Performance geprüft
+- [ ] **Treibstoffgenerator** · `BLD_GenFuel` · `EA`
+  - [ ] Blockout (Graybox, Footprint im Raster, Ein-/Ausgänge markiert)
+  - [ ] Konzept/Paintover & Silhouette freigegeben
+  - [ ] High-Detail-Mesh LOD0 + LOD1–LOD3 (+ Fern-Imposter)
+  - [ ] Kollision, Snap-Punkte & Port-Sockets (Band/Rohr/Strom)
+  - [ ] Materialien (Master-Material-Instanzen, Farb-/Lackier-Slots)
+  - [ ] Animationen (Idle, Arbeiten, Stillstand/Fehler, Bau-Einblendung)
+  - [ ] VFX (Arbeitsbetrieb, Abgas/Funken, Bau, Abriss)
+  - [ ] SFX (Loop an/aus, Start/Stop, Bau/Abriss, Distanz-Attenuation)
+  - [ ] Icon (256 px) + Bau-Hologramm/Vorschau
+  - [ ] UI-Panel (Rezeptwahl, Status, Ein-/Ausgabe-Slots)
+  - [ ] Ingame integriert, Rezepte verknüpft, Performance geprüft
+- [ ] **Fluidtank** · `BLD_FluidTank` · `EA`
+  - [ ] Blockout (Graybox, Footprint im Raster, Ein-/Ausgänge markiert)
+  - [ ] Konzept/Paintover & Silhouette freigegeben
+  - [ ] High-Detail-Mesh LOD0 + LOD1–LOD3 (+ Fern-Imposter)
+  - [ ] Kollision, Snap-Punkte & Port-Sockets (Band/Rohr/Strom)
+  - [ ] Materialien (Master-Material-Instanzen, Farb-/Lackier-Slots)
+  - [ ] Animationen (Idle, Arbeiten, Stillstand/Fehler, Bau-Einblendung)
+  - [ ] VFX (Arbeitsbetrieb, Abgas/Funken, Bau, Abriss)
+  - [ ] SFX (Loop an/aus, Start/Stop, Bau/Abriss, Distanz-Attenuation)
+  - [ ] Icon (256 px) + Bau-Hologramm/Vorschau
+  - [ ] UI-Panel (Rezeptwahl, Status, Ein-/Ausgabe-Slots)
+  - [ ] Ingame integriert, Rezepte verknüpft, Performance geprüft
+- [ ] **Gasbrunnen (Erdgas)** · `BLD_GasWell` · `EA`
+  - [ ] Blockout (Graybox, Footprint im Raster, Ein-/Ausgänge markiert)
+  - [ ] Konzept/Paintover & Silhouette freigegeben
+  - [ ] High-Detail-Mesh LOD0 + LOD1–LOD3 (+ Fern-Imposter)
+  - [ ] Kollision, Snap-Punkte & Port-Sockets (Band/Rohr/Strom)
+  - [ ] Materialien (Master-Material-Instanzen, Farb-/Lackier-Slots)
+  - [ ] Animationen (Idle, Arbeiten, Stillstand/Fehler, Bau-Einblendung)
+  - [ ] VFX (Arbeitsbetrieb, Abgas/Funken, Bau, Abriss)
+  - [ ] SFX (Loop an/aus, Start/Stop, Bau/Abriss, Distanz-Attenuation)
+  - [ ] Icon (256 px) + Bau-Hologramm/Vorschau
+  - [ ] UI-Panel (Rezeptwahl, Status, Ein-/Ausgabe-Slots)
+  - [ ] Ingame integriert, Rezepte verknüpft, Performance geprüft
+
+## Tier 4 – Elektronik & Logik
+
+_Schaltkreise, Logiknetz, Solar/Wind, Forschungspaket IV_
+
+- [ ] **Fertigungsanlage (4 Eingänge)** · `BLD_Manufacturer` · `EA`
+  - [ ] Blockout (Graybox, Footprint im Raster, Ein-/Ausgänge markiert)
+  - [ ] Konzept/Paintover & Silhouette freigegeben
+  - [ ] High-Detail-Mesh LOD0 + LOD1–LOD3 (+ Fern-Imposter)
+  - [ ] Kollision, Snap-Punkte & Port-Sockets (Band/Rohr/Strom)
+  - [ ] Materialien (Master-Material-Instanzen, Farb-/Lackier-Slots)
+  - [ ] Animationen (Idle, Arbeiten, Stillstand/Fehler, Bau-Einblendung)
+  - [ ] VFX (Arbeitsbetrieb, Abgas/Funken, Bau, Abriss)
+  - [ ] SFX (Loop an/aus, Start/Stop, Bau/Abriss, Distanz-Attenuation)
+  - [ ] Icon (256 px) + Bau-Hologramm/Vorschau
+  - [ ] UI-Panel (Rezeptwahl, Status, Ein-/Ausgabe-Slots)
+  - [ ] Ingame integriert, Rezepte verknüpft, Performance geprüft
+- [ ] **Solarfeld-Modul** · `BLD_SolarPanel` · `EA`
+  - [ ] Blockout (Graybox, Footprint im Raster, Ein-/Ausgänge markiert)
+  - [ ] Konzept/Paintover & Silhouette freigegeben
+  - [ ] High-Detail-Mesh LOD0 + LOD1–LOD3 (+ Fern-Imposter)
+  - [ ] Kollision, Snap-Punkte & Port-Sockets (Band/Rohr/Strom)
+  - [ ] Materialien (Master-Material-Instanzen, Farb-/Lackier-Slots)
+  - [ ] Animationen (Idle, Arbeiten, Stillstand/Fehler, Bau-Einblendung)
+  - [ ] VFX (Arbeitsbetrieb, Abgas/Funken, Bau, Abriss)
+  - [ ] SFX (Loop an/aus, Start/Stop, Bau/Abriss, Distanz-Attenuation)
+  - [ ] Icon (256 px) + Bau-Hologramm/Vorschau
+  - [ ] UI-Panel (Rezeptwahl, Status, Ein-/Ausgabe-Slots)
+  - [ ] Ingame integriert, Rezepte verknüpft, Performance geprüft
+- [ ] **Windturbine** · `BLD_WindTurbine` · `EA`
+  - [ ] Blockout (Graybox, Footprint im Raster, Ein-/Ausgänge markiert)
+  - [ ] Konzept/Paintover & Silhouette freigegeben
+  - [ ] High-Detail-Mesh LOD0 + LOD1–LOD3 (+ Fern-Imposter)
+  - [ ] Kollision, Snap-Punkte & Port-Sockets (Band/Rohr/Strom)
+  - [ ] Materialien (Master-Material-Instanzen, Farb-/Lackier-Slots)
+  - [ ] Animationen (Idle, Arbeiten, Stillstand/Fehler, Bau-Einblendung)
+  - [ ] VFX (Arbeitsbetrieb, Abgas/Funken, Bau, Abriss)
+  - [ ] SFX (Loop an/aus, Start/Stop, Bau/Abriss, Distanz-Attenuation)
+  - [ ] Icon (256 px) + Bau-Hologramm/Vorschau
+  - [ ] UI-Panel (Rezeptwahl, Status, Ein-/Ausgabe-Slots)
+  - [ ] Ingame integriert, Rezepte verknüpft, Performance geprüft
+- [ ] **Logik-Steuerkasten** · `BLD_LogicBox` · `EA`
+  - [ ] Blockout (Graybox, Footprint im Raster, Ein-/Ausgänge markiert)
+  - [ ] Konzept/Paintover & Silhouette freigegeben
+  - [ ] High-Detail-Mesh LOD0 + LOD1–LOD3 (+ Fern-Imposter)
+  - [ ] Kollision, Snap-Punkte & Port-Sockets (Band/Rohr/Strom)
+  - [ ] Materialien (Master-Material-Instanzen, Farb-/Lackier-Slots)
+  - [ ] Animationen (Idle, Arbeiten, Stillstand/Fehler, Bau-Einblendung)
+  - [ ] VFX (Arbeitsbetrieb, Abgas/Funken, Bau, Abriss)
+  - [ ] SFX (Loop an/aus, Start/Stop, Bau/Abriss, Distanz-Attenuation)
+  - [ ] Icon (256 px) + Bau-Hologramm/Vorschau
+  - [ ] UI-Panel (Rezeptwahl, Status, Ein-/Ausgabe-Slots)
+  - [ ] Ingame integriert, Rezepte verknüpft, Performance geprüft
+- [ ] **Sensor / Lampe / Anzeige-Panel** · `BLD_LogicIO` · `EA`
+  - [ ] Blockout (Graybox, Footprint im Raster, Ein-/Ausgänge markiert)
+  - [ ] Konzept/Paintover & Silhouette freigegeben
+  - [ ] High-Detail-Mesh LOD0 + LOD1–LOD3 (+ Fern-Imposter)
+  - [ ] Kollision, Snap-Punkte & Port-Sockets (Band/Rohr/Strom)
+  - [ ] Materialien (Master-Material-Instanzen, Farb-/Lackier-Slots)
+  - [ ] Animationen (Idle, Arbeiten, Stillstand/Fehler, Bau-Einblendung)
+  - [ ] VFX (Arbeitsbetrieb, Abgas/Funken, Bau, Abriss)
+  - [ ] SFX (Loop an/aus, Start/Stop, Bau/Abriss, Distanz-Attenuation)
+  - [ ] Icon (256 px) + Bau-Hologramm/Vorschau
+  - [ ] UI-Panel (Rezeptwahl, Status, Ein-/Ausgabe-Slots)
+  - [ ] Ingame integriert, Rezepte verknüpft, Performance geprüft
+- [ ] **Radar / Kartenscanner** · `BLD_Radar` · `EA`
+  - [ ] Blockout (Graybox, Footprint im Raster, Ein-/Ausgänge markiert)
+  - [ ] Konzept/Paintover & Silhouette freigegeben
+  - [ ] High-Detail-Mesh LOD0 + LOD1–LOD3 (+ Fern-Imposter)
+  - [ ] Kollision, Snap-Punkte & Port-Sockets (Band/Rohr/Strom)
+  - [ ] Materialien (Master-Material-Instanzen, Farb-/Lackier-Slots)
+  - [ ] Animationen (Idle, Arbeiten, Stillstand/Fehler, Bau-Einblendung)
+  - [ ] VFX (Arbeitsbetrieb, Abgas/Funken, Bau, Abriss)
+  - [ ] SFX (Loop an/aus, Start/Stop, Bau/Abriss, Distanz-Attenuation)
+  - [ ] Icon (256 px) + Bau-Hologramm/Vorschau
+  - [ ] UI-Panel (Rezeptwahl, Status, Ein-/Ausgabe-Slots)
+  - [ ] Ingame integriert, Rezepte verknüpft, Performance geprüft
+
+## Tier 5 – Massenlogistik
+
+_Züge, Drohnen, Bänder Mk3–4, Forschungspaket V_
+
+- [ ] **Bergbaubohrer Mk3** · `BLD_Drill_Mk3` · `EA`
+  - [ ] Blockout (Graybox, Footprint im Raster, Ein-/Ausgänge markiert)
+  - [ ] Konzept/Paintover & Silhouette freigegeben
+  - [ ] High-Detail-Mesh LOD0 + LOD1–LOD3 (+ Fern-Imposter)
+  - [ ] Kollision, Snap-Punkte & Port-Sockets (Band/Rohr/Strom)
+  - [ ] Materialien (Master-Material-Instanzen, Farb-/Lackier-Slots)
+  - [ ] Animationen (Idle, Arbeiten, Stillstand/Fehler, Bau-Einblendung)
+  - [ ] VFX (Arbeitsbetrieb, Abgas/Funken, Bau, Abriss)
+  - [ ] SFX (Loop an/aus, Start/Stop, Bau/Abriss, Distanz-Attenuation)
+  - [ ] Icon (256 px) + Bau-Hologramm/Vorschau
+  - [ ] UI-Panel (Rezeptwahl, Status, Ein-/Ausgabe-Slots)
+  - [ ] Ingame integriert, Rezepte verknüpft, Performance geprüft
+- [ ] **Bahnhof** · `BLD_TrainStation` · `EA`
+  - [ ] Blockout (Graybox, Footprint im Raster, Ein-/Ausgänge markiert)
+  - [ ] Konzept/Paintover & Silhouette freigegeben
+  - [ ] High-Detail-Mesh LOD0 + LOD1–LOD3 (+ Fern-Imposter)
+  - [ ] Kollision, Snap-Punkte & Port-Sockets (Band/Rohr/Strom)
+  - [ ] Materialien (Master-Material-Instanzen, Farb-/Lackier-Slots)
+  - [ ] Animationen (Idle, Arbeiten, Stillstand/Fehler, Bau-Einblendung)
+  - [ ] VFX (Arbeitsbetrieb, Abgas/Funken, Bau, Abriss)
+  - [ ] SFX (Loop an/aus, Start/Stop, Bau/Abriss, Distanz-Attenuation)
+  - [ ] Icon (256 px) + Bau-Hologramm/Vorschau
+  - [ ] UI-Panel (Rezeptwahl, Status, Ein-/Ausgabe-Slots)
+  - [ ] Ingame integriert, Rezepte verknüpft, Performance geprüft
+- [ ] **Güter-Plattform** · `BLD_FreightPlatform` · `EA`
+  - [ ] Blockout (Graybox, Footprint im Raster, Ein-/Ausgänge markiert)
+  - [ ] Konzept/Paintover & Silhouette freigegeben
+  - [ ] High-Detail-Mesh LOD0 + LOD1–LOD3 (+ Fern-Imposter)
+  - [ ] Kollision, Snap-Punkte & Port-Sockets (Band/Rohr/Strom)
+  - [ ] Materialien (Master-Material-Instanzen, Farb-/Lackier-Slots)
+  - [ ] Animationen (Idle, Arbeiten, Stillstand/Fehler, Bau-Einblendung)
+  - [ ] VFX (Arbeitsbetrieb, Abgas/Funken, Bau, Abriss)
+  - [ ] SFX (Loop an/aus, Start/Stop, Bau/Abriss, Distanz-Attenuation)
+  - [ ] Icon (256 px) + Bau-Hologramm/Vorschau
+  - [ ] UI-Panel (Rezeptwahl, Status, Ein-/Ausgabe-Slots)
+  - [ ] Ingame integriert, Rezepte verknüpft, Performance geprüft
+- [ ] **Fluid-Plattform** · `BLD_FluidPlatform` · `EA`
+  - [ ] Blockout (Graybox, Footprint im Raster, Ein-/Ausgänge markiert)
+  - [ ] Konzept/Paintover & Silhouette freigegeben
+  - [ ] High-Detail-Mesh LOD0 + LOD1–LOD3 (+ Fern-Imposter)
+  - [ ] Kollision, Snap-Punkte & Port-Sockets (Band/Rohr/Strom)
+  - [ ] Materialien (Master-Material-Instanzen, Farb-/Lackier-Slots)
+  - [ ] Animationen (Idle, Arbeiten, Stillstand/Fehler, Bau-Einblendung)
+  - [ ] VFX (Arbeitsbetrieb, Abgas/Funken, Bau, Abriss)
+  - [ ] SFX (Loop an/aus, Start/Stop, Bau/Abriss, Distanz-Attenuation)
+  - [ ] Icon (256 px) + Bau-Hologramm/Vorschau
+  - [ ] UI-Panel (Rezeptwahl, Status, Ein-/Ausgabe-Slots)
+  - [ ] Ingame integriert, Rezepte verknüpft, Performance geprüft
+- [ ] **Drohnenhafen** · `BLD_DronePort` · `EA`
+  - [ ] Blockout (Graybox, Footprint im Raster, Ein-/Ausgänge markiert)
+  - [ ] Konzept/Paintover & Silhouette freigegeben
+  - [ ] High-Detail-Mesh LOD0 + LOD1–LOD3 (+ Fern-Imposter)
+  - [ ] Kollision, Snap-Punkte & Port-Sockets (Band/Rohr/Strom)
+  - [ ] Materialien (Master-Material-Instanzen, Farb-/Lackier-Slots)
+  - [ ] Animationen (Idle, Arbeiten, Stillstand/Fehler, Bau-Einblendung)
+  - [ ] VFX (Arbeitsbetrieb, Abgas/Funken, Bau, Abriss)
+  - [ ] SFX (Loop an/aus, Start/Stop, Bau/Abriss, Distanz-Attenuation)
+  - [ ] Icon (256 px) + Bau-Hologramm/Vorschau
+  - [ ] UI-Panel (Rezeptwahl, Status, Ein-/Ausgabe-Slots)
+  - [ ] Ingame integriert, Rezepte verknüpft, Performance geprüft
+- [ ] **Lager-Silo / Industriespeicher** · `BLD_Silo` · `EA`
+  - [ ] Blockout (Graybox, Footprint im Raster, Ein-/Ausgänge markiert)
+  - [ ] Konzept/Paintover & Silhouette freigegeben
+  - [ ] High-Detail-Mesh LOD0 + LOD1–LOD3 (+ Fern-Imposter)
+  - [ ] Kollision, Snap-Punkte & Port-Sockets (Band/Rohr/Strom)
+  - [ ] Materialien (Master-Material-Instanzen, Farb-/Lackier-Slots)
+  - [ ] Animationen (Idle, Arbeiten, Stillstand/Fehler, Bau-Einblendung)
+  - [ ] VFX (Arbeitsbetrieb, Abgas/Funken, Bau, Abriss)
+  - [ ] SFX (Loop an/aus, Start/Stop, Bau/Abriss, Distanz-Attenuation)
+  - [ ] Icon (256 px) + Bau-Hologramm/Vorschau
+  - [ ] UI-Panel (Rezeptwahl, Status, Ein-/Ausgabe-Slots)
+  - [ ] Ingame integriert, Rezepte verknüpft, Performance geprüft
+
+## Tier 6 – Fortgeschrittene Materialien
+
+_Aluminium, Verbundstoffe, Supraleiter, Forschungspaket VI_
+
+- [ ] **Induktionsofen (Aluminium)** · `BLD_InductionFurnace` · `1.0`
+  - [ ] Blockout (Graybox, Footprint im Raster, Ein-/Ausgänge markiert)
+  - [ ] Konzept/Paintover & Silhouette freigegeben
+  - [ ] High-Detail-Mesh LOD0 + LOD1–LOD3 (+ Fern-Imposter)
+  - [ ] Kollision, Snap-Punkte & Port-Sockets (Band/Rohr/Strom)
+  - [ ] Materialien (Master-Material-Instanzen, Farb-/Lackier-Slots)
+  - [ ] Animationen (Idle, Arbeiten, Stillstand/Fehler, Bau-Einblendung)
+  - [ ] VFX (Arbeitsbetrieb, Abgas/Funken, Bau, Abriss)
+  - [ ] SFX (Loop an/aus, Start/Stop, Bau/Abriss, Distanz-Attenuation)
+  - [ ] Icon (256 px) + Bau-Hologramm/Vorschau
+  - [ ] UI-Panel (Rezeptwahl, Status, Ein-/Ausgabe-Slots)
+  - [ ] Ingame integriert, Rezepte verknüpft, Performance geprüft
+- [ ] **Mischer / Blender** · `BLD_Blender` · `1.0`
+  - [ ] Blockout (Graybox, Footprint im Raster, Ein-/Ausgänge markiert)
+  - [ ] Konzept/Paintover & Silhouette freigegeben
+  - [ ] High-Detail-Mesh LOD0 + LOD1–LOD3 (+ Fern-Imposter)
+  - [ ] Kollision, Snap-Punkte & Port-Sockets (Band/Rohr/Strom)
+  - [ ] Materialien (Master-Material-Instanzen, Farb-/Lackier-Slots)
+  - [ ] Animationen (Idle, Arbeiten, Stillstand/Fehler, Bau-Einblendung)
+  - [ ] VFX (Arbeitsbetrieb, Abgas/Funken, Bau, Abriss)
+  - [ ] SFX (Loop an/aus, Start/Stop, Bau/Abriss, Distanz-Attenuation)
+  - [ ] Icon (256 px) + Bau-Hologramm/Vorschau
+  - [ ] UI-Panel (Rezeptwahl, Status, Ein-/Ausgabe-Slots)
+  - [ ] Ingame integriert, Rezepte verknüpft, Performance geprüft
+- [ ] **Teilchenbeschleuniger** · `BLD_Accelerator` · `1.0`
+  - [ ] Blockout (Graybox, Footprint im Raster, Ein-/Ausgänge markiert)
+  - [ ] Konzept/Paintover & Silhouette freigegeben
+  - [ ] High-Detail-Mesh LOD0 + LOD1–LOD3 (+ Fern-Imposter)
+  - [ ] Kollision, Snap-Punkte & Port-Sockets (Band/Rohr/Strom)
+  - [ ] Materialien (Master-Material-Instanzen, Farb-/Lackier-Slots)
+  - [ ] Animationen (Idle, Arbeiten, Stillstand/Fehler, Bau-Einblendung)
+  - [ ] VFX (Arbeitsbetrieb, Abgas/Funken, Bau, Abriss)
+  - [ ] SFX (Loop an/aus, Start/Stop, Bau/Abriss, Distanz-Attenuation)
+  - [ ] Icon (256 px) + Bau-Hologramm/Vorschau
+  - [ ] UI-Panel (Rezeptwahl, Status, Ein-/Ausgabe-Slots)
+  - [ ] Ingame integriert, Rezepte verknüpft, Performance geprüft
+- [ ] **Kryo-Anlage** · `BLD_Cryo` · `1.0`
+  - [ ] Blockout (Graybox, Footprint im Raster, Ein-/Ausgänge markiert)
+  - [ ] Konzept/Paintover & Silhouette freigegeben
+  - [ ] High-Detail-Mesh LOD0 + LOD1–LOD3 (+ Fern-Imposter)
+  - [ ] Kollision, Snap-Punkte & Port-Sockets (Band/Rohr/Strom)
+  - [ ] Materialien (Master-Material-Instanzen, Farb-/Lackier-Slots)
+  - [ ] Animationen (Idle, Arbeiten, Stillstand/Fehler, Bau-Einblendung)
+  - [ ] VFX (Arbeitsbetrieb, Abgas/Funken, Bau, Abriss)
+  - [ ] SFX (Loop an/aus, Start/Stop, Bau/Abriss, Distanz-Attenuation)
+  - [ ] Icon (256 px) + Bau-Hologramm/Vorschau
+  - [ ] UI-Panel (Rezeptwahl, Status, Ein-/Ausgabe-Slots)
+  - [ ] Ingame integriert, Rezepte verknüpft, Performance geprüft
+- [ ] **Ressourcenbrunnen-Druckkopf** · `BLD_WellPressurizer` · `1.0`
+  - [ ] Blockout (Graybox, Footprint im Raster, Ein-/Ausgänge markiert)
+  - [ ] Konzept/Paintover & Silhouette freigegeben
+  - [ ] High-Detail-Mesh LOD0 + LOD1–LOD3 (+ Fern-Imposter)
+  - [ ] Kollision, Snap-Punkte & Port-Sockets (Band/Rohr/Strom)
+  - [ ] Materialien (Master-Material-Instanzen, Farb-/Lackier-Slots)
+  - [ ] Animationen (Idle, Arbeiten, Stillstand/Fehler, Bau-Einblendung)
+  - [ ] VFX (Arbeitsbetrieb, Abgas/Funken, Bau, Abriss)
+  - [ ] SFX (Loop an/aus, Start/Stop, Bau/Abriss, Distanz-Attenuation)
+  - [ ] Icon (256 px) + Bau-Hologramm/Vorschau
+  - [ ] UI-Panel (Rezeptwahl, Status, Ein-/Ausgabe-Slots)
+  - [ ] Ingame integriert, Rezepte verknüpft, Performance geprüft
+
+## Tier 7 – Hochenergie
+
+_Kernspaltung, Fusion, Forschungspaket VII_
+
+- [ ] **Kernkraftwerk** · `BLD_GenNuclear` · `1.0`
+  - [ ] Blockout (Graybox, Footprint im Raster, Ein-/Ausgänge markiert)
+  - [ ] Konzept/Paintover & Silhouette freigegeben
+  - [ ] High-Detail-Mesh LOD0 + LOD1–LOD3 (+ Fern-Imposter)
+  - [ ] Kollision, Snap-Punkte & Port-Sockets (Band/Rohr/Strom)
+  - [ ] Materialien (Master-Material-Instanzen, Farb-/Lackier-Slots)
+  - [ ] Animationen (Idle, Arbeiten, Stillstand/Fehler, Bau-Einblendung)
+  - [ ] VFX (Arbeitsbetrieb, Abgas/Funken, Bau, Abriss)
+  - [ ] SFX (Loop an/aus, Start/Stop, Bau/Abriss, Distanz-Attenuation)
+  - [ ] Icon (256 px) + Bau-Hologramm/Vorschau
+  - [ ] UI-Panel (Rezeptwahl, Status, Ein-/Ausgabe-Slots)
+  - [ ] Ingame integriert, Rezepte verknüpft, Performance geprüft
+- [ ] **Kühlturm** · `BLD_CoolingTower` · `1.0`
+  - [ ] Blockout (Graybox, Footprint im Raster, Ein-/Ausgänge markiert)
+  - [ ] Konzept/Paintover & Silhouette freigegeben
+  - [ ] High-Detail-Mesh LOD0 + LOD1–LOD3 (+ Fern-Imposter)
+  - [ ] Kollision, Snap-Punkte & Port-Sockets (Band/Rohr/Strom)
+  - [ ] Materialien (Master-Material-Instanzen, Farb-/Lackier-Slots)
+  - [ ] Animationen (Idle, Arbeiten, Stillstand/Fehler, Bau-Einblendung)
+  - [ ] VFX (Arbeitsbetrieb, Abgas/Funken, Bau, Abriss)
+  - [ ] SFX (Loop an/aus, Start/Stop, Bau/Abriss, Distanz-Attenuation)
+  - [ ] Icon (256 px) + Bau-Hologramm/Vorschau
+  - [ ] UI-Panel (Rezeptwahl, Status, Ein-/Ausgabe-Slots)
+  - [ ] Ingame integriert, Rezepte verknüpft, Performance geprüft
+- [ ] **Brennstab-Fabrik** · `BLD_FuelRodPlant` · `1.0`
+  - [ ] Blockout (Graybox, Footprint im Raster, Ein-/Ausgänge markiert)
+  - [ ] Konzept/Paintover & Silhouette freigegeben
+  - [ ] High-Detail-Mesh LOD0 + LOD1–LOD3 (+ Fern-Imposter)
+  - [ ] Kollision, Snap-Punkte & Port-Sockets (Band/Rohr/Strom)
+  - [ ] Materialien (Master-Material-Instanzen, Farb-/Lackier-Slots)
+  - [ ] Animationen (Idle, Arbeiten, Stillstand/Fehler, Bau-Einblendung)
+  - [ ] VFX (Arbeitsbetrieb, Abgas/Funken, Bau, Abriss)
+  - [ ] SFX (Loop an/aus, Start/Stop, Bau/Abriss, Distanz-Attenuation)
+  - [ ] Icon (256 px) + Bau-Hologramm/Vorschau
+  - [ ] UI-Panel (Rezeptwahl, Status, Ein-/Ausgabe-Slots)
+  - [ ] Ingame integriert, Rezepte verknüpft, Performance geprüft
+- [ ] **Atommüll-Endlager** · `BLD_WasteStorage` · `1.0`
+  - [ ] Blockout (Graybox, Footprint im Raster, Ein-/Ausgänge markiert)
+  - [ ] Konzept/Paintover & Silhouette freigegeben
+  - [ ] High-Detail-Mesh LOD0 + LOD1–LOD3 (+ Fern-Imposter)
+  - [ ] Kollision, Snap-Punkte & Port-Sockets (Band/Rohr/Strom)
+  - [ ] Materialien (Master-Material-Instanzen, Farb-/Lackier-Slots)
+  - [ ] Animationen (Idle, Arbeiten, Stillstand/Fehler, Bau-Einblendung)
+  - [ ] VFX (Arbeitsbetrieb, Abgas/Funken, Bau, Abriss)
+  - [ ] SFX (Loop an/aus, Start/Stop, Bau/Abriss, Distanz-Attenuation)
+  - [ ] Icon (256 px) + Bau-Hologramm/Vorschau
+  - [ ] UI-Panel (Rezeptwahl, Status, Ein-/Ausgabe-Slots)
+  - [ ] Ingame integriert, Rezepte verknüpft, Performance geprüft
+- [ ] **Fusionsreaktor** · `BLD_GenFusion` · `1.0`
+  - [ ] Blockout (Graybox, Footprint im Raster, Ein-/Ausgänge markiert)
+  - [ ] Konzept/Paintover & Silhouette freigegeben
+  - [ ] High-Detail-Mesh LOD0 + LOD1–LOD3 (+ Fern-Imposter)
+  - [ ] Kollision, Snap-Punkte & Port-Sockets (Band/Rohr/Strom)
+  - [ ] Materialien (Master-Material-Instanzen, Farb-/Lackier-Slots)
+  - [ ] Animationen (Idle, Arbeiten, Stillstand/Fehler, Bau-Einblendung)
+  - [ ] VFX (Arbeitsbetrieb, Abgas/Funken, Bau, Abriss)
+  - [ ] SFX (Loop an/aus, Start/Stop, Bau/Abriss, Distanz-Attenuation)
+  - [ ] Icon (256 px) + Bau-Hologramm/Vorschau
+  - [ ] UI-Panel (Rezeptwahl, Status, Ein-/Ausgabe-Slots)
+  - [ ] Ingame integriert, Rezepte verknüpft, Performance geprüft
+
+## Tier 8 – Exodus Mars
+
+_Raketenbau, Startkomplex, Spielende_
+
+- [ ] **Raketen-Montagehalle** · `BLD_RocketAssembly` · `1.0`
+  - [ ] Blockout (Graybox, Footprint im Raster, Ein-/Ausgänge markiert)
+  - [ ] Konzept/Paintover & Silhouette freigegeben
+  - [ ] High-Detail-Mesh LOD0 + LOD1–LOD3 (+ Fern-Imposter)
+  - [ ] Kollision, Snap-Punkte & Port-Sockets (Band/Rohr/Strom)
+  - [ ] Materialien (Master-Material-Instanzen, Farb-/Lackier-Slots)
+  - [ ] Animationen (Idle, Arbeiten, Stillstand/Fehler, Bau-Einblendung)
+  - [ ] VFX (Arbeitsbetrieb, Abgas/Funken, Bau, Abriss)
+  - [ ] SFX (Loop an/aus, Start/Stop, Bau/Abriss, Distanz-Attenuation)
+  - [ ] Icon (256 px) + Bau-Hologramm/Vorschau
+  - [ ] UI-Panel (Rezeptwahl, Status, Ein-/Ausgabe-Slots)
+  - [ ] Ingame integriert, Rezepte verknüpft, Performance geprüft
+- [ ] **Startrampe / Silo** · `BLD_LaunchPad` · `1.0`
+  - [ ] Blockout (Graybox, Footprint im Raster, Ein-/Ausgänge markiert)
+  - [ ] Konzept/Paintover & Silhouette freigegeben
+  - [ ] High-Detail-Mesh LOD0 + LOD1–LOD3 (+ Fern-Imposter)
+  - [ ] Kollision, Snap-Punkte & Port-Sockets (Band/Rohr/Strom)
+  - [ ] Materialien (Master-Material-Instanzen, Farb-/Lackier-Slots)
+  - [ ] Animationen (Idle, Arbeiten, Stillstand/Fehler, Bau-Einblendung)
+  - [ ] VFX (Arbeitsbetrieb, Abgas/Funken, Bau, Abriss)
+  - [ ] SFX (Loop an/aus, Start/Stop, Bau/Abriss, Distanz-Attenuation)
+  - [ ] Icon (256 px) + Bau-Hologramm/Vorschau
+  - [ ] UI-Panel (Rezeptwahl, Status, Ein-/Ausgabe-Slots)
+  - [ ] Ingame integriert, Rezepte verknüpft, Performance geprüft
+- [ ] **Missionskontrolle (Endgame-Ziele)** · `BLD_MissionControl` · `1.0`
+  - [ ] Blockout (Graybox, Footprint im Raster, Ein-/Ausgänge markiert)
+  - [ ] Konzept/Paintover & Silhouette freigegeben
+  - [ ] High-Detail-Mesh LOD0 + LOD1–LOD3 (+ Fern-Imposter)
+  - [ ] Kollision, Snap-Punkte & Port-Sockets (Band/Rohr/Strom)
+  - [ ] Materialien (Master-Material-Instanzen, Farb-/Lackier-Slots)
+  - [ ] Animationen (Idle, Arbeiten, Stillstand/Fehler, Bau-Einblendung)
+  - [ ] VFX (Arbeitsbetrieb, Abgas/Funken, Bau, Abriss)
+  - [ ] SFX (Loop an/aus, Start/Stop, Bau/Abriss, Distanz-Attenuation)
+  - [ ] Icon (256 px) + Bau-Hologramm/Vorschau
+  - [ ] UI-Panel (Rezeptwahl, Status, Ein-/Ausgabe-Slots)
+  - [ ] Ingame integriert, Rezepte verknüpft, Performance geprüft
+- [ ] **Treibstoff-Kryotank** · `BLD_CryoTank` · `1.0`
+  - [ ] Blockout (Graybox, Footprint im Raster, Ein-/Ausgänge markiert)
+  - [ ] Konzept/Paintover & Silhouette freigegeben
+  - [ ] High-Detail-Mesh LOD0 + LOD1–LOD3 (+ Fern-Imposter)
+  - [ ] Kollision, Snap-Punkte & Port-Sockets (Band/Rohr/Strom)
+  - [ ] Materialien (Master-Material-Instanzen, Farb-/Lackier-Slots)
+  - [ ] Animationen (Idle, Arbeiten, Stillstand/Fehler, Bau-Einblendung)
+  - [ ] VFX (Arbeitsbetrieb, Abgas/Funken, Bau, Abriss)
+  - [ ] SFX (Loop an/aus, Start/Stop, Bau/Abriss, Distanz-Attenuation)
+  - [ ] Icon (256 px) + Bau-Hologramm/Vorschau
+  - [ ] UI-Panel (Rezeptwahl, Status, Ein-/Ausgabe-Slots)
+  - [ ] Ingame integriert, Rezepte verknüpft, Performance geprüft
+
+## Gebäude-übergreifend
+
+- [ ] **Bau-Shader (Einblenden/Materialisieren)** · `MAT_BuildDissolve` · `VS`
+- [ ] **Abriss-Shader + Teile-Effekt** · `MAT_Deconstruct` · `VS`
+- [ ] **Hologramm-Material gültig/ungültig** · `MAT_Hologram` · `PT`
+- [ ] **Lackier-System (Farbslots, Muster)** · `SYS_Paint` · `EA`
+- [ ] **Status-Leuchten (an/aus/Fehler/kein Strom) als Modul** · `MESH_StatusLight` · `VS`
+- [ ] **Maschinen-Fundament-Sockel & Wartungsklappen-Kit** · `KIT_MachineDetail` · `EA`
+- [ ] **Overclock-/Modul-Steckplatz-Visuals** · `MESH_ModuleSlot` · `EA`

@@ -1,0 +1,23 @@
+name: Checkliste – Fortschritt aktualisieren
+on:
+  push:
+    paths: ["Docs/Checkliste/checklisten/**"]
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  progress:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          lfs: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: python Docs/Checkliste/tools/progress.py
+      - name: Commit
+        run: |
+          git config user.name "progress-bot"
+          git config user.email "actions@github.com"
+          git diff --quiet Docs/Checkliste/README.md || (git commit -am "Checkliste: Fortschritt aktualisiert" && git push)
