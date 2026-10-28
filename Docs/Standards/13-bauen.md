@@ -4,7 +4,7 @@ Gehört zu `SYS_Build` (Bausystem), `EQP_BuildGun` und später `UI_BuildMenu`. R
 
 Das Bausystem kommt in drei Schritten:
 
-1. **Gebäude platzieren** (Hologramm, Drehen, Kosten, Abriss, Speichern) ✅
+1. **Gebäude platzieren** (Hologramm, Drehen, Kosten, Abriss, Speichern) ✅ im Spiel getestet
 2. **Bänder bauen** (zwischen Ports ziehen, Modi, Bandstützen)
 3. **Baumenü** (`UI_BuildMenu`, Kategorien & Suche)
 

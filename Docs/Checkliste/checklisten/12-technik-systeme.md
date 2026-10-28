@@ -8,7 +8,7 @@ Legende: `PT` Prototyp · `VS` Vertical Slice · `EA` Early Access · `1.0` Rele
 
 - [x] **Deterministische Simulation getrennt vom Rendering (Tick-basiert)** · `SYS_Sim` · `PT` · [Doku](../../Standards/12-simulation.md) — _20 Ticks/s, Produktions-Komponente, Graybox-Maschine + Cheats, im Spiel getestet. Maschinen werden noch nicht gespeichert (kommt mit dem Bausystem)_
 - [x] **Segment-basierte Band-Simulation (nicht pro Item)** · `SYS_BeltSim` · `PT` · [Doku](../../Standards/12-simulation.md#förderbänder-sys_beltsim) — _Lücken-Verfahren, Mk1–Mk5 (60–960/min), Graybox-Band + Cheats, Durchsatz nachgerechnet, im Spiel getestet. Zusammenlegen von Bandketten + Speichern kommen mit dem Bausystem_
-- [ ] **Bausystem (Platzieren, Abriss, Bänder ziehen)** · `SYS_Build` · `PT` · [Doku](../../Standards/13-bauen.md) — _Schritt 1 (Gebäude-Tabelle, Hologramm, Raster, Drehen, Kosten, Abriss mit Kiste, Speichern) gebaut, Test im Spiel offen; Schritt 2 Bänder ziehen, Schritt 3 Baumenü_
+- [ ] **Bausystem (Platzieren, Abriss, Bänder ziehen)** · `SYS_Build` · `PT` · [Doku](../../Standards/13-bauen.md) — _Schritt 1 (Gebäude-Tabelle, Hologramm, Raster, Drehen, Kosten, Abriss mit Kiste, Speichern) im Spiel getestet; offen: Schritt 2 Bänder ziehen, Schritt 3 Baumenü_
 - [ ] **Rezept-/Item-Datenbank aus DataTables** · `SYS_Recipes` · `PT` · [Doku](../../Standards/11-rezepte.md) — _Items (CSV → DataTable) und Rezepte Tier 0–2 (25, mit Prüfung beim Laden) stehen. Rezeptwerte = Entwurf, Freigabe offen; Tier 3–8 fehlen_
 - [ ] **Strom-Netz-Berechnung** · `SYS_Power` · `VS`
 - [ ] **Fluid-Simulation (vereinfacht)** · `SYS_Fluids` · `EA`
