@@ -6,7 +6,7 @@
 namespace
 {
 	// unbenutzte Spalten (keine ID oder Menge 0) werden übersprungen
-	void AddColumn(TArray<FFactoryItemStack>& Stacks, FName ItemId, int32 Amount)
+	void AddCostColumn(TArray<FFactoryItemStack>& Stacks, FName ItemId, int32 Amount)
 	{
 		if (!ItemId.IsNone() && Amount > 0)
 		{
@@ -32,10 +32,10 @@ namespace
 TArray<FFactoryItemStack> FFactoryBuildingDefinition::GetCosts() const
 {
 	TArray<FFactoryItemStack> Costs;
-	AddColumn(Costs, Cost1, Cost1Amount);
-	AddColumn(Costs, Cost2, Cost2Amount);
-	AddColumn(Costs, Cost3, Cost3Amount);
-	AddColumn(Costs, Cost4, Cost4Amount);
+	AddCostColumn(Costs, Cost1, Cost1Amount);
+	AddCostColumn(Costs, Cost2, Cost2Amount);
+	AddCostColumn(Costs, Cost3, Cost3Amount);
+	AddCostColumn(Costs, Cost4, Cost4Amount);
 	return Costs;
 }
 
