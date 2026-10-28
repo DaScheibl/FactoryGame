@@ -4,6 +4,7 @@
 #include "FactoryBuildingTypes.h"
 #include "FactoryBeltPath.h"
 #include "FactoryBelt.h"
+#include "FactoryMachine.h"
 #include "Components/StaticMeshComponent.h"
 #include "Components/SplineComponent.h"
 #include "Components/SplineMeshComponent.h"
@@ -57,12 +58,7 @@ void AFactoryHologram::HideAll()
 
 	Mesh->SetVisibility(false);
 
-	for (UStaticMeshComponent* Marker : PortMarkers)
-	{
-		Marker->DestroyComponent();
-	}
-
-	PortMarkers.Reset();
+	AFactoryMachine::CreatePortVisuals(this, Root, {}, CubeMesh, BaseMaterial, PortMarkers);
 
 	for (UStaticMeshComponent* Part : PoleMeshes)
 	{
@@ -85,21 +81,8 @@ void AFactoryHologram::SetBuilding(const FFactoryBuildingDefinition& Building)
 	Mesh->SetRelativeScale3D(Size / 100.0);
 	Mesh->SetRelativeLocation(FVector(0.0, 0.0, Size.Z * 0.5));
 
-	// gleiche Platten wie an der fertigen Maschine (AFactoryMachine::CreatePortMarkers)
-	for (const FFactoryPort& Port : Building.GetPorts())
-	{
-		UStaticMeshComponent* Marker = CreatePart();
-		Marker->SetRelativeScale3D(FVector(0.3, 0.8, 0.1));
-		Marker->SetRelativeLocation(Port.Location + Port.Direction * (Port.bInput ? -15.0 : 15.0) - FVector(0.0, 0.0, 5.0));
-
-		if (UMaterialInstanceDynamic* MarkerMaterial = UMaterialInstanceDynamic::Create(BaseMaterial, Marker))
-		{
-			MarkerMaterial->SetVectorParameterValue(TEXT("Color"), Port.bInput ? FLinearColor(0.05f, 0.25f, 0.8f) : FLinearColor(0.9f, 0.4f, 0.05f));
-			Marker->SetMaterial(0, MarkerMaterial);
-		}
-
-		PortMarkers.Add(Marker);
-	}
+	// gleiche Anschlusskästen und Pfeile wie an der fertigen Maschine, damit man beim Drehen sieht, wo Bänder andocken
+	AFactoryMachine::CreatePortVisuals(this, Root, Building.GetPorts(), CubeMesh, BaseMaterial, PortMarkers);
 }
 
 void AFactoryHologram::SetPole(int32 Height)

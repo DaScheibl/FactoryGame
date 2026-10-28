@@ -113,33 +113,60 @@ void AFactoryMachine::InitBuilding(FName BuildingId)
 
 void AFactoryMachine::CreatePortMarkers()
 {
-	for (UStaticMeshComponent* Marker : PortMarkers)
+	CreatePortVisuals(this, Root, Ports, Mesh->GetStaticMesh(), Mesh->GetMaterial(0)->GetBaseMaterial(), PortMarkers);
+}
+
+void AFactoryMachine::CreatePortVisuals(AActor* Owner, USceneComponent* Parent, const TArray<FFactoryPort>& InPorts, UStaticMesh* Cube,
+	UMaterialInterface* BaseMaterial, TArray<TObjectPtr<UStaticMeshComponent>>& InOutParts)
+{
+	for (UStaticMeshComponent* Part : InOutParts)
 	{
-		Marker->DestroyComponent();
+		Part->DestroyComponent();
 	}
 
-	PortMarkers.Reset();
+	InOutParts.Reset();
 
-	// Graybox: eine Platte in Bandbreite (0,8 m), die 0,3 m aus der Kante ragt, Oberkante auf Port-Höhe
-	for (const FFactoryPort& Port : Ports)
+	// ein Teil aus dem Engine-Würfel (1 m, mittig): Position und Größe in cm relativ zum Port, X = Fluss-Richtung
+	auto AddPart = [&](const FFactoryPort& Port, const FVector& Offset, const FVector& SizeCm, double Yaw, const FLinearColor& Color)
 	{
-		UStaticMeshComponent* Marker = NewObject<UStaticMeshComponent>(this);
-		Marker->SetStaticMesh(Mesh->GetStaticMesh());
-		Marker->SetMaterial(0, Mesh->GetMaterial(0));
-		Marker->SetCollisionEnabled(ECollisionEnabled::NoCollision);
-		Marker->SetupAttachment(Root);
-		Marker->SetRelativeScale3D(FVector(0.3, 0.8, 0.1));
-		Marker->SetRelativeLocation(Port.Location + Port.Direction * (Port.bInput ? -15.0 : 15.0) - FVector(0.0, 0.0, 5.0));
-		Marker->RegisterComponent();
-		AddInstanceComponent(Marker);
+		const FQuat PortRotation = Port.Direction.ToOrientationQuat();
+		const FQuat PartRotation = PortRotation * FQuat(FVector::UpVector, FMath::DegreesToRadians(Yaw));
 
-		// blau = Eingang, orange = Ausgang
-		if (UMaterialInstanceDynamic* MarkerMaterial = Marker->CreateAndSetMaterialInstanceDynamic(0))
+		UStaticMeshComponent* Part = NewObject<UStaticMeshComponent>(Owner);
+		Part->SetStaticMesh(Cube);
+		Part->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+		Part->SetCastShadow(false);
+		Part->SetupAttachment(Parent);
+		Part->SetRelativeTransform(FTransform(PartRotation, Port.Location + PortRotation.RotateVector(Offset), SizeCm / 100.0));
+		Part->RegisterComponent();
+		Owner->AddInstanceComponent(Part);
+
+		if (UMaterialInstanceDynamic* Material = UMaterialInstanceDynamic::Create(BaseMaterial, Part))
 		{
-			MarkerMaterial->SetVectorParameterValue(TEXT("Color"), Port.bInput ? FLinearColor(0.05f, 0.25f, 0.8f) : FLinearColor(0.9f, 0.4f, 0.05f));
+			Material->SetVectorParameterValue(TEXT("Color"), Color);
+			Part->SetMaterial(0, Material);
 		}
 
-		PortMarkers.Add(Marker);
+		InOutParts.Add(Part);
+	};
+
+	// Graybox nach Satisfactory-Vorbild: schwarzer Anschlusskasten in der Wand (ragt 5 cm heraus, 1,1 m breit,
+	// 0,3-1,5 m hoch; das Band dockt auf 1 m an), darüber ein flacher Pfeil in Fluss-Richtung,
+	// der 0,6 m aus der Wand ragt. Blau = Eingang, orange = Ausgang
+	const FLinearColor BoxColor(0.015f, 0.015f, 0.018f);
+
+	for (const FFactoryPort& Port : InPorts)
+	{
+		// Eingänge liegen hinten: die Wand ist dort vor dem Port (+X), Ausgänge vorn: die Wand ist hinter dem Port (-X)
+		const double Wall = Port.bInput ? 1.0 : -1.0;
+		const double Outside = -Wall;
+		const FLinearColor ArrowColor = Port.bInput ? FLinearColor(0.05f, 0.25f, 0.8f) : FLinearColor(0.9f, 0.4f, 0.05f);
+
+		AddPart(Port, FVector(Wall * 10.0, 0.0, -10.0), FVector(30.0, 110.0, 120.0), 0.0, BoxColor);
+
+		// Pfeil: Schaft + auf die Spitze gedrehtes Quadrat, zeigt immer in Fluss-Richtung (+X)
+		AddPart(Port, FVector(Outside * 30.0, 0.0, 62.0), FVector(40.0, 10.0, 4.0), 0.0, ArrowColor);
+		AddPart(Port, FVector(Outside * 30.0 + 22.0, 0.0, 62.0), FVector(25.0, 25.0, 4.0), 45.0, ArrowColor);
 	}
 }
 

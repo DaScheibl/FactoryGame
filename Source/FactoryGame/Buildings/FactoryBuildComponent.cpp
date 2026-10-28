@@ -551,7 +551,7 @@ AFactoryBeltPole* UFactoryBuildComponent::SpawnPole(const FVector& Foot, int32 H
 	return Pole;
 }
 
-bool UFactoryBuildComponent::FindBeltEnd(bool bStart, FFactoryBeltEnd& OutEnd, FText& OutError) const
+bool UFactoryBuildComponent::FindBeltEnd(EFactoryBeltEndWant Want, FFactoryBeltEnd& OutEnd, FText& OutError) const
 {
 	OutEnd = FFactoryBeltEnd();
 	FHitResult Hit;
@@ -562,53 +562,117 @@ bool UFactoryBuildComponent::FindBeltEnd(bool bStart, FFactoryBeltEnd& OutEnd, F
 		return false;
 	}
 
-	// Start braucht einen freien Ausgang, Ende einen freien Eingang
-	auto UseMachinePort = [&OutEnd](AFactoryMachine* Machine, int32 PortIndex)
+	// Maschine: nächster freier Ausgang bzw. Eingang; bei "egal" gewinnt der nähere
+	auto TryMachine = [&OutEnd, Want](AFactoryMachine* Machine, const FVector& Near, double MaxDistance)
 	{
-		const FFactoryPort Port = Machine->GetWorldPorts()[PortIndex];
+		const int32 Output = Want != EFactoryBeltEndWant::Input ? Machine->FindFreePort(false, Near, MaxDistance) : INDEX_NONE;
+		const int32 Input = Want != EFactoryBeltEndWant::Output ? Machine->FindFreePort(true, Near, MaxDistance) : INDEX_NONE;
+		const TArray<FFactoryPort> Ports = Machine->GetWorldPorts();
+
+		int32 PortIndex = Output;
+
+		if (Input != INDEX_NONE && (Output == INDEX_NONE || FVector::Dist(Ports[Input].Location, Near) < FVector::Dist(Ports[Output].Location, Near)))
+		{
+			PortIndex = Input;
+		}
+
+		if (PortIndex == INDEX_NONE)
+		{
+			return false;
+		}
+
 		OutEnd.Machine = Machine;
 		OutEnd.Port = PortIndex;
-		OutEnd.Location = Port.Location;
-		OutEnd.Direction = Port.Direction;
+		OutEnd.Location = Ports[PortIndex].Location;
+		OutEnd.Direction = Ports[PortIndex].Direction;
+		OutEnd.bBeltEndsHere = Ports[PortIndex].bInput;
+		return true;
 	};
 
-	auto UsePole = [&OutEnd](AFactoryBeltPole* Pole)
+	// Stütze: hat einen Eingang (Band endet hier) und einen Ausgang (Band beginnt hier)
+	auto TryPole = [&OutEnd, Want](AFactoryBeltPole* Pole)
 	{
+		const bool bOutputFree = !Pole->GetOutputBelt();
+		const bool bInputFree = !Pole->GetInputBelt();
+		bool bEndsHere = false;
+
+		switch (Want)
+		{
+		case EFactoryBeltEndWant::Output:	if (!bOutputFree) { return false; } break;
+		case EFactoryBeltEndWant::Input:	if (!bInputFree) { return false; } bEndsHere = true; break;
+
+		default:
+			// frei lassen, was schon belegt ist: hängt schon ein ankommendes Band dran, geht es weiter (Ausgang)
+			if (!bOutputFree && !bInputFree)
+			{
+				return false;
+			}
+
+			bEndsHere = !bOutputFree;
+			break;
+		}
+
 		OutEnd.Pole = Pole;
 		OutEnd.Location = Pole->GetConnectionLocation();
 		// ist schon ein Band angeschlossen, ist die Fluss-Richtung der Stütze festgelegt
 		OutEnd.Direction = Pole->HasAnyBelt() ? Pole->GetActorForwardVector() : FVector::ZeroVector;
+		OutEnd.bBeltEndsHere = bEndsHere;
+		return true;
 	};
 
-	auto PoleIsFree = [bStart](const AFactoryBeltPole* Pole)
-	{
-		return bStart ? !Pole->GetOutputBelt() : !Pole->GetInputBelt();
-	};
-
+	// direkt auf eine Maschine gezielt: irgendein passender freier Port, egal wie weit
 	if (AFactoryMachine* Machine = Cast<AFactoryMachine>(Hit.GetActor()))
 	{
-		const int32 PortIndex = Machine->FindFreePort(!bStart, Hit.ImpactPoint, 300.0);
-
-		if (PortIndex == INDEX_NONE)
+		if (TryMachine(Machine, Hit.ImpactPoint, UE_BIG_NUMBER))
 		{
-			OutError = FactoryLoc::Get(TEXT("Build_Error_NoPort"));
-			return false;
+			return true;
 		}
 
-		UseMachinePort(Machine, PortIndex);
-		return true;
+		OutError = FactoryLoc::Get(TEXT("Build_Error_NoPort"));
+		return false;
 	}
 
-	if (AFactoryBeltPole* Pole = Cast<AFactoryBeltPole>(Hit.GetActor()))
+	// Stützen in der Nähe haben Vorrang, auch wenn ein angeschlossenes Band vor ihnen getroffen wurde
+	AFactoryBeltPole* NearestPole = Cast<AFactoryBeltPole>(Hit.GetActor());
+	double NearestPoleDistance = SnapDistance;
+
+	if (!NearestPole)
 	{
-		if (!PoleIsFree(Pole))
+		for (TActorIterator<AFactoryBeltPole> It(GetWorld()); It; ++It)
 		{
-			OutError = FactoryLoc::Get(TEXT("Build_Error_NoPort"));
-			return false;
+			const double Distance = FMath::Min(FVector::Dist(It->GetConnectionLocation(), Hit.ImpactPoint), FVector::Dist2D(It->GetActorLocation(), Hit.ImpactPoint));
+
+			if (Distance < NearestPoleDistance)
+			{
+				NearestPoleDistance = Distance;
+				NearestPole = *It;
+			}
+		}
+	}
+
+	if (NearestPole)
+	{
+		if (TryPole(NearestPole))
+		{
+			return true;
 		}
 
-		UsePole(Pole);
-		return true;
+		OutError = FactoryLoc::Get(TEXT("Build_Error_NoPort"));
+		return false;
+	}
+
+	// freie Ports in der Nähe (Boden davor oder Bandende davor getroffen)
+	for (TActorIterator<AFactoryMachine> It(GetWorld()); It; ++It)
+	{
+		if (FVector::DistSquared2D(It->GetActorLocation(), Hit.ImpactPoint) < FMath::Square(2000.0))
+		{
+			const FVector Near = IsFactoryActor(Hit.GetActor()) ? Hit.ImpactPoint : Hit.ImpactPoint + FVector(0.0, 0.0, 100.0);
+
+			if (TryMachine(*It, Near, SnapDistance))
+			{
+				return true;
+			}
+		}
 	}
 
 	if (IsFactoryActor(Hit.GetActor()))
@@ -617,32 +681,9 @@ bool UFactoryBuildComponent::FindBeltEnd(bool bStart, FFactoryBeltEnd& OutEnd, F
 		return false;
 	}
 
-	// Boden: in der Nähe eines freien Ports oder einer Stütze dort einrasten
-	for (TActorIterator<AFactoryMachine> It(GetWorld()); It; ++It)
-	{
-		if (FVector::DistSquared2D(It->GetActorLocation(), Hit.ImpactPoint) < FMath::Square(2000.0))
-		{
-			const int32 PortIndex = It->FindFreePort(!bStart, Hit.ImpactPoint + FVector(0.0, 0.0, 100.0), SnapDistance);
-
-			if (PortIndex != INDEX_NONE)
-			{
-				UseMachinePort(*It, PortIndex);
-				return true;
-			}
-		}
-	}
-
-	for (TActorIterator<AFactoryBeltPole> It(GetWorld()); It; ++It)
-	{
-		if (PoleIsFree(*It) && FVector::Dist2D(It->GetActorLocation(), Hit.ImpactPoint) < SnapDistance * 0.67)
-		{
-			UsePole(*It);
-			return true;
-		}
-	}
-
 	// sonst entsteht hier eine neue Stütze (1-m-Raster, Höhe per Mausrad)
 	OutEnd.bNewPole = true;
+	OutEnd.bBeltEndsHere = Want == EFactoryBeltEndWant::Input;
 	OutEnd.PoleFoot = FVector(FMath::GridSnap(Hit.ImpactPoint.X, 100.0), FMath::GridSnap(Hit.ImpactPoint.Y, 100.0), Hit.ImpactPoint.Z);
 	OutEnd.PoleHeight = PoleHeight;
 	OutEnd.Location = OutEnd.PoleFoot + FVector(0.0, 0.0, PoleHeight * 100.0);
@@ -698,10 +739,10 @@ void UFactoryBuildComponent::UpdateBelt()
 
 	if (!bHasBeltStart)
 	{
-		// 1. Schritt: Start suchen
+		// 1. Schritt: Start suchen. Ein Eingang geht auch, dann wird das Band rückwärts gezogen
 		FFactoryBeltEnd Start;
 
-		if (FindBeltEnd(true, Start, Error))
+		if (FindBeltEnd(EFactoryBeltEndWant::Either, Start, Error))
 		{
 			AddNewPole(Start, Start.Direction.IsZero() ? FVector::ForwardVector : Start.Direction);
 		}
@@ -714,24 +755,28 @@ void UFactoryBuildComponent::UpdateBelt()
 		return;
 	}
 
-	// 2. Schritt: Ende suchen und die Kurve berechnen
-	const bool bFoundEnd = FindBeltEnd(false, BeltEnd, Error);
+	// 2. Schritt: das andere Ende suchen. Begann es an einem Eingang, braucht das andere Ende einen Ausgang
+	const bool bReversed = BeltStart.bBeltEndsHere;
+	const bool bFoundEnd = FindBeltEnd(bReversed ? EFactoryBeltEndWant::Output : EFactoryBeltEndWant::Input, BeltEnd, Error);
 
 	if (bFoundEnd && BeltEnd.IsSameAs(BeltStart))
 	{
 		Error = FactoryLoc::Get(TEXT("Build_Error_TooShort"));
 	}
 
+	// gebaut wird immer in Fluss-Richtung: vom Ausgang (From) zum Eingang (To)
+	const FFactoryBeltEnd& From = bReversed ? BeltEnd : BeltStart;
+	const FFactoryBeltEnd& To = bReversed ? BeltStart : BeltEnd;
 	EFactoryBeltPathProblem Problem = EFactoryBeltPathProblem::None;
 
 	if (Error.IsEmpty())
 	{
-		Problem = FactoryBeltPath::Build(BeltMode, BeltStart.Location, BeltStart.Direction, BeltEnd.Location, BeltEnd.Direction, BeltPath);
+		Problem = FactoryBeltPath::Build(BeltMode, From.Location, From.Direction, To.Location, To.Direction, BeltPath);
 		Error = GetPathProblemText(Problem);
 
 		AddStacks(Costs, AFactoryBelt::GetBuildCostsForLength(this, BeltPath.Length, 1));
-		AddNewPole(BeltStart, BeltPath.StartDirection);
-		AddNewPole(BeltEnd, BeltPath.EndDirection);
+		AddNewPole(From, BeltPath.StartDirection);
+		AddNewPole(To, BeltPath.EndDirection);
 	}
 
 	const bool bEnoughMaterial = CheckCosts(Costs, CostLines);
@@ -752,12 +797,12 @@ void UFactoryBuildComponent::UpdateBelt()
 
 bool UFactoryBuildComponent::PlaceBelt()
 {
-	// 1. Klick: Start merken (gebaut wird erst mit dem Ende)
+	// 1. Klick: Start merken (gebaut wird erst mit dem zweiten)
 	if (!bHasBeltStart)
 	{
 		FText Error;
 
-		if (FindBeltEnd(true, BeltStart, Error))
+		if (FindBeltEnd(EFactoryBeltEndWant::Either, BeltStart, Error))
 		{
 			bHasBeltStart = true;
 		}
@@ -775,33 +820,37 @@ bool UFactoryBuildComponent::PlaceBelt()
 	const UFactoryBuildingDatabase* Buildings = UFactoryBuildingDatabase::Get(this);
 	const FFactoryBuildingDefinition* PoleBuilding = Buildings ? Buildings->FindBuilding(PoleId) : nullptr;
 
+	const bool bReversed = BeltStart.bBeltEndsHere;
+	const FFactoryBeltEnd From = bReversed ? BeltEnd : BeltStart;
+	const FFactoryBeltEnd To = bReversed ? BeltStart : BeltEnd;
+
 	TArray<FFactoryItemStack> Costs = AFactoryBelt::GetBuildCostsForLength(this, BeltPath.Length, 1);
 
 	// neue Stützen an den Enden mitbauen, ausgerichtet in Fluss-Richtung
-	AFactoryBeltPole* StartPole = BeltStart.Pole.Get();
-	AFactoryBeltPole* EndPole = BeltEnd.Pole.Get();
+	AFactoryBeltPole* FromPole = From.Pole.Get();
+	AFactoryBeltPole* ToPole = To.Pole.Get();
 
-	if (BeltStart.bNewPole)
+	if (From.bNewPole)
 	{
-		StartPole = SpawnPole(BeltStart.PoleFoot, BeltStart.PoleHeight, BeltPath.StartDirection);
+		FromPole = SpawnPole(From.PoleFoot, From.PoleHeight, BeltPath.StartDirection);
 		AddStacks(Costs, PoleBuilding ? PoleBuilding->GetCosts() : TArray<FFactoryItemStack>());
 	}
 
-	if (BeltEnd.bNewPole)
+	if (To.bNewPole)
 	{
-		EndPole = SpawnPole(BeltEnd.PoleFoot, BeltEnd.PoleHeight, BeltPath.EndDirection);
+		ToPole = SpawnPole(To.PoleFoot, To.PoleHeight, BeltPath.EndDirection);
 		AddStacks(Costs, PoleBuilding ? PoleBuilding->GetCosts() : TArray<FFactoryItemStack>());
 	}
 
 	// eine bisher freie Stütze übernimmt die Richtung des ersten Bandes
-	if (StartPole && !StartPole->HasAnyBelt())
+	if (FromPole && !FromPole->HasAnyBelt())
 	{
-		StartPole->SetActorRotation(FRotator(0.0, BeltPath.StartDirection.Rotation().Yaw, 0.0));
+		FromPole->SetActorRotation(FRotator(0.0, BeltPath.StartDirection.Rotation().Yaw, 0.0));
 	}
 
-	if (EndPole && !EndPole->HasAnyBelt())
+	if (ToPole && !ToPole->HasAnyBelt())
 	{
-		EndPole->SetActorRotation(FRotator(0.0, BeltPath.EndDirection.Rotation().Yaw, 0.0));
+		ToPole->SetActorRotation(FRotator(0.0, BeltPath.EndDirection.Rotation().Yaw, 0.0));
 	}
 
 	PayCosts(Costs);
@@ -813,38 +862,40 @@ bool UFactoryBuildComponent::PlaceBelt()
 		return false;
 	}
 
-	if (BeltStart.Machine.IsValid())
+	if (From.Machine.IsValid())
 	{
-		NewBelt->ConnectStartToMachine(BeltStart.Machine.Get(), BeltStart.Port);
+		NewBelt->ConnectStartToMachine(From.Machine.Get(), From.Port);
 	}
 	else
 	{
-		NewBelt->ConnectStartToPole(StartPole);
+		NewBelt->ConnectStartToPole(FromPole);
 	}
 
-	if (BeltEnd.Machine.IsValid())
+	if (To.Machine.IsValid())
 	{
-		NewBelt->ConnectEndToMachine(BeltEnd.Machine.Get(), BeltEnd.Port);
+		NewBelt->ConnectEndToMachine(To.Machine.Get(), To.Port);
+	}
+	else
+	{
+		NewBelt->ConnectEndToPole(ToPole);
+	}
 
-		// an einer Maschine ist die Kette zu Ende, der nächste Klick wählt einen neuen Start
+	// Kette: am zweiten Klick geht es weiter, wenn dort eine Stütze mit freier Seite steht
+	// (vorwärts: ihr Ausgang, rückwärts: ihr Eingang). An einer Maschine ist die Kette zu Ende
+	AFactoryBeltPole* ChainPole = bReversed ? FromPole : ToPole;
+	const bool bChainSideFree = ChainPole && (bReversed ? !ChainPole->GetInputBelt() : !ChainPole->GetOutputBelt());
+
+	if (!bChainSideFree)
+	{
 		bHasBeltStart = false;
 		return true;
 	}
 
-	NewBelt->ConnectEndToPole(EndPole);
-
-	// an eine bestehende Bandkette angeschlossen: auch hier ist die Kette zu Ende
-	if (!EndPole || EndPole->GetOutputBelt())
-	{
-		bHasBeltStart = false;
-		return true;
-	}
-
-	// Kette: das nächste Band beginnt an der Stütze, an der dieses endet
 	BeltStart = FFactoryBeltEnd();
-	BeltStart.Pole = EndPole;
-	BeltStart.Location = EndPole ? EndPole->GetConnectionLocation() : BeltEnd.Location;
-	BeltStart.Direction = BeltPath.EndDirection;
+	BeltStart.Pole = ChainPole;
+	BeltStart.Location = ChainPole->GetConnectionLocation();
+	BeltStart.Direction = bReversed ? BeltPath.StartDirection : BeltPath.EndDirection;
+	BeltStart.bBeltEndsHere = bReversed;
 	return true;
 }
 

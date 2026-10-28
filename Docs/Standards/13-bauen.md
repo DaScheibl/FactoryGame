@@ -34,13 +34,17 @@ Das Bausystem kommt in drei Schritten:
 
 ### Bänder ziehen – so funktioniert's
 
-1. Förderband auf der Hotbar wählen. **1. Klick** auf einen **Ausgang** (orange), eine **Stütze** oder den **Boden**. Auf dem Boden entsteht beim Bauen eine neue Stütze (Höhe per Mausrad). In der Nähe (1,5 m) rastet es an freie Ports und Stützen ein.
-2. **2. Klick** auf einen **Eingang** (blau), eine Stütze oder den Boden. Das Hologramm zeigt die Kurve und die neuen Stützen, darunter Kosten (Band + Stützen) und ggf. den Grund, warum es nicht geht.
-3. Endet das Band an einer Stütze, beginnt das nächste dort (**Kette**). Rechtsklick verwirft den Start, ein zweiter Rechtsklick verlässt den Bau-Modus.
+1. Förderband auf der Hotbar wählen. **1. Klick** auf einen **Port** (Ausgang oder Eingang), eine **Stütze** oder den **Boden**. Beginnt man an einem Eingang, wird das Band rückwärts gezogen (das andere Ende braucht dann einen Ausgang). Auf dem Boden entsteht beim Bauen eine neue Stütze (Höhe per Mausrad). In der Nähe (1,5 m) rastet es an freie Ports und Stützen ein.
+2. **2. Klick** auf das andere Ende: Eingang bzw. Ausgang, eine Stütze oder den Boden. Zielt man direkt auf eine Maschine, nimmt das Werkzeug den nächsten passenden freien Port. Das Hologramm zeigt die Kurve und die neuen Stützen, darunter Kosten (Band + Stützen) und ggf. den Grund, warum es nicht geht.
+3. Endet das Band an einer Stütze, beginnt das nächste dort (**Kette**, rückwärts entsprechend). Rechtsklick verwirft den Start, ein zweiter Rechtsklick verlässt den Bau-Modus.
 
 - **Richtungen:** Ports und Stützen mit Band haben eine feste Fluss-Richtung, das Band startet bzw. kommt in dieser Richtung an. Freie Enden wählt der Modus.
 - **Modi:** *Standard* = weiche Kurve. *Gerade* = gerade Stücke mit 90°-Ecken (L- oder S-Form). *Kurve* = gleichmäßiger Kreisbogen, an festen Enden Bogen + Gerade. Passt ein Modus nicht, steht „Passt in diesem Modus nicht“ da.
-- **Stützen verbinden Bänder:** Ein Band, das an einer Stütze ankommt, gibt seine Items an das Band weiter, das dort beginnt.
+- **Stützen verbinden Bänder:** Jede Stütze hat einen Eingang und einen Ausgang. Ein Band, das an einer Stütze ankommt, gibt seine Items an das Band weiter, das dort beginnt. Stützen und Ports in der Nähe des Fadenkreuzes haben Vorrang, auch wenn ein angeschlossenes Band davor liegt.
+
+### Ports an Maschinen
+
+> ✏️ **Entwurf, von dir freizugeben** (auf deinen Vorschlag): Jeder Port ist ein **schwarzer Anschlusskasten** in der Wand (1,1 m breit, 0,3–1,5 m hoch, Band dockt auf 1 m an). Darüber ragt ein flacher **Pfeil in Fluss-Richtung** 0,6 m aus der Wand: **blau = Eingang** (zeigt in die Maschine), **orange = Ausgang** (zeigt heraus). Das Hologramm zeigt dieselben Kästen und Pfeile.
 - **Abriss:** Eine Stütze reißt die Bänder an ihr mit ab (alles wird erstattet). Eine Maschine lässt ihre Bänder stehen, deren Ende ist dann offen.
 - Bänder prüfen noch **keine Kollision** mit Gebäuden auf ihrer Strecke, nur an den Enden.
 

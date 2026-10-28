@@ -11,6 +11,8 @@
 class UStaticMeshComponent;
 class UTextRenderComponent;
 class UMaterialInstanceDynamic;
+class UMaterialInterface;
+class UStaticMesh;
 class AFactoryBelt;
 
 /**
@@ -20,8 +22,8 @@ class AFactoryBelt;
  *  Der Actor ist nur die Optik: er hört auf OnStateChanged, färbt den Würfel ein und
  *  aktualisiert jedes Bild den Text darüber. Farben (Graybox, nicht final):
  *  grau = kein Rezept, gelb = wartet auf Zutaten, grün = arbeitet, rot = Ausgang voll.
- *  Größe und Ports kommen aus DT_Buildings (InitBuilding). Ports sind kleine Platten an der Kante:
- *  blau = Eingang (hinten), orange = Ausgang (vorn).
+ *  Größe und Ports kommen aus DT_Buildings (InitBuilding). Ports sind schwarze Anschlusskästen in der Wand
+ *  mit einem Pfeil in Fluss-Richtung darüber: blau = Eingang (hinten), orange = Ausgang (vorn).
  *  Zum Testen: Konsole "SpawnMachine Smelter IronIngot", siehe Docs/Standards/12-simulation.md
  */
 UCLASS()
@@ -58,6 +60,10 @@ public:
 
 	/** Tints the machine red while it is targeted for demolition */
 	void SetDemolishHighlight(bool bHighlighted);
+
+	/** Builds the port graybox (black connection box + flow arrow) for each port; also used by the build hologram */
+	static void CreatePortVisuals(AActor* Owner, USceneComponent* Parent, const TArray<FFactoryPort>& InPorts, UStaticMesh* Cube,
+		UMaterialInterface* BaseMaterial, TArray<TObjectPtr<UStaticMeshComponent>>& InOutParts);
 
 	virtual void Tick(float DeltaSeconds) override;
 

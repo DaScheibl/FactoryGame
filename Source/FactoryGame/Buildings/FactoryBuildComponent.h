@@ -34,6 +34,19 @@ enum class EFactoryBuildMode : uint8
 	Demolish
 };
 
+/** Which side of a belt FindBeltEnd looks for */
+enum class EFactoryBeltEndWant : uint8
+{
+	/** Where a belt can begin: free machine output, free pole output */
+	Output,
+
+	/** Where a belt can end: free machine input, free pole input */
+	Input,
+
+	/** First click: either, the belt is then drawn forward or backward */
+	Either
+};
+
 /** One end of a belt that is being drawn: a machine port, an existing pole or a new pole on the ground */
 struct FFactoryBeltEnd
 {
@@ -53,6 +66,9 @@ struct FFactoryBeltEnd
 	/** Flow direction at this end, zero if the belt may choose */
 	FVector Direction = FVector::ZeroVector;
 
+	/** True if items flow into this end (machine input or pole input side) */
+	bool bBeltEndsHere = false;
+
 	bool IsSameAs(const FFactoryBeltEnd& Other) const;
 };
 
@@ -63,9 +79,9 @@ struct FFactoryBeltEnd
  *  Ablauf Gebäude: Hotbar-Taste → Hologramm am Fadenkreuz (1-m-Raster, Mausrad dreht) → grün, wenn der Boden
  *  eben genug ist (max. 1 m Höhenunterschied, das Gebäude sinkt ein), nichts im Weg steht und das Material
  *  reicht → Linksklick baut und zieht die Kosten ab.
- *  Ablauf Band: 1. Klick auf einen Ausgang, eine Stütze oder den Boden (dort entsteht eine neue Stütze),
- *  2. Klick auf einen Eingang, eine Stütze oder den Boden. Endet das Band nicht an einer Maschine, geht es
- *  von dort aus weiter (Kette), bis man rechtsklickt. R wechselt den Modus (Standard/Gerade/Kurve),
+ *  Ablauf Band: 1. Klick auf einen Port, eine Stütze oder den Boden (dort entsteht eine neue Stütze),
+ *  2. Klick auf das andere Ende. Beginnt man an einem Eingang, wird das Band rückwärts gezogen.
+ *  Endet es nicht an einer Maschine, geht es von dort aus weiter (Kette), bis man rechtsklickt. R wechselt den Modus (Standard/Gerade/Kurve),
  *  das Mausrad die Höhe neuer Stützen.
  *  Ablauf Abriss: F → Ziel leuchtet rot → Linksklick 0,5 s halten → alles zurück ins Inventar,
  *  was nicht passt, landet in einer Abriss-Kiste.
@@ -163,8 +179,11 @@ private:
 	bool PlacePole();
 	bool PlaceBelt();
 
-	/** Finds what a belt would connect to under the crosshair. Returns false and sets OutError if nothing fits */
-	bool FindBeltEnd(bool bStart, FFactoryBeltEnd& OutEnd, FText& OutError) const;
+	/**
+	 *  Finds what a belt would connect to under the crosshair: a port or pole nearby wins over everything else,
+	 *  otherwise a new pole on the ground. Returns false and sets OutError if nothing fits
+	 */
+	bool FindBeltEnd(EFactoryBeltEndWant Want, FFactoryBeltEnd& OutEnd, FText& OutError) const;
 
 	/** Returns true if nothing (other buildings, belts, the player) is in a box. Used for poles */
 	bool IsFree(const FVector& Center, const FQuat& Rotation, const FVector& HalfSize) const;
