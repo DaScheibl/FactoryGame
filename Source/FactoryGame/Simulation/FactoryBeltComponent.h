@@ -78,8 +78,8 @@ public:
 	/** Returns the speed in mm per simulation tick */
 	int32 GetSpeed() const { return GetSpeedForTier(Tier); }
 
-	/** Machine the belt takes items from at its start (None: only fed by other belts or by hand) */
-	void SetSource(UFactoryProductionComponent* NewSource) { Source = NewSource; }
+	/** Machine the belt takes items from at its start (None: only fed by other belts or by hand), and which of its outputs */
+	void SetSource(UFactoryProductionComponent* NewSource, int32 OutputIndex = 0) { Source = NewSource; SourceOutput = OutputIndex; }
 
 	UFactoryProductionComponent* GetSource() const { return Source.Get(); }
 
@@ -96,6 +96,9 @@ public:
 
 	/** Returns true if an item could be put onto the belt start right now */
 	bool HasRoomAtStart() const;
+
+	/** Replaces all items, used for loading. The length must be set before */
+	void LoadItems(const TArray<FFactoryBeltItem>& NewItems);
 
 	/** Removes all items and adds them to OutRemoved, e.g. to give them back to the player */
 	void ClearItems(TArray<FName>& OutRemoved);
@@ -147,6 +150,9 @@ private:
 
 	UPROPERTY()
 	TWeakObjectPtr<UObject> Target;
+
+	/** Output buffer of the source machine this belt takes from */
+	int32 SourceOutput = 0;
 
 	/** Sum of all gaps. Distance from the belt end to the last item = TotalGap + (items - 1) x spacing */
 	int32 TotalGap = 0;

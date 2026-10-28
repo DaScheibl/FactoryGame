@@ -2,14 +2,20 @@
 
 #include "FactoryBelt.h"
 #include "FactoryBeltComponent.h"
+#include "FactoryBeltPole.h"
+#include "FactoryMachine.h"
 #include "FactoryProductionComponent.h"
 #include "FactoryItemDatabase.h"
+#include "FactoryBuildingDatabase.h"
 #include "FactoryLocalization.h"
-#include "Components/StaticMeshComponent.h"
+#include "Components/BoxComponent.h"
 #include "Components/InstancedStaticMeshComponent.h"
+#include "Components/SplineComponent.h"
+#include "Components/SplineMeshComponent.h"
 #include "Components/TextRenderComponent.h"
 #include "Engine/StaticMesh.h"
 #include "Engine/World.h"
+#include "Engine/CollisionProfile.h"
 #include "Materials/MaterialInstanceDynamic.h"
 #include "Materials/MaterialInterface.h"
 #include "Camera/PlayerCameraManager.h"
@@ -23,17 +29,10 @@ namespace
 	constexpr double BeltThickness = 10.0;
 	constexpr double ItemCubeSize = 30.0;
 
-	// Abstand von der Maschinenmitte bis zur Außenkante ihrer Bounding-Box in Richtung Dir (nur XY)
-	double GetDistanceToEdge(const AActor* Machine, const FVector& Dir)
-	{
-		FVector Origin;
-		FVector Extent;
-		Machine->GetActorBounds(true, Origin, Extent);
+	// Länge eines Körper-Stücks; Spline-Meshes verformen sich nur gut, wenn sie nicht zu lang sind
+	constexpr double BodyPieceLength = 100.0;
 
-		const double ToEdgeX = FMath::Abs(Dir.X) > UE_KINDA_SMALL_NUMBER ? Extent.X / FMath::Abs(Dir.X) : UE_BIG_NUMBER;
-		const double ToEdgeY = FMath::Abs(Dir.Y) > UE_KINDA_SMALL_NUMBER ? Extent.Y / FMath::Abs(Dir.Y) : UE_BIG_NUMBER;
-		return FMath::Min(ToEdgeX, ToEdgeY);
-	}
+	const FLinearColor BodyColor(0.04f, 0.04f, 0.045f);
 }
 
 AFactoryBelt::AFactoryBelt()
@@ -49,10 +48,8 @@ AFactoryBelt::AFactoryBelt()
 	CubeMesh = CubeFinder.Object;
 	ColorMaterial = MaterialFinder.Object;
 
-	BodyMesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("BodyMesh"));
-	BodyMesh->SetupAttachment(Root);
-	BodyMesh->SetStaticMesh(CubeMesh);
-	BodyMesh->SetMaterial(0, ColorMaterial);
+	Spline = CreateDefaultSubobject<USplineComponent>(TEXT("Spline"));
+	Spline->SetupAttachment(Root);
 
 	Label = CreateDefaultSubobject<UTextRenderComponent>(TEXT("Label"));
 	Label->SetupAttachment(Root);
@@ -69,64 +66,13 @@ void AFactoryBelt::BeginPlay()
 	Super::BeginPlay();
 
 	// Band-Körper dunkelgrau, damit die farbigen Item-Würfel darauf gut zu sehen sind
-	BodyMaterial = BodyMesh->CreateAndSetMaterialInstanceDynamic(0);
+	BodyMaterial = UMaterialInstanceDynamic::Create(ColorMaterial, this);
 	SetDemolishHighlight(false);
-
-	TArray<FName> Ignored;
-	SetEndpoints(GetActorLocation(), GetActorLocation() + GetActorForwardVector() * Belt->GetLength() * 0.1, Ignored);
 }
 
-TArray<FFactoryItemStack> AFactoryBelt::GetBuildCosts() const
+AFactoryBelt* AFactoryBelt::SpawnBelt(UWorld* World, const FFactoryBeltPath& Path, int32 Tier)
 {
-	// höhere Stufen bekommen später eigene Materialien, bis dahin kostet jede Stufe gleich viel
-	return { FFactoryItemStack(TEXT("ITM_IronPlate"), FMath::Max(1, FMath::DivideAndRoundUp(Belt->GetLength(), 2000))) };
-}
-
-void AFactoryBelt::SetDemolishHighlight(bool bHighlighted)
-{
-	if (BodyMaterial)
-	{
-		BodyMaterial->SetVectorParameterValue(TEXT("Color"), bHighlighted ? FLinearColor(1.0f, 0.02f, 0.02f) : FLinearColor(0.04f, 0.04f, 0.045f));
-	}
-}
-
-void AFactoryBelt::SetEndpoints(const FVector& Start, const FVector& End, TArray<FName>& OutRemoved)
-{
-	const FVector Delta = End - Start;
-	const double LengthCm = Delta.Size();
-
-	SetActorLocationAndRotation(Start, Delta.Rotation());
-	Belt->SetLength(FMath::RoundToInt32(LengthCm * 10.0), OutRemoved);
-
-	// der Engine-Würfel ist 1 m groß und mittig; so strecken, dass die Oberkante auf SurfaceHeight liegt
-	const double ShownLength = Belt->GetLength() * 0.1;
-	BodyMesh->SetRelativeScale3D(FVector(ShownLength, BeltWidth, BeltThickness) / 100.0);
-	BodyMesh->SetRelativeLocation(FVector(ShownLength * 0.5, 0.0, SurfaceHeight - BeltThickness * 0.5));
-	Label->SetRelativeLocation(FVector(ShownLength * 0.5, 0.0, SurfaceHeight + 60.0));
-}
-
-AFactoryBelt* AFactoryBelt::SpawnBetween(UWorld* World, AActor* SourceMachine, AActor* TargetMachine, int32 Tier)
-{
-	if (!World || !SourceMachine || !TargetMachine || SourceMachine == TargetMachine)
-	{
-		return nullptr;
-	}
-
-	// gerade Linie von der Kante der Quelle zur Kante des Ziels (Ports bündig mit dem Footprint)
-	const FVector SourceLocation = SourceMachine->GetActorLocation();
-	const FVector TargetLocation = TargetMachine->GetActorLocation();
-	const FVector Dir = (TargetLocation - SourceLocation).GetSafeNormal2D();
-
-	if (Dir.IsNearlyZero())
-	{
-		return nullptr;
-	}
-
-	const FVector Start = SourceLocation + Dir * GetDistanceToEdge(SourceMachine, Dir);
-	const FVector End = TargetLocation - Dir * GetDistanceToEdge(TargetMachine, Dir);
-
-	// die Maschinen müssen mindestens einen Item-Abstand auseinander stehen
-	if (FVector::DotProduct(End - Start, Dir) * 10.0 < UFactoryBeltComponent::ItemSpacing)
+	if (!World || Path.Points.Num() < 2)
 	{
 		return nullptr;
 	}
@@ -134,19 +80,271 @@ AFactoryBelt* AFactoryBelt::SpawnBetween(UWorld* World, AActor* SourceMachine, A
 	FActorSpawnParameters SpawnParams;
 	SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
 
-	AFactoryBelt* NewBelt = World->SpawnActor<AFactoryBelt>(Start, (End - Start).Rotation(), SpawnParams);
+	AFactoryBelt* NewBelt = World->SpawnActor<AFactoryBelt>(Path.Points[0].Location, FRotator::ZeroRotator, SpawnParams);
 
-	if (!NewBelt)
+	if (NewBelt)
+	{
+		TArray<FName> Ignored;
+		NewBelt->SetPath(Path, Ignored);
+		NewBelt->Belt->SetTier(Tier);
+	}
+
+	return NewBelt;
+}
+
+void AFactoryBelt::SetPath(const FFactoryBeltPath& NewPath, TArray<FName>& OutRemoved)
+{
+	Path = NewPath;
+
+	// der Actor steht am Bandanfang, der Spline ist relativ dazu
+	SetActorLocationAndRotation(Path.Points.Num() > 0 ? Path.Points[0].Location : GetActorLocation(), FRotator::ZeroRotator);
+	ApplyPathToSpline(Spline, Path, GetActorLocation());
+
+	Belt->SetLength(FMath::RoundToInt32(Spline->GetSplineLength() * 10.0), OutRemoved);
+
+	if (!BodyMaterial)
+	{
+		BodyMaterial = UMaterialInstanceDynamic::Create(ColorMaterial, this);
+		SetDemolishHighlight(false);
+	}
+
+	BuildBodyMeshes(this, Spline, BodyMeshes, CubeMesh, BodyMaterial, &CollisionBoxes);
+
+	const float Middle = Spline->GetSplineLength() * 0.5f;
+	Label->SetRelativeLocation(Spline->GetLocationAtDistanceAlongSpline(Middle, ESplineCoordinateSpace::Local) + FVector(0.0, 0.0, 60.0));
+}
+
+void AFactoryBelt::ApplyPathToSpline(USplineComponent* Spline, const FFactoryBeltPath& Path, const FVector& Origin)
+{
+	Spline->ClearSplinePoints(false);
+
+	for (int32 Index = 0; Index < Path.Points.Num(); ++Index)
+	{
+		const FFactoryBeltPathPoint& Point = Path.Points[Index];
+		Spline->AddSplinePoint(Point.Location - Origin, ESplineCoordinateSpace::Local, false);
+		Spline->SetSplinePointType(Index, ESplinePointType::CurveCustomTangent, false);
+		Spline->SetTangentsAtSplinePoint(Index, Point.ArriveTangent, Point.LeaveTangent, ESplineCoordinateSpace::Local, false);
+	}
+
+	Spline->UpdateSpline();
+}
+
+void AFactoryBelt::BuildBodyMeshes(AActor* Owner, USplineComponent* Spline, TArray<TObjectPtr<USplineMeshComponent>>& Meshes,
+	UStaticMesh* Mesh, UMaterialInterface* Material, TArray<TObjectPtr<UBoxComponent>>* Boxes)
+{
+	const double Length = Spline->GetSplineLength();
+	const int32 NumPieces = FMath::Max(1, FMath::CeilToInt32(Length / BodyPieceLength));
+	const double PieceLength = Length / NumPieces;
+
+	// vorhandene Stücke wiederverwenden, überzählige entfernen
+	while (Meshes.Num() > NumPieces)
+	{
+		Meshes.Pop()->DestroyComponent();
+	}
+
+	while (Boxes && Boxes->Num() > NumPieces)
+	{
+		Boxes->Pop()->DestroyComponent();
+	}
+
+	while (Boxes && Boxes->Num() < NumPieces)
+	{
+		UBoxComponent* Box = NewObject<UBoxComponent>(Owner);
+		Box->SetupAttachment(Spline);
+		Box->SetCollisionProfileName(UCollisionProfile::BlockAllDynamic_ProfileName);
+		Box->RegisterComponent();
+		Owner->AddInstanceComponent(Box);
+		Boxes->Add(Box);
+	}
+
+	while (Meshes.Num() < NumPieces)
+	{
+		USplineMeshComponent* Piece = NewObject<USplineMeshComponent>(Owner);
+		Piece->SetMobility(EComponentMobility::Movable);
+		Piece->SetStaticMesh(Mesh);
+		Piece->SetupAttachment(Spline);
+		Piece->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+		Piece->SetCastShadow(Boxes != nullptr);
+		Piece->RegisterComponent();
+		Owner->AddInstanceComponent(Piece);
+		Meshes.Add(Piece);
+	}
+
+	// der Würfel wird zum flachen Streifen: 0,8 m breit, 0,1 m dick, Oberkante auf der Kurve
+	const FVector Down(0.0, 0.0, BeltThickness * 0.5);
+
+	for (int32 Index = 0; Index < NumPieces; ++Index)
+	{
+		const float From = PieceLength * Index;
+		const float To = PieceLength * (Index + 1);
+		const FVector StartTangent = Spline->GetTangentAtDistanceAlongSpline(From, ESplineCoordinateSpace::Local).GetSafeNormal() * PieceLength;
+		const FVector EndTangent = Spline->GetTangentAtDistanceAlongSpline(To, ESplineCoordinateSpace::Local).GetSafeNormal() * PieceLength;
+
+		USplineMeshComponent* Piece = Meshes[Index];
+		Piece->SetMaterial(0, Material);
+		Piece->SetStartScale(FVector2D(BeltWidth / 100.0, BeltThickness / 100.0), false);
+		Piece->SetEndScale(FVector2D(BeltWidth / 100.0, BeltThickness / 100.0), false);
+		Piece->SetStartAndEnd(Spline->GetLocationAtDistanceAlongSpline(From, ESplineCoordinateSpace::Local) - Down, StartTangent,
+			Spline->GetLocationAtDistanceAlongSpline(To, ESplineCoordinateSpace::Local) - Down, EndTangent, true);
+
+		// gerade Box über das Stück; bei 1 m Länge weicht sie in Kurven nur wenige Zentimeter ab
+		if (Boxes)
+		{
+			const FTransform MiddleTransform = Spline->GetTransformAtDistanceAlongSpline((From + To) * 0.5f, ESplineCoordinateSpace::Local);
+			UBoxComponent* Box = (*Boxes)[Index];
+			Box->SetBoxExtent(FVector(PieceLength * 0.5, BeltWidth * 0.5, BeltThickness * 0.5), false);
+			Box->SetRelativeLocationAndRotation(MiddleTransform.GetLocation() - Down, MiddleTransform.GetRotation());
+		}
+	}
+}
+
+void AFactoryBelt::ConnectStartToMachine(AFactoryMachine* Machine, int32 PortIndex)
+{
+	if (!Machine)
+	{
+		return;
+	}
+
+	StartMachine = Machine;
+	StartPort = PortIndex;
+	Machine->SetPortBelt(PortIndex, this);
+
+	// Ausgang N der Maschine hat den Port-Index NumInputs + N
+	Belt->SetSource(Machine->GetProduction(), PortIndex - Machine->GetNumInputPorts());
+}
+
+void AFactoryBelt::ConnectEndToMachine(AFactoryMachine* Machine, int32 PortIndex)
+{
+	if (!Machine)
+	{
+		return;
+	}
+
+	EndMachine = Machine;
+	EndPort = PortIndex;
+	Machine->SetPortBelt(PortIndex, this);
+	Belt->SetTarget(Machine->GetProduction());
+}
+
+void AFactoryBelt::ConnectStartToPole(AFactoryBeltPole* Pole)
+{
+	if (!Pole)
+	{
+		return;
+	}
+
+	StartPole = Pole;
+	Pole->SetOutputBelt(this);
+
+	// das Band, das an der Stütze ankommt, liefert ab jetzt in dieses
+	if (AFactoryBelt* Incoming = Pole->GetInputBelt())
+	{
+		Incoming->Belt->SetTarget(Belt);
+	}
+}
+
+void AFactoryBelt::ConnectEndToPole(AFactoryBeltPole* Pole)
+{
+	if (!Pole)
+	{
+		return;
+	}
+
+	EndPole = Pole;
+	Pole->SetInputBelt(this);
+
+	if (AFactoryBelt* Outgoing = Pole->GetOutputBelt())
+	{
+		Belt->SetTarget(Outgoing->Belt);
+	}
+}
+
+AFactoryBelt* AFactoryBelt::SpawnBetween(UWorld* World, AFactoryMachine* SourceMachine, AFactoryMachine* TargetMachine, int32 Tier)
+{
+	if (!World || !SourceMachine || !TargetMachine || SourceMachine == TargetMachine)
 	{
 		return nullptr;
 	}
 
-	TArray<FName> Ignored;
-	NewBelt->SetEndpoints(Start, End, Ignored);
-	NewBelt->Belt->SetTier(Tier);
-	NewBelt->Belt->SetSource(SourceMachine->FindComponentByClass<UFactoryProductionComponent>());
-	NewBelt->Belt->SetTarget(TargetMachine->FindComponentByClass<UFactoryProductionComponent>());
-	return NewBelt;
+	const TArray<FFactoryPort> SourcePorts = SourceMachine->GetWorldPorts();
+	const TArray<FFactoryPort> TargetPorts = TargetMachine->GetWorldPorts();
+
+	// erster freier Ausgang der Quelle ...
+	const int32 OutputIndex = SourcePorts.IndexOfByPredicate([SourceMachine, &SourcePorts](const FFactoryPort& Port)
+	{
+		return !Port.bInput && !SourceMachine->GetPortBelt(&Port - SourcePorts.GetData());
+	});
+
+	if (OutputIndex == INDEX_NONE)
+	{
+		return nullptr;
+	}
+
+	// ... zum nächstgelegenen freien Eingang des Ziels
+	const int32 InputIndex = TargetMachine->FindFreePort(true, SourcePorts[OutputIndex].Location, UE_BIG_NUMBER);
+
+	if (InputIndex == INDEX_NONE)
+	{
+		return nullptr;
+	}
+
+	// der Reihe nach alle Modi probieren, der erste passende gewinnt
+	FFactoryBeltPath NewPath;
+
+	for (const EFactoryBeltMode Mode : { EFactoryBeltMode::Standard, EFactoryBeltMode::Curve, EFactoryBeltMode::Straight })
+	{
+		if (FactoryBeltPath::Build(Mode, SourcePorts[OutputIndex].Location, SourcePorts[OutputIndex].Direction,
+			TargetPorts[InputIndex].Location, TargetPorts[InputIndex].Direction, NewPath) == EFactoryBeltPathProblem::None)
+		{
+			AFactoryBelt* NewBelt = SpawnBelt(World, NewPath, Tier);
+
+			if (NewBelt)
+			{
+				NewBelt->ConnectStartToMachine(SourceMachine, OutputIndex);
+				NewBelt->ConnectEndToMachine(TargetMachine, InputIndex);
+			}
+
+			return NewBelt;
+		}
+	}
+
+	return nullptr;
+}
+
+FName AFactoryBelt::GetBuildingIdForTier(int32 Tier)
+{
+	return FName(FString::Printf(TEXT("LOG_Belt_Mk%d"), Tier));
+}
+
+TArray<FFactoryItemStack> AFactoryBelt::GetBuildCostsForLength(const UObject* WorldContext, double LengthCm, int32 Tier)
+{
+	// die Tabelle enthält die Kosten pro angefangene 2 m; Stufen ohne eigene Zeile kosten wie Mk1
+	const UFactoryBuildingDatabase* Buildings = UFactoryBuildingDatabase::Get(WorldContext);
+	const FFactoryBuildingDefinition* Row = Buildings ? Buildings->FindBuilding(GetBuildingIdForTier(Tier)) : nullptr;
+	Row = Row ? Row : (Buildings ? Buildings->FindBuilding(GetBuildingIdForTier(1)) : nullptr);
+
+	TArray<FFactoryItemStack> Costs = Row ? Row->GetCosts() : TArray<FFactoryItemStack>();
+	const int32 Pieces = FMath::Max(1, FMath::CeilToInt32(LengthCm / 200.0 - 0.001));
+
+	for (FFactoryItemStack& Cost : Costs)
+	{
+		Cost.Count *= Pieces;
+	}
+
+	return Costs;
+}
+
+TArray<FFactoryItemStack> AFactoryBelt::GetBuildCosts() const
+{
+	return GetBuildCostsForLength(this, Spline->GetSplineLength(), Belt->GetTier());
+}
+
+void AFactoryBelt::SetDemolishHighlight(bool bHighlighted)
+{
+	if (BodyMaterial)
+	{
+		BodyMaterial->SetVectorParameterValue(TEXT("Color"), bHighlighted ? FLinearColor(1.0f, 0.02f, 0.02f) : BodyColor);
+	}
 }
 
 void AFactoryBelt::Tick(float DeltaSeconds)
@@ -175,11 +373,15 @@ void AFactoryBelt::UpdateItemMeshes()
 	}
 
 	const FVector CubeScale(ItemCubeSize / 100.0);
+	const float SplineLength = Spline->GetSplineLength();
 
+	// Simulations-Länge (ganze mm) und Spline-Länge können um Bruchteile abweichen, deshalb begrenzen
 	for (int32 Index = 0; Index < Items.Num() && Index < PositionsScratch.Num(); ++Index)
 	{
-		const FVector Location(PositionsScratch[Index], 0.0, SurfaceHeight + ItemCubeSize * 0.5);
-		TransformsScratch.FindOrAdd(Items[Index].ItemId).Emplace(FQuat::Identity, Location, CubeScale);
+		const float Distance = FMath::Clamp(PositionsScratch[Index], 0.0f, SplineLength);
+		const FTransform OnSpline = Spline->GetTransformAtDistanceAlongSpline(Distance, ESplineCoordinateSpace::Local);
+		const FVector Location = OnSpline.GetLocation() + OnSpline.GetRotation().GetUpVector() * ItemCubeSize * 0.5;
+		TransformsScratch.FindOrAdd(Items[Index].ItemId).Emplace(OnSpline.GetRotation(), Location, CubeScale);
 	}
 
 	for (const TPair<FName, TArray<FTransform>>& Pair : TransformsScratch)
@@ -216,7 +418,7 @@ UInstancedStaticMeshComponent* AFactoryBelt::GetItemMesh(FName ItemId)
 	Mesh->SetStaticMesh(CubeMesh);
 	Mesh->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 	Mesh->SetCastShadow(false);
-	Mesh->SetupAttachment(Root);
+	Mesh->SetupAttachment(Spline);
 	Mesh->RegisterComponent();
 	AddInstanceComponent(Mesh);
 

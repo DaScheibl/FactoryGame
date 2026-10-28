@@ -153,6 +153,8 @@ void AFactoryGamePlayerController::SetupInputComponent()
 	InputComponent->BindKey(EKeys::Gamepad_LeftShoulder, IE_Pressed, this, &AFactoryGamePlayerController::HandleRotateLeft);
 	InputComponent->BindKey(EKeys::F, IE_Pressed, this, &AFactoryGamePlayerController::HandleToggleDemolish);
 	InputComponent->BindKey(EKeys::Gamepad_DPad_Down, IE_Pressed, this, &AFactoryGamePlayerController::HandleToggleDemolish);
+	InputComponent->BindKey(EKeys::R, IE_Pressed, this, &AFactoryGamePlayerController::HandleCycleMode);
+	InputComponent->BindKey(EKeys::Gamepad_FaceButton_Top, IE_Pressed, this, &AFactoryGamePlayerController::HandleCycleMode);
 	InputComponent->BindKey(EKeys::E, IE_Pressed, this, &AFactoryGamePlayerController::HandleInteract);
 	InputComponent->BindKey(EKeys::Gamepad_FaceButton_Left, IE_Pressed, this, &AFactoryGamePlayerController::HandleInteract);
 
@@ -402,7 +404,7 @@ void AFactoryGamePlayerController::SelectHotbarSlot(int32 Index)
 		{
 			BuildComponent->BeginPlacing(HotbarSlots[SelectedHotbarSlot]);
 		}
-		else if (BuildComponent->GetMode() == EFactoryBuildMode::Place)
+		else if (BuildComponent->GetMode() != EFactoryBuildMode::None && BuildComponent->GetMode() != EFactoryBuildMode::Demolish)
 		{
 			BuildComponent->StopBuilding();
 		}
@@ -478,9 +480,10 @@ void AFactoryGamePlayerController::HandlePrimaryReleased()
 
 void AFactoryGamePlayerController::HandleCancel()
 {
-	if (BuildComponent)
+	// beim Band geht Rechtsklick erst einen Schritt zurück (Start verwerfen), der Slot bleibt dann gewählt
+	if (BuildComponent && !BuildComponent->Cancel())
 	{
-		BuildComponent->StopBuilding();
+		return;
 	}
 
 	// der Hotbar-Slot gehört zum Platzieren, also mit abwählen
@@ -499,7 +502,7 @@ void AFactoryGamePlayerController::HandleRotateLeft()
 {
 	if (BuildComponent)
 	{
-		BuildComponent->Rotate(-1, IsInputKeyDown(EKeys::LeftControl) || IsInputKeyDown(EKeys::RightControl));
+		BuildComponent->Scroll(-1, IsInputKeyDown(EKeys::LeftControl) || IsInputKeyDown(EKeys::RightControl));
 	}
 }
 
@@ -507,7 +510,7 @@ void AFactoryGamePlayerController::HandleRotateRight()
 {
 	if (BuildComponent)
 	{
-		BuildComponent->Rotate(1, IsInputKeyDown(EKeys::LeftControl) || IsInputKeyDown(EKeys::RightControl));
+		BuildComponent->Scroll(1, IsInputKeyDown(EKeys::LeftControl) || IsInputKeyDown(EKeys::RightControl));
 	}
 }
 
@@ -520,11 +523,20 @@ void AFactoryGamePlayerController::HandleToggleDemolish()
 
 	// der Abriss-Modus ersetzt das Platzieren, der Hotbar-Slot wird dabei abgewählt
 	const bool bWasDemolishing = BuildComponent->GetMode() == EFactoryBuildMode::Demolish;
+	BuildComponent->StopBuilding();
 	HandleCancel();
 
 	if (!bWasDemolishing)
 	{
 		BuildComponent->ToggleDemolish();
+	}
+}
+
+void AFactoryGamePlayerController::HandleCycleMode()
+{
+	if (BuildComponent)
+	{
+		BuildComponent->CycleMode();
 	}
 }
 
@@ -538,19 +550,23 @@ void AFactoryGamePlayerController::HandleInteract()
 
 void AFactoryGamePlayerController::FillDefaultHotbar()
 {
-	// Übergangslösung bis zum Baumenü (UI_BuildMenu): eine leere Hotbar bekommt alle Gebäude der Tabelle
-	if (HotbarSlots.ContainsByPredicate([](const FName& Shortcut) { return !Shortcut.IsNone(); }))
-	{
-		return;
-	}
-
+	// Übergangslösung bis zum Baumenü (UI_BuildMenu): jedes Gebäude der Tabelle, das noch nicht auf der
+	// Hotbar liegt, kommt in den ersten freien Slot (so tauchen neue Gebäude auch in alten Welten auf)
 	if (const UFactoryBuildingDatabase* Buildings = UFactoryBuildingDatabase::Get(this))
 	{
-		const TArray<FName>& Ids = Buildings->GetAllBuildingIds();
-
-		for (int32 Index = 0; Index < Ids.Num() && Index < NumHotbarSlots; ++Index)
+		for (const FName& Id : Buildings->GetAllBuildingIds())
 		{
-			HotbarSlots[Index] = Ids[Index];
+			const int32 FreeSlot = HotbarSlots.IndexOfByKey(NAME_None);
+
+			if (FreeSlot == INDEX_NONE)
+			{
+				break;
+			}
+
+			if (!HotbarSlots.Contains(Id))
+			{
+				HotbarSlots[FreeSlot] = Id;
+			}
 		}
 	}
 

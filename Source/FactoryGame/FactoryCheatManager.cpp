@@ -527,9 +527,14 @@ AFactoryBelt* UFactoryCheatManager::GetTargetBelt() const
 
 	for (TActorIterator<AFactoryBelt> It(World); It; ++It)
 	{
-		const FVector Start = It->GetActorLocation();
-		const FVector End = Start + It->GetActorForwardVector() * It->GetBelt()->GetLength() * 0.1;
-		const double DistSq = FVector::DistSquared(FMath::ClosestPointOnSegment(ViewLocation, Start, End), ViewLocation);
+		// Abstand zur Kurve, grob über die Spline-Punkte und ihre Verbindungslinien
+		const TArray<FFactoryBeltPathPoint>& Points = It->GetPath().Points;
+		double DistSq = TNumericLimits<double>::Max();
+
+		for (int32 Index = 1; Index < Points.Num(); ++Index)
+		{
+			DistSq = FMath::Min(DistSq, FVector::DistSquared(FMath::ClosestPointOnSegment(ViewLocation, Points[Index - 1].Location, Points[Index].Location), ViewLocation));
+		}
 
 		if (DistSq < NearestDistSq)
 		{
@@ -579,7 +584,7 @@ void UFactoryCheatManager::ConnectBelt(int32 Tier)
 
 	if (!Belt)
 	{
-		UE_LOG(LogFactoryGame, Warning, TEXT("ConnectBelt: the machines are too close together (at least 0.5 m between them)."));
+		UE_LOG(LogFactoryGame, Warning, TEXT("ConnectBelt: no free ports, or no belt shape fits between them (try placing them in a row)."));
 		return;
 	}
 
@@ -592,15 +597,16 @@ void UFactoryCheatManager::BeltTest(int32 Tier)
 	FVector Location;
 	FRotator Facing;
 
-	if (!GetSpawnPoint(1000.0, Location, Facing))
+	if (!GetSpawnPoint(800.0, Location, Facing))
 	{
 		return;
 	}
 
-	// Schmelzofen links, Konstruktor 12 m rechts davon: zwischen den 4-m-Würfeln bleiben 8 m Band
-	const FVector Right = FRotationMatrix(Facing).GetUnitAxis(EAxis::Y);
-	AFactoryMachine* Smelter = SpawnMachineAt(Location - Right * 600.0, Facing, TEXT("Smelter"), TEXT("IronIngot"));
-	AFactoryMachine* Constructor = SpawnMachineAt(Location + Right * 600.0, Facing, TEXT("Constructor"), TEXT("IronPlate"));
+	// hintereinander: Ausgang des Schmelzofens (vorn, +2 m) zeigt auf den Eingang des Konstruktors
+	// (hinten, 14 m - 4 m = +10 m), dazwischen 8 m gerades Band
+	const FVector Forward = Facing.Vector();
+	AFactoryMachine* Smelter = SpawnMachineAt(Location, Facing, TEXT("Smelter"), TEXT("IronIngot"));
+	AFactoryMachine* Constructor = SpawnMachineAt(Location + Forward * 1400.0, Facing, TEXT("Constructor"), TEXT("IronPlate"));
 
 	if (!Smelter || !Constructor)
 	{

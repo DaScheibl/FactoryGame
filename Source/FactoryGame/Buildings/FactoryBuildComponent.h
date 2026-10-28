@@ -5,10 +5,13 @@
 #include "CoreMinimal.h"
 #include "Components/ActorComponent.h"
 #include "FactoryItemTypes.h"
+#include "FactoryBeltPath.h"
 #include "FactoryBuildComponent.generated.h"
 
 class AFactoryGamePlayerController;
 class AFactoryHologram;
+class AFactoryMachine;
+class AFactoryBeltPole;
 class AActor;
 struct FFactoryBuildingDefinition;
 
@@ -18,20 +21,52 @@ enum class EFactoryBuildMode : uint8
 	/** Not building; looking at a demolition crate shows "E: take items" */
 	None,
 
-	/** A building from the hotbar follows the crosshair as a hologram */
+	/** A machine from the hotbar follows the crosshair as a hologram */
 	Place,
+
+	/** A conveyor pole follows the crosshair, the mouse wheel sets its height */
+	Pole,
+
+	/** Drawing a belt: first click picks the start, second click the end */
+	Belt,
 
 	/** Holding the primary button on a building demolishes it */
 	Demolish
 };
 
+/** One end of a belt that is being drawn: a machine port, an existing pole or a new pole on the ground */
+struct FFactoryBeltEnd
+{
+	TWeakObjectPtr<AFactoryMachine> Machine;
+	int32 Port = INDEX_NONE;
+
+	TWeakObjectPtr<AFactoryBeltPole> Pole;
+
+	/** A pole is built here together with the belt */
+	bool bNewPole = false;
+	FVector PoleFoot = FVector::ZeroVector;
+	int32 PoleHeight = 1;
+
+	/** Belt connection point (belt surface) */
+	FVector Location = FVector::ZeroVector;
+
+	/** Flow direction at this end, zero if the belt may choose */
+	FVector Direction = FVector::ZeroVector;
+
+	bool IsSameAs(const FFactoryBeltEnd& Other) const;
+};
+
 /**
- *  The build tool of the player: placing buildings, demolishing them and emptying demolition crates.
+ *  The build tool of the player: placing buildings, poles and belts, demolishing and emptying demolition crates.
  *  Lives on the AFactoryGamePlayerController, which forwards the build keys to it.
  *
- *  Ablauf Platzieren: Hotbar-Taste wählt ein Gebäude → Hologramm folgt dem Fadenkreuz (1-m-Raster,
- *  Drehen mit dem Mausrad) → grün, wenn der Boden eben genug ist (max. 1 m Höhenunterschied, das Gebäude
- *  sinkt dann ein), nichts im Weg steht und das Material reicht → Linksklick baut und zieht die Kosten ab.
+ *  Ablauf Gebäude: Hotbar-Taste → Hologramm am Fadenkreuz (1-m-Raster, Mausrad dreht) → grün, wenn der Boden
+ *  eben genug ist (max. 1 m Höhenunterschied, das Gebäude sinkt ein), nichts im Weg steht und das Material
+ *  reicht → Linksklick baut und zieht die Kosten ab.
+ *  Ablauf Band: 1. Klick auf einen Ausgang, eine Stütze oder den Boden (dort entsteht eine neue Stütze),
+ *  2. Klick auf einen Eingang, eine Stütze oder den Boden. Endet das Band nicht an einer Maschine, geht es
+ *  von dort aus weiter (Kette), bis man rechtsklickt. R wechselt den Modus (Standard/Gerade/Kurve),
+ *  das Mausrad die Höhe neuer Stützen.
  *  Ablauf Abriss: F → Ziel leuchtet rot → Linksklick 0,5 s halten → alles zurück ins Inventar,
  *  was nicht passt, landet in einer Abriss-Kiste.
  *  Regeln und Steuerung: Docs/Standards/13-bauen.md
@@ -55,27 +90,42 @@ public:
 	/** How long the primary button has to be held to demolish, in seconds */
 	static constexpr float DemolishHoldTime = 0.5f;
 
+	/** How close the crosshair has to be to a port or pole to snap to it, in cm */
+	static constexpr double SnapDistance = 150.0;
+
+	/** Building table id of the conveyor pole */
+	static const FName PoleId;
+
 	UFactoryBuildComponent();
 
 	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
 
 	EFactoryBuildMode GetMode() const { return Mode; }
 
-	/** Starts placing a building. Unknown ids stop building */
+	/** Starts placing a building, pole or belt from the building table. Unknown ids stop building */
 	void BeginPlacing(FName BuildingId);
 
 	/** Switches the demolish mode on or off */
 	void ToggleDemolish();
 
-	/** Leaves place or demolish mode */
+	/** Leaves the build mode */
 	void StopBuilding();
+
+	/**
+	 *  Right mouse button / B: steps back. While drawing a belt this drops the chosen start first.
+	 *  Returns true if the build mode was left
+	 */
+	bool Cancel();
 
 	/** Primary button (left mouse, RT) pressed or released */
 	void PrimaryPressed();
 	void PrimaryReleased();
 
-	/** Rotates the hologram by one step. Fine steps (15°) instead of 90° */
-	void Rotate(int32 Direction, bool bFine);
+	/** Mouse wheel: rotates buildings, changes the pole height for poles and belts. Fine: Ctrl held */
+	void Scroll(int32 Direction, bool bFine);
+
+	/** R: cycles the belt mode */
+	void CycleMode();
 
 	/** Interact key (E): empties the demolition crate in view */
 	void Interact();
@@ -88,11 +138,19 @@ private:
 
 	AFactoryGamePlayerController* GetPlayerController() const;
 
+	const FFactoryBuildingDefinition* GetBuilding() const;
+
 	/** Line trace along the view, ignoring the player and the hologram */
 	bool TraceView(double Range, FHitResult& OutHit) const;
 
-	/** Moves the hologram to the crosshair and checks if it can be built there */
+	/** Moves the hologram to the crosshair and checks if the machine can be built there */
 	void UpdatePlacement();
+
+	/** Same for a single pole */
+	void UpdatePole();
+
+	/** Finds the belt end under the crosshair and checks the path */
+	void UpdateBelt();
 
 	/** Finds the demolish target and advances the hold timer */
 	void UpdateDemolish(float DeltaTime);
@@ -102,8 +160,22 @@ private:
 
 	/** Builds the current placement. Returns false if it isn't valid */
 	bool PlaceBuilding();
+	bool PlacePole();
+	bool PlaceBelt();
 
-	/** Demolishes a machine or belt and gives everything back */
+	/** Finds what a belt would connect to under the crosshair. Returns false and sets OutError if nothing fits */
+	bool FindBeltEnd(bool bStart, FFactoryBeltEnd& OutEnd, FText& OutError) const;
+
+	/** Returns true if nothing (other buildings, belts, the player) is in a box. Used for poles */
+	bool IsFree(const FVector& Center, const FQuat& Rotation, const FVector& HalfSize) const;
+
+	/** Takes the costs from the inventory and shows "-N item" */
+	void PayCosts(const TArray<FFactoryItemStack>& Costs) const;
+
+	/** Spawns a pole for a belt end that needs a new one, facing along the belt */
+	AFactoryBeltPole* SpawnPole(const FVector& Foot, int32 Height, const FVector& Direction) const;
+
+	/** Demolishes a machine, belt or pole and gives everything back */
 	void Demolish(AActor* Target);
 
 	/** Highlights the demolish target (and removes the highlight from the old one) */
@@ -117,9 +189,12 @@ private:
 
 	void HidePanel() const;
 
+	/** Spawns the hologram if needed */
+	AFactoryHologram* GetHologram();
+
 	EFactoryBuildMode Mode = EFactoryBuildMode::None;
 
-	/** Building being placed */
+	/** Building, pole or belt being placed */
 	FName BuildingId;
 
 	/** Rotation of the hologram around the up axis */
@@ -128,6 +203,19 @@ private:
 	/** Current hologram transform and whether it can be built there */
 	FTransform PlaceTransform;
 	bool bPlaceValid = false;
+
+	/** Height of new poles in meters, changed with the mouse wheel */
+	int32 PoleHeight = 1;
+
+	EFactoryBeltMode BeltMode = EFactoryBeltMode::Standard;
+
+	/** Start of the belt being drawn, valid after the first click */
+	bool bHasBeltStart = false;
+	FFactoryBeltEnd BeltStart;
+
+	/** End under the crosshair and the resulting path */
+	FFactoryBeltEnd BeltEnd;
+	FFactoryBeltPath BeltPath;
 
 	UPROPERTY()
 	TObjectPtr<AFactoryHologram> Hologram;

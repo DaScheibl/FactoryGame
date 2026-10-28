@@ -4,6 +4,7 @@
 #include "FactoryItemDatabase.h"
 #include "FactoryRecipeDatabase.h"
 #include "FactoryBuildingDatabase.h"
+#include "FactoryBelt.h"
 #include "FactoryLocalization.h"
 #include "Components/StaticMeshComponent.h"
 #include "Components/TextRenderComponent.h"
@@ -106,6 +107,7 @@ void AFactoryMachine::InitBuilding(FName BuildingId)
 
 	SetGrayboxSize(FVector(Building->SizeX, Building->SizeY, Building->SizeZ));
 	Ports = Building->GetPorts();
+	PortBelts.SetNum(Ports.Num());
 	CreatePortMarkers();
 }
 
@@ -153,6 +155,44 @@ TArray<FFactoryPort> AFactoryMachine::GetWorldPorts() const
 	}
 
 	return WorldPorts;
+}
+
+int32 AFactoryMachine::GetNumInputPorts() const
+{
+	return Ports.FilterByPredicate([](const FFactoryPort& Port) { return Port.bInput; }).Num();
+}
+
+AFactoryBelt* AFactoryMachine::GetPortBelt(int32 PortIndex) const
+{
+	return PortBelts.IsValidIndex(PortIndex) ? PortBelts[PortIndex].Get() : nullptr;
+}
+
+void AFactoryMachine::SetPortBelt(int32 PortIndex, AFactoryBelt* Belt)
+{
+	if (PortBelts.IsValidIndex(PortIndex))
+	{
+		PortBelts[PortIndex] = Belt;
+	}
+}
+
+int32 AFactoryMachine::FindFreePort(bool bInput, const FVector& WorldLocation, double MaxDistance) const
+{
+	const TArray<FFactoryPort> WorldPorts = GetWorldPorts();
+	int32 Best = INDEX_NONE;
+	double BestDistance = MaxDistance;
+
+	for (int32 Index = 0; Index < WorldPorts.Num(); ++Index)
+	{
+		const double Distance = FVector::Dist(WorldPorts[Index].Location, WorldLocation);
+
+		if (WorldPorts[Index].bInput == bInput && !GetPortBelt(Index) && Distance <= BestDistance)
+		{
+			Best = Index;
+			BestDistance = Distance;
+		}
+	}
+
+	return Best;
 }
 
 void AFactoryMachine::SetDemolishHighlight(bool bHighlighted)

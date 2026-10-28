@@ -13,6 +13,8 @@
 #include "Misc/Guid.h"
 #include "FactoryMachine.h"
 #include "FactoryCrate.h"
+#include "FactoryBelt.h"
+#include "FactoryBeltPole.h"
 #include "EngineUtils.h"
 #include "Engine/World.h"
 
@@ -365,14 +367,67 @@ void UFactoryGameInstance::CaptureBuildings(UWorld* World)
 	}
 
 	CurrentWorldSave->Machines.Reset();
+	CurrentWorldSave->Poles.Reset();
+	CurrentWorldSave->Belts.Reset();
 	CurrentWorldSave->Crates.Reset();
+
+	// Bänder verweisen über die Position in diesen Listen auf ihre Maschinen und Stützen
+	TMap<const AActor*, int32> MachineIndices;
+	TMap<const AActor*, int32> PoleIndices;
 
 	for (TActorIterator<AFactoryMachine> It(World); It; ++It)
 	{
+		MachineIndices.Add(*It, CurrentWorldSave->Machines.Num());
+
 		FFactorySavedMachine& Saved = CurrentWorldSave->Machines.AddDefaulted_GetRef();
 		Saved.BuildingId = It->GetProduction()->GetBuildingId();
 		Saved.Transform = It->GetActorTransform();
 		Saved.Production = It->GetProduction()->GetSaveData();
+	}
+
+	for (TActorIterator<AFactoryBeltPole> It(World); It; ++It)
+	{
+		PoleIndices.Add(*It, CurrentWorldSave->Poles.Num());
+
+		FFactorySavedPole& Saved = CurrentWorldSave->Poles.AddDefaulted_GetRef();
+		Saved.Transform = It->GetActorTransform();
+		Saved.Height = It->GetHeight();
+	}
+
+	auto SaveEnd = [&MachineIndices, &PoleIndices](const AFactoryMachine* Machine, int32 Port, const AFactoryBeltPole* Pole)
+	{
+		FFactorySavedBeltEnd End;
+
+		if (const int32* MachineIndex = Machine ? MachineIndices.Find(Machine) : nullptr)
+		{
+			End.Type = 1;
+			End.Index = *MachineIndex;
+			End.Port = Port;
+		}
+		else if (const int32* PoleIndex = Pole ? PoleIndices.Find(Pole) : nullptr)
+		{
+			End.Type = 2;
+			End.Index = *PoleIndex;
+		}
+
+		return End;
+	};
+
+	for (TActorIterator<AFactoryBelt> It(World); It; ++It)
+	{
+		FFactorySavedBelt& Saved = CurrentWorldSave->Belts.AddDefaulted_GetRef();
+
+		for (const FFactoryBeltPathPoint& Point : It->GetPath().Points)
+		{
+			Saved.Locations.Add(Point.Location);
+			Saved.ArriveTangents.Add(Point.ArriveTangent);
+			Saved.LeaveTangents.Add(Point.LeaveTangent);
+		}
+
+		Saved.Tier = It->GetBelt()->GetTier();
+		Saved.Items = It->GetBelt()->GetItems();
+		Saved.Start = SaveEnd(It->GetStartMachine(), It->GetStartPort(), It->GetStartPole());
+		Saved.End = SaveEnd(It->GetEndMachine(), It->GetEndPort(), It->GetEndPole());
 	}
 
 	for (TActorIterator<AFactoryCrate> It(World); It; ++It)
@@ -393,12 +448,74 @@ void UFactoryGameInstance::RestoreBuildings(UWorld* World)
 	FActorSpawnParameters SpawnParams;
 	SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
 
+	// gleiche Reihenfolge wie beim Speichern, damit die Indizes der Bänder passen
+	TArray<AFactoryMachine*> Machines;
+	TArray<AFactoryBeltPole*> Poles;
+
 	for (const FFactorySavedMachine& Saved : CurrentWorldSave->Machines)
 	{
-		if (AFactoryMachine* Machine = World->SpawnActor<AFactoryMachine>(Saved.Transform.GetLocation(), Saved.Transform.Rotator(), SpawnParams))
+		AFactoryMachine* Machine = World->SpawnActor<AFactoryMachine>(Saved.Transform.GetLocation(), Saved.Transform.Rotator(), SpawnParams);
+
+		if (Machine)
 		{
 			Machine->InitBuilding(Saved.BuildingId);
 			Machine->GetProduction()->LoadSaveData(Saved.Production);
+		}
+
+		Machines.Add(Machine);
+	}
+
+	for (const FFactorySavedPole& Saved : CurrentWorldSave->Poles)
+	{
+		AFactoryBeltPole* Pole = World->SpawnActor<AFactoryBeltPole>(Saved.Transform.GetLocation(), Saved.Transform.Rotator(), SpawnParams);
+
+		if (Pole)
+		{
+			Pole->SetHeight(Saved.Height);
+		}
+
+		Poles.Add(Pole);
+	}
+
+	for (const FFactorySavedBelt& Saved : CurrentWorldSave->Belts)
+	{
+		FFactoryBeltPath Path;
+
+		for (int32 Index = 0; Index < Saved.Locations.Num() && Index < Saved.ArriveTangents.Num() && Index < Saved.LeaveTangents.Num(); ++Index)
+		{
+			Path.Points.Add({ Saved.Locations[Index], Saved.ArriveTangents[Index], Saved.LeaveTangents[Index] });
+		}
+
+		AFactoryBelt* Belt = AFactoryBelt::SpawnBelt(World, Path, Saved.Tier);
+
+		if (!Belt)
+		{
+			continue;
+		}
+
+		Belt->GetBelt()->LoadItems(Saved.Items);
+
+		AFactoryMachine* StartMachine = Saved.Start.Type == 1 && Machines.IsValidIndex(Saved.Start.Index) ? Machines[Saved.Start.Index] : nullptr;
+		AFactoryBeltPole* StartPole = Saved.Start.Type == 2 && Poles.IsValidIndex(Saved.Start.Index) ? Poles[Saved.Start.Index] : nullptr;
+		AFactoryMachine* EndMachine = Saved.End.Type == 1 && Machines.IsValidIndex(Saved.End.Index) ? Machines[Saved.End.Index] : nullptr;
+		AFactoryBeltPole* EndPole = Saved.End.Type == 2 && Poles.IsValidIndex(Saved.End.Index) ? Poles[Saved.End.Index] : nullptr;
+
+		if (StartMachine)
+		{
+			Belt->ConnectStartToMachine(StartMachine, Saved.Start.Port);
+		}
+		else if (StartPole)
+		{
+			Belt->ConnectStartToPole(StartPole);
+		}
+
+		if (EndMachine)
+		{
+			Belt->ConnectEndToMachine(EndMachine, Saved.End.Port);
+		}
+		else if (EndPole)
+		{
+			Belt->ConnectEndToPole(EndPole);
 		}
 	}
 
@@ -407,7 +524,8 @@ void UFactoryGameInstance::RestoreBuildings(UWorld* World)
 		AFactoryCrate::SpawnCrate(World, Saved.Location, Saved.Items);
 	}
 
-	UE_LOG(LogFactoryGame, Log, TEXT("Restored %d machines and %d crates."), CurrentWorldSave->Machines.Num(), CurrentWorldSave->Crates.Num());
+	UE_LOG(LogFactoryGame, Log, TEXT("Restored %d machines, %d poles, %d belts and %d crates."), CurrentWorldSave->Machines.Num(),
+		CurrentWorldSave->Poles.Num(), CurrentWorldSave->Belts.Num(), CurrentWorldSave->Crates.Num());
 }
 
 void UFactoryGameInstance::OpenMap(const TSoftObjectPtr<UWorld>& Map)

@@ -11,6 +11,7 @@
 class UStaticMeshComponent;
 class UTextRenderComponent;
 class UMaterialInstanceDynamic;
+class AFactoryBelt;
 
 /**
  *  Base actor for production buildings. For now a graybox: a cube that changes its color with the machine state and shows its status as text.
@@ -40,8 +41,20 @@ public:
 	/** Sets size of the graybox cube in meters. The actor origin is the center of the bottom face */
 	void SetGrayboxSize(const FVector& SizeInMeters);
 
-	/** Returns the belt ports in world space */
+	/** Returns the belt ports in world space, inputs first */
 	TArray<FFactoryPort> GetWorldPorts() const;
+
+	/** Returns the number of input ports; output port N has the index NumInputs + N */
+	int32 GetNumInputPorts() const;
+
+	/** Returns the belt connected to a port, or null if the port is free */
+	AFactoryBelt* GetPortBelt(int32 PortIndex) const;
+
+	/** Remembers which belt is connected to a port */
+	void SetPortBelt(int32 PortIndex, AFactoryBelt* Belt);
+
+	/** Returns the free input or output port closest to a location within MaxDistance (cm), or INDEX_NONE */
+	int32 FindFreePort(bool bInput, const FVector& WorldLocation, double MaxDistance) const;
 
 	/** Tints the machine red while it is targeted for demolition */
 	void SetDemolishHighlight(bool bHighlighted);
@@ -87,6 +100,9 @@ private:
 
 	/** Belt ports relative to the actor, from the building table */
 	TArray<FFactoryPort> Ports;
+
+	/** Belt connected to each port (same order as Ports) */
+	TArray<TWeakObjectPtr<AFactoryBelt>> PortBelts;
 
 	/** Text currently shown by the label */
 	FString LabelText;

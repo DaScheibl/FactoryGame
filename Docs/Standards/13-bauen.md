@@ -5,7 +5,7 @@ Gehört zu `SYS_Build` (Bausystem), `EQP_BuildGun` und später `UI_BuildMenu`. R
 Das Bausystem kommt in drei Schritten:
 
 1. **Gebäude platzieren** (Hologramm, Drehen, Kosten, Abriss, Speichern) ✅ im Spiel getestet
-2. **Bänder bauen** (zwischen Ports ziehen, Modi, Bandstützen)
+2. **Bänder bauen** (zwischen Ports ziehen, Modi, Bandstützen) – gebaut, Test im Spiel offen
 3. **Baumenü** (`UI_BuildMenu`, Kategorien & Suche)
 
 ## Entscheidungen
@@ -27,7 +27,22 @@ Das Bausystem kommt in drei Schritten:
 | Modi (Wechsel mit `R`) | **Standard** (weiche S-Kurve nach Port-Richtung), **Gerade** (nur gerade Stücke + 90°-Ecken), **Kurve** (gleichmäßige Bögen) |
 | Grenzen pro Abschnitt | **max. 56 m** (7 Kacheln), **max. 35° Steigung**, **Kurvenradius min. 2 m** |
 | Freies Ende | Automatisch eine **Bandstütze** (`LOG_BeltPole`), von dort weiterziehen |
-| Kosten | **1 Eisenplatte pro angefangene 2 m** (Mk1; höhere Stufen später). Gilt schon jetzt für den Abriss von Cheat-Bändern |
+| Kosten | **1 Eisenplatte pro angefangene 2 m** (Mk1; höhere Stufen später). Steht als Kosten „pro 2 m“ in der Zeile `LOG_Belt_Mk1` |
+| Bandstütze | **1 Eisenstange + 1 Eisenplatte**, Höhe **1–7 m** per Mausrad (Standard 1 m = Port-Höhe), `Strg` + Mausrad dreht |
+| Ablauf | **Klick-Klick mit Kette:** Start, Ende; endet es nicht an einer Maschine, geht es von dort weiter, bis Rechtsklick |
+| Hotbar / Stufen | Eigene Slots für **Förderband Mk1** und **Bandstütze**; Mk2–Mk5 kommen mit der Forschung |
+
+### Bänder ziehen – so funktioniert's
+
+1. Förderband auf der Hotbar wählen. **1. Klick** auf einen **Ausgang** (orange), eine **Stütze** oder den **Boden**. Auf dem Boden entsteht beim Bauen eine neue Stütze (Höhe per Mausrad). In der Nähe (1,5 m) rastet es an freie Ports und Stützen ein.
+2. **2. Klick** auf einen **Eingang** (blau), eine Stütze oder den Boden. Das Hologramm zeigt die Kurve und die neuen Stützen, darunter Kosten (Band + Stützen) und ggf. den Grund, warum es nicht geht.
+3. Endet das Band an einer Stütze, beginnt das nächste dort (**Kette**). Rechtsklick verwirft den Start, ein zweiter Rechtsklick verlässt den Bau-Modus.
+
+- **Richtungen:** Ports und Stützen mit Band haben eine feste Fluss-Richtung, das Band startet bzw. kommt in dieser Richtung an. Freie Enden wählt der Modus.
+- **Modi:** *Standard* = weiche Kurve. *Gerade* = gerade Stücke mit 90°-Ecken (L- oder S-Form). *Kurve* = gleichmäßiger Kreisbogen, an festen Enden Bogen + Gerade. Passt ein Modus nicht, steht „Passt in diesem Modus nicht“ da.
+- **Stützen verbinden Bänder:** Ein Band, das an einer Stütze ankommt, gibt seine Items an das Band weiter, das dort beginnt.
+- **Abriss:** Eine Stütze reißt die Bänder an ihr mit ab (alles wird erstattet). Eine Maschine lässt ihre Bänder stehen, deren Ende ist dann offen.
+- Bänder prüfen noch **keine Kollision** mit Gebäuden auf ihrer Strecke, nur an den Enden.
 
 ## Steuerung (Schema A)
 
@@ -37,6 +52,7 @@ Das Bausystem kommt in drei Schritten:
 | Platzieren | Linksklick | RT |
 | Drehen | Mausrad (90°), `Strg` + Mausrad (15°) | LB / RB |
 | Modus wechseln (Bänder) | `R` | Y |
+| Stützenhöhe (Stütze/Band) | Mausrad (1–7 m) | LB / RB |
 | Abbrechen | Rechtsklick oder `Esc` | B |
 | Abriss-Modus an/aus | `F`, dann Linksklick **halten** | Steuerkreuz runter, RT halten |
 | Abriss-Kiste leeren | `E` | X |
@@ -52,7 +68,8 @@ Das Bausystem kommt in drei Schritten:
 | `---` | Gebäude-ID (`BLD_…`) |
 | `NameEN` / `NameDE` | Anzeigename |
 | `Tier` | 0–8, Freischalt-Tier (wird noch nicht geprüft) |
-| `Category` | Kategorie fürs Baumenü, z. B. `Production` |
+| `Category` | Kategorie fürs Baumenü, z. B. `Production`, `Logistics` |
+| `Type` | `Machine` (Gebäude), `Belt` (Kosten gelten pro angefangene 2 m) oder `Pole` |
 | `SizeX` | Länge in Fluss-Richtung (hinten → vorn) in m |
 | `SizeY` | Breite in m |
 | `SizeZ` | Höhe in m |
@@ -69,6 +86,8 @@ Beim Laden wird jede Zeile geprüft (unbekannte oder nicht tragbare Kosten-Items
 | Konstruktor | 1 | 8 × 4 × 4 m | 1 → 1 | 8 Eisenplatten, 8 Kupferdraht |
 | Assembler | 2 | 8 × 8 × 5 m | 2 → 1 | 6 Verst. Eisenplatten, 4 Rotoren |
 | Gießerei | 2 | 8 × 4 × 6 m | 2 → 1 | 10 Zahnräder, 10 Beton |
+| Förderband Mk1 | 0 | – | – | 1 Eisenplatte pro 2 m |
+| Bandstütze | 0 | 1–7 m hoch | – | 1 Eisenstange, 1 Eisenplatte |
 
 > ✏️ **Entwurf, von dir freizugeben:** die **Höhen** (5 / 4 / 5 / 6 m), Größe und Kosten hast du festgelegt.
 
@@ -87,7 +106,7 @@ Damit der erste Assembler baubar ist, gibt es den **Rotor jetzt auch an der Werk
 
 ## Speichern
 
-Maschinen (Gebäude, Position, Rezept, Puffer, Fortschritt) und Abriss-Kisten werden mit der Welt gespeichert (Spielstand-Version 3). **Bänder noch nicht**, das kommt mit Schritt 2, weil sie dann an Ports hängen.
+Maschinen (Gebäude, Position, Rezept, Puffer, Fortschritt), Abriss-Kisten (Version 3), Bandstützen und Bänder mit Kurve, Items und Anschlüssen (Version 4) werden mit der Welt gespeichert.
 
 ## Testwelt
 
@@ -107,6 +126,8 @@ Alle Befehle auf einen Blick: [Cheatsheet](../Cheatsheet.md)
 | `ListBuildings` | Alle Gebäude mit Größe, Ports und Kosten ins Log |
 | `ReloadBuildings` | `DT_Buildings.csv` neu laden und prüfen |
 
+**Schnelltest Band:** `BeltTest` → Schmelzofen und Konstruktor mit Band. Selbst ziehen: `GiveItem IronPlate 100`, `GiveItem IronRod 20`, Förderband auf der Hotbar wählen, auf den orangen Ausgang klicken, dann auf den Boden (Stütze), weiter zum blauen Eingang.
+
 **Schnelltest:** `GiveBuildCosts Smelter 3` → Taste `1` → Hologramm grün → Linksklick baut → Mausrad dreht → `F`, auf den Ofen zielen, Linksklick halten → Eisenplatten kommen zurück.
 
 ## Code
@@ -118,3 +139,6 @@ Alle Befehle auf einen Blick: [Cheatsheet](../Cheatsheet.md)
 | `UFactoryBuildComponent` (Bauwerkzeug am Player Controller) | `Source/FactoryGame/Buildings/FactoryBuildComponent.h` |
 | `AFactoryHologram` (Vorschau) | `Source/FactoryGame/Buildings/FactoryHologram.h` |
 | `AFactoryCrate` (Abriss-Kiste) | `Source/FactoryGame/Buildings/FactoryCrate.h` |
+| `FactoryBeltPath` (Kurven der drei Band-Modi, Grenzen) | `Source/FactoryGame/Buildings/FactoryBeltPath.h` |
+| `AFactoryBeltPole` (Bandstütze) | `Source/FactoryGame/Buildings/FactoryBeltPole.h` |
+| `AFactoryBelt` (Band: Kurve, Anschlüsse, Optik) | `Source/FactoryGame/Buildings/FactoryBelt.h` |

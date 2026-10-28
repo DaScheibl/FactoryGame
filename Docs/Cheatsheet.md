@@ -48,7 +48,7 @@ Farben der Graybox: grau = kein Rezept · gelb = wartet auf Zutaten · grün = a
 
 ## Bauen
 
-Steuerung: `1`–`0` Gebäude wählen · Linksklick bauen · Mausrad drehen (`Strg`: 15°) · Rechtsklick/`Esc` abbrechen · `F` Abriss-Modus (Linksklick halten) · `E` Abriss-Kiste leeren. Details: [13 Bauen](Standards/13-bauen.md)
+Steuerung: `1`–`0` Gebäude wählen · Linksklick bauen · Mausrad drehen (`Strg`: 15°) bzw. Stützenhöhe · `R` Band-Modus · Rechtsklick/`Esc` abbrechen · `F` Abriss-Modus (Linksklick halten) · `E` Abriss-Kiste leeren. Details: [13 Bauen](Standards/13-bauen.md)
 
 | Befehl | Wirkung | Beispiel |
 |---|---|---|
@@ -62,8 +62,8 @@ Steuerung: `1`–`0` Gebäude wählen · Linksklick bauen · Mausrad drehen (`St
 
 | Befehl | Wirkung | Beispiel |
 |---|---|---|
-| `BeltTest [Stufe]` | Fertiger Aufbau: Schmelzofen (voll Eisenerz) → Band → Konstruktor, 10 m vor dir | `BeltTest 2` |
-| `ConnectBelt [Stufe]` | Zweimal eingeben: erst auf die Quell-, dann auf die Zielmaschine schauen. Baut ein gerades Band (Stufe 1–5, Standard Mk1) | `ConnectBelt 3` |
+| `BeltTest [Stufe]` | Fertiger Aufbau: Schmelzofen (voll Eisenerz) → Band → Konstruktor, hintereinander vor dir | `BeltTest 2` |
+| `ConnectBelt [Stufe]` | Zweimal eingeben: erst auf die Quell-, dann auf die Zielmaschine schauen. Baut ein Band vom freien Ausgang zum nächsten freien Eingang (Stufe 1–5, Standard Mk1) | `ConnectBelt 3` |
 | `FeedBelt <Item> [Anzahl]` | Items aufs Band legen, von vorn dicht gepackt (ohne Anzahl: bis voll) | `FeedBelt IronOre 10` |
 | `SetBeltTier <1–5>` | Stufe ändern (Mk1 60 · Mk2 120 · Mk3 240 · Mk4 480 · Mk5 960 Items/min) | `SetBeltTier 5` |
 | `BeltInfo` | Stufe, Tempo, Länge, Items pro Sorte, gestaut?, ausgelieferte Items ins Log | |

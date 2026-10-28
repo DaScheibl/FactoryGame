@@ -131,7 +131,9 @@ void UFactoryBeltComponent::PullFromSource()
 
 	// das Item kann in diesem Tick schon eine Tick-Strecke weit gekommen sein; ohne das würde bei
 	// schnellen Bändern (Mk5: 400 mm/Tick bei 500 mm Abstand) Durchsatz verloren gehen
-	const FFactoryItemStack Taken = Machine->ExtractOutput(NAME_None, 1);
+	const TArray<FFactoryItemStack>& Outputs = Machine->GetOutputs();
+	const FName OutputItem = Outputs.IsValidIndex(SourceOutput) ? Outputs[SourceOutput].ItemId : NAME_None;
+	const FFactoryItemStack Taken = Machine->ExtractOutput(OutputItem, 1);
 
 	if (!Taken.IsEmpty())
 	{
@@ -191,6 +193,16 @@ void UFactoryBeltComponent::SetLength(int32 NewLengthMm, TArray<FName>& OutRemov
 	}
 
 	NumCompressed = FMath::Min(NumCompressed, Items.Num());
+}
+
+void UFactoryBeltComponent::LoadItems(const TArray<FFactoryBeltItem>& NewItems)
+{
+	Items = NewItems;
+	RecalculateTotalGap();
+
+	// passt der Inhalt nicht mehr (Länge geändert), fliegt hinten herunter, was übersteht
+	TArray<FName> Ignored;
+	SetLength(LengthMm, Ignored);
 }
 
 void UFactoryBeltComponent::ClearItems(TArray<FName>& OutRemoved)

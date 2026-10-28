@@ -109,10 +109,10 @@ private:
 	/** Copies the current pawn and camera state into the active save game */
 	void CapturePlayerState();
 
-	/** Writes all machines and crates of the world into the current save */
+	/** Writes all machines, poles, belts and crates of the world into the current save */
 	void CaptureBuildings(UWorld* World);
 
-	/** Spawns the saved machines and crates after the world has been loaded */
+	/** Spawns the saved machines, poles, belts and crates after the world has been loaded */
 	void RestoreBuildings(UWorld* World);
 
 	/** Opens the given map */

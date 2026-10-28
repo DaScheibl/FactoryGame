@@ -13,6 +13,20 @@
  *  Format und Werte: Docs/Standards/13-bauen.md
  */
 
+/** What kind of thing a building table row places */
+UENUM(BlueprintType)
+enum class EFactoryBuildingType : uint8
+{
+	/** Production building with recipe and ports (AFactoryMachine) */
+	Machine,
+
+	/** Conveyor belt, drawn between ports and poles. Costs are per started 2 m */
+	Belt,
+
+	/** Conveyor pole (AFactoryBeltPole) */
+	Pole
+};
+
 /** Where in a building a belt port sits */
 struct FFactoryPort
 {
@@ -47,6 +61,10 @@ struct FACTORYGAME_API FFactoryBuildingDefinition : public FTableRowBase
 	/** Build menu category, e.g. Production */
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category="Building")
 	FName Category;
+
+	/** Machine, belt or pole */
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category="Building")
+	EFactoryBuildingType Type = EFactoryBuildingType::Machine;
 
 	/** Footprint length along the item flow (front-back) in meters */
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category="Building", meta=(ClampMin=1))

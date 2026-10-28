@@ -46,6 +46,13 @@ bool UFactoryWorldSaveGame::MigrateToLatest()
 		Crates.Reset();
 	}
 
+	if (SaveVersion < static_cast<int32>(EFactoryWorldSaveVersion::Belts))
+	{
+		// no belts or poles before
+		Poles.Reset();
+		Belts.Reset();
+	}
+
 	if (SaveVersion < Latest)
 	{
 		UE_LOG(LogFactoryGame, Log, TEXT("Migrated world '%s' from save version %d to %d."), *DisplayName, SaveVersion, Latest);

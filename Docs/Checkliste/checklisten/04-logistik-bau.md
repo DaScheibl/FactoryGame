@@ -18,12 +18,12 @@ Legende: `PT` Prototyp · `VS` Vertical Slice · `EA` Early Access · `1.0` Rele
 
 ## Förderbänder
 
-- [ ] **Förderband Mk1 (gerade, Kurve, Rampe)** · `LOG_Belt_Mk1` · `PT`
+- [ ] **Förderband Mk1 (gerade, Kurve, Rampe)** · `LOG_Belt_Mk1` · `PT` — _Funktion steht (Graybox, 3 Bau-Modi, [13 Bauen](../../Standards/13-bauen.md)); Mesh, Bandlauf-Shader, SFX fehlen_
 - [ ] **Förderband Mk2** · `LOG_Belt_Mk2` · `VS`
 - [ ] **Förderband Mk3** · `LOG_Belt_Mk3` · `EA`
 - [ ] **Förderband Mk4** · `LOG_Belt_Mk4` · `EA`
 - [ ] **Förderband Mk5** · `LOG_Belt_Mk5` · `1.0`
-- [ ] **Bandstützen / Pfeiler (Stapelbar)** · `LOG_BeltPole` · `PT`
+- [ ] **Bandstützen / Pfeiler (Stapelbar)** · `LOG_BeltPole` · `PT` — _Funktion steht (Graybox, 1–7 m per Mausrad statt Stapeln); Mesh fehlt_
 - [ ] **Wandhalterung & Deckenaufhängung** · `LOG_BeltMounts` · `EA`
 - [ ] **Förderlift Mk1–Mk5** · `LOG_Lift` · `VS`
 - [ ] **Splitter** · `LOG_Splitter` · `VS`

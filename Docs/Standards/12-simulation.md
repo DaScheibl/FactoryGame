@@ -94,15 +94,15 @@ Ein Mk1-Band reicht also für 2 Schmelzöfen (je 30 Barren/min).
 
 ### Graybox-Band
 
-`AFactoryBelt`: gerader dunkler Streifen (0,8 m breit, Oberkante auf 1 m = Port-Höhe), Items als 30-cm-Würfel in der Platzhalterfarbe aus `DT_Items` (Instanced Mesh pro Sorte). Über dem Band steht Stufe, Durchsatz, Anzahl Items und ggf. „Gestaut“.
-Bänder werden **noch nicht gespeichert**, das kommt mit dem Bausystem.
+`AFactoryBelt`: dunkler Streifen (0,8 m breit) entlang einer Kurve, Oberkante auf Port- bzw. Stützenhöhe, Items als 30-cm-Würfel in der Platzhalterfarbe aus `DT_Items` (Instanced Mesh pro Sorte). Über dem Band steht Stufe, Durchsatz, Anzahl Items und ggf. „Gestaut“.
+Gebaut werden Bänder mit dem Bauwerkzeug ([13 Bauen](13-bauen.md)), gespeichert mit der Welt.
 
 ### Test-Befehle (Konsole)
 
 | Befehl | Wirkung |
 |---|---|
-| `BeltTest 2` | Schmelzofen (voll Eisenerz) → Mk2-Band → Konstruktor (Eisenplatten), 10 m vor dir |
-| `ConnectBelt [Stufe]` | 1. Aufruf: Maschine im Blick = Quelle, 2. Aufruf: Maschine im Blick = Ziel, Band wird gebaut |
+| `BeltTest 2` | Schmelzofen (voll Eisenerz) → Mk2-Band → Konstruktor (Eisenplatten), hintereinander vor dir |
+| `ConnectBelt [Stufe]` | 1. Aufruf: Maschine im Blick = Quelle, 2. Aufruf: Maschine im Blick = Ziel, Band vom freien Ausgang zum nächsten freien Eingang |
 | `FeedBelt IronOre [Anzahl]` | Items aufs Band im Blick legen (von vorn dicht gepackt, ohne Anzahl: bis voll) |
 | `SetBeltTier 5` | Stufe des Bands im Blick ändern |
 | `BeltInfo` | Stufe, Länge, Items, gestaut?, ausgelieferte Items ins Log |

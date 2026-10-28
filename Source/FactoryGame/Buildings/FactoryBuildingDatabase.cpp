@@ -77,9 +77,10 @@ int32 UFactoryBuildingDatabase::Validate() const
 	{
 		const FFactoryBuildingDefinition* Building = FindBuilding(BuildingId);
 
-		if (!BuildingId.ToString().StartsWith(TEXT("BLD_")))
+		// Gebäude heißen BLD_, Logistik-Teile (Bänder, Stützen) LOG_
+		if (!BuildingId.ToString().StartsWith(TEXT("BLD_")) && !BuildingId.ToString().StartsWith(TEXT("LOG_")))
 		{
-			Report(BuildingId, TEXT("id should start with BLD_"));
+			Report(BuildingId, TEXT("id should start with BLD_ or LOG_"));
 		}
 
 		if (Building->SizeX <= 0 || Building->SizeY <= 0 || Building->SizeZ <= 0)
@@ -88,7 +89,7 @@ int32 UFactoryBuildingDatabase::Validate() const
 		}
 
 		// Ports müssen nebeneinander auf die Kante passen (mindestens 1 m pro Port)
-		if (Building->Inputs > Building->SizeY || Building->Outputs > Building->SizeY)
+		if (Building->Type == EFactoryBuildingType::Machine && (Building->Inputs > Building->SizeY || Building->Outputs > Building->SizeY))
 		{
 			Report(BuildingId, TEXT("more ports than meters of edge"));
 		}

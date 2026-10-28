@@ -6,6 +6,7 @@
 #include "GameFramework/SaveGame.h"
 #include "FactoryItemTypes.h"
 #include "FactoryProductionComponent.h"
+#include "FactoryBeltComponent.h"
 #include "FactoryWorldSaveGame.generated.h"
 
 /**
@@ -76,6 +77,9 @@ enum class EFactoryWorldSaveVersion : int32
 	/** Placed machines and demolition crates */
 	Buildings = 3,
 
+	/** Conveyor poles and belts */
+	Belts = 4,
+
 	LatestPlusOne,
 	Latest = LatestPlusOne - 1
 };
@@ -94,6 +98,66 @@ struct FFactorySavedMachine
 
 	UPROPERTY(SaveGame)
 	FFactoryProductionSaveData Production;
+};
+
+/** A conveyor pole */
+USTRUCT()
+struct FFactorySavedPole
+{
+	GENERATED_BODY()
+
+	UPROPERTY(SaveGame)
+	FTransform Transform;
+
+	UPROPERTY(SaveGame)
+	int32 Height = 1;
+};
+
+/** What a belt end is attached to: index into Machines or Poles of the same save */
+USTRUCT()
+struct FFactorySavedBeltEnd
+{
+	GENERATED_BODY()
+
+	/** 0 = nothing, 1 = machine, 2 = pole */
+	UPROPERTY(SaveGame)
+	uint8 Type = 0;
+
+	UPROPERTY(SaveGame)
+	int32 Index = INDEX_NONE;
+
+	/** Port index of the machine */
+	UPROPERTY(SaveGame)
+	int32 Port = INDEX_NONE;
+};
+
+/** A conveyor belt: its curve, tier, items and both ends */
+USTRUCT()
+struct FFactorySavedBelt
+{
+	GENERATED_BODY()
+
+	/** Curve points in world space, with the tangents of each point */
+	UPROPERTY(SaveGame)
+	TArray<FVector> Locations;
+
+	UPROPERTY(SaveGame)
+	TArray<FVector> ArriveTangents;
+
+	UPROPERTY(SaveGame)
+	TArray<FVector> LeaveTangents;
+
+	UPROPERTY(SaveGame)
+	int32 Tier = 1;
+
+	UPROPERTY(SaveGame)
+	TArray<FFactoryBeltItem> Items;
+
+	UPROPERTY(SaveGame)
+	FFactorySavedBeltEnd Start;
+
+	UPROPERTY(SaveGame)
+	FFactorySavedBeltEnd End;
 };
 
 /** A demolition crate with the items that didn't fit into the inventory */
@@ -163,9 +227,16 @@ public:
 	UPROPERTY(SaveGame)
 	TArray<FName> HotbarSlots;
 
-	/** Placed machines. Belts are not saved yet, they follow with belt building */
+	/** Placed machines */
 	UPROPERTY(SaveGame)
 	TArray<FFactorySavedMachine> Machines;
+
+	UPROPERTY(SaveGame)
+	TArray<FFactorySavedPole> Poles;
+
+	/** Belts refer to Machines and Poles by index */
+	UPROPERTY(SaveGame)
+	TArray<FFactorySavedBelt> Belts;
 
 	UPROPERTY(SaveGame)
 	TArray<FFactorySavedCrate> Crates;

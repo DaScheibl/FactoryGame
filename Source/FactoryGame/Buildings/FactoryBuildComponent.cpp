@@ -5,6 +5,7 @@
 #include "FactoryHologram.h"
 #include "FactoryMachine.h"
 #include "FactoryBelt.h"
+#include "FactoryBeltPole.h"
 #include "FactoryBeltComponent.h"
 #include "FactoryCrate.h"
 #include "FactoryGamePlayerController.h"
@@ -16,7 +17,10 @@
 #include "FactoryGame.h"
 #include "Engine/World.h"
 #include "Engine/OverlapResult.h"
+#include "EngineUtils.h"
 #include "GameFramework/Pawn.h"
+
+const FName UFactoryBuildComponent::PoleId(TEXT("LOG_BeltPole"));
 
 namespace
 {
@@ -26,7 +30,7 @@ namespace
 	// Gebäude-Actors, die sich nie überlappen dürfen
 	bool IsFactoryActor(const AActor* Actor)
 	{
-		return Actor && (Actor->IsA<AFactoryMachine>() || Actor->IsA<AFactoryBelt>() || Actor->IsA<AFactoryCrate>() || Actor->IsA<APawn>());
+		return Actor && (Actor->IsA<AFactoryMachine>() || Actor->IsA<AFactoryBelt>() || Actor->IsA<AFactoryBeltPole>() || Actor->IsA<AFactoryCrate>() || Actor->IsA<APawn>());
 	}
 
 	// gleiche Items zusammenfassen, damit die Meldungen "+10 Eisenplatte" statt zweimal "+5" zeigen
@@ -49,6 +53,54 @@ namespace
 			}
 		}
 	}
+
+	FCollisionObjectQueryParams GetBlockingObjectTypes()
+	{
+		FCollisionObjectQueryParams ObjectTypes;
+		ObjectTypes.AddObjectTypesToQuery(ECC_WorldStatic);
+		ObjectTypes.AddObjectTypesToQuery(ECC_WorldDynamic);
+		ObjectTypes.AddObjectTypesToQuery(ECC_Pawn);
+		ObjectTypes.AddObjectTypesToQuery(ECC_PhysicsBody);
+		return ObjectTypes;
+	}
+
+	FText GetPathProblemText(EFactoryBeltPathProblem Problem)
+	{
+		switch (Problem)
+		{
+		case EFactoryBeltPathProblem::TooShort:		return FactoryLoc::Get(TEXT("Build_Error_TooShort"));
+		case EFactoryBeltPathProblem::TooLong:		return FactoryLoc::Get(TEXT("Build_Error_TooLong"));
+		case EFactoryBeltPathProblem::TooSteep:		return FactoryLoc::Get(TEXT("Build_Error_TooSteep"));
+		case EFactoryBeltPathProblem::TooTight:		return FactoryLoc::Get(TEXT("Build_Error_TooTight"));
+		case EFactoryBeltPathProblem::Impossible:	return FactoryLoc::Get(TEXT("Build_Error_Impossible"));
+		default:									return FText::GetEmpty();
+		}
+	}
+
+	FText GetBeltModeText(EFactoryBeltMode Mode)
+	{
+		switch (Mode)
+		{
+		case EFactoryBeltMode::Straight:	return FactoryLoc::Get(TEXT("Belt_Mode_Straight"));
+		case EFactoryBeltMode::Curve:		return FactoryLoc::Get(TEXT("Belt_Mode_Curve"));
+		default:							return FactoryLoc::Get(TEXT("Belt_Mode_Standard"));
+		}
+	}
+}
+
+bool FFactoryBeltEnd::IsSameAs(const FFactoryBeltEnd& Other) const
+{
+	if (Machine.IsValid() && Machine == Other.Machine)
+	{
+		return true;
+	}
+
+	if (Pole.IsValid() && Pole == Other.Pole)
+	{
+		return true;
+	}
+
+	return bNewPole && Other.bNewPole && PoleFoot.Equals(Other.PoleFoot, 1.0);
 }
 
 UFactoryBuildComponent::UFactoryBuildComponent()
@@ -68,39 +120,14 @@ AFactoryGamePlayerController* UFactoryBuildComponent::GetPlayerController() cons
 	return Cast<AFactoryGamePlayerController>(GetOwner());
 }
 
-void UFactoryBuildComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
-{
-	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
-
-	switch (Mode)
-	{
-	case EFactoryBuildMode::Place:		UpdatePlacement(); break;
-	case EFactoryBuildMode::Demolish:	UpdateDemolish(DeltaTime); break;
-	default:							UpdateIdle(); break;
-	}
-}
-
-void UFactoryBuildComponent::BeginPlacing(FName NewBuildingId)
+const FFactoryBuildingDefinition* UFactoryBuildComponent::GetBuilding() const
 {
 	const UFactoryBuildingDatabase* Buildings = UFactoryBuildingDatabase::Get(this);
-	const FFactoryBuildingDefinition* Building = Buildings ? Buildings->FindBuilding(NewBuildingId) : nullptr;
+	return Buildings ? Buildings->FindBuilding(BuildingId) : nullptr;
+}
 
-	if (!Building)
-	{
-		StopBuilding();
-		return;
-	}
-
-	SetDemolishTarget(nullptr);
-	Mode = EFactoryBuildMode::Place;
-	BuildingId = NewBuildingId;
-
-	// das Gebäude zeigt anfangs vom Spieler weg (Ausgang vorn), in 90°-Schritten
-	if (const AFactoryGamePlayerController* PlayerController = GetPlayerController())
-	{
-		PlaceYaw = FMath::GridSnap(PlayerController->GetControlRotation().Yaw, 90.0);
-	}
-
+AFactoryHologram* UFactoryBuildComponent::GetHologram()
+{
 	if (!Hologram)
 	{
 		FActorSpawnParameters SpawnParams;
@@ -108,12 +135,60 @@ void UFactoryBuildComponent::BeginPlacing(FName NewBuildingId)
 		Hologram = GetWorld()->SpawnActor<AFactoryHologram>(FVector::ZeroVector, FRotator::ZeroRotator, SpawnParams);
 	}
 
-	if (Hologram)
+	return Hologram;
+}
+
+void UFactoryBuildComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
+{
+	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
+
+	switch (Mode)
 	{
-		Hologram->SetBuilding(*Building);
+	case EFactoryBuildMode::Place:		UpdatePlacement(); break;
+	case EFactoryBuildMode::Pole:		UpdatePole(); break;
+	case EFactoryBuildMode::Belt:		UpdateBelt(); break;
+	case EFactoryBuildMode::Demolish:	UpdateDemolish(DeltaTime); break;
+	default:							UpdateIdle(); break;
+	}
+}
+
+void UFactoryBuildComponent::BeginPlacing(FName NewBuildingId)
+{
+	StopBuilding();
+
+	const UFactoryBuildingDatabase* Buildings = UFactoryBuildingDatabase::Get(this);
+	const FFactoryBuildingDefinition* Building = Buildings ? Buildings->FindBuilding(NewBuildingId) : nullptr;
+
+	if (!Building || !GetHologram())
+	{
+		return;
 	}
 
-	UpdatePlacement();
+	BuildingId = NewBuildingId;
+
+	// Gebäude zeigen anfangs vom Spieler weg (Ausgang vorn), in 90°-Schritten
+	if (const AFactoryGamePlayerController* PlayerController = GetPlayerController())
+	{
+		PlaceYaw = FMath::GridSnap(PlayerController->GetControlRotation().Yaw, 90.0);
+	}
+
+	switch (Building->Type)
+	{
+	case EFactoryBuildingType::Pole:
+		Mode = EFactoryBuildMode::Pole;
+		Hologram->SetPole(PoleHeight);
+		break;
+
+	case EFactoryBuildingType::Belt:
+		Mode = EFactoryBuildMode::Belt;
+		bHasBeltStart = false;
+		break;
+
+	default:
+		Mode = EFactoryBuildMode::Place;
+		Hologram->SetBuilding(*Building);
+		break;
+	}
 }
 
 void UFactoryBuildComponent::ToggleDemolish()
@@ -132,6 +207,7 @@ void UFactoryBuildComponent::StopBuilding()
 {
 	Mode = EFactoryBuildMode::None;
 	BuildingId = NAME_None;
+	bHasBeltStart = false;
 	bHoldingPrimary = false;
 	HoldTime = 0.0f;
 	SetDemolishTarget(nullptr);
@@ -145,16 +221,34 @@ void UFactoryBuildComponent::StopBuilding()
 	HidePanel();
 }
 
+bool UFactoryBuildComponent::Cancel()
+{
+	// beim Band zuerst nur den gewählten Start verwerfen
+	if (Mode == EFactoryBuildMode::Belt && bHasBeltStart)
+	{
+		bHasBeltStart = false;
+		return false;
+	}
+
+	StopBuilding();
+	return true;
+}
+
 void UFactoryBuildComponent::PrimaryPressed()
 {
-	if (Mode == EFactoryBuildMode::Place)
+	switch (Mode)
 	{
-		PlaceBuilding();
-	}
-	else if (Mode == EFactoryBuildMode::Demolish)
-	{
+	case EFactoryBuildMode::Place:		PlaceBuilding(); break;
+	case EFactoryBuildMode::Pole:		PlacePole(); break;
+	case EFactoryBuildMode::Belt:		PlaceBelt(); break;
+
+	case EFactoryBuildMode::Demolish:
 		bHoldingPrimary = true;
 		HoldTime = 0.0f;
+		break;
+
+	default:
+		break;
 	}
 }
 
@@ -164,11 +258,32 @@ void UFactoryBuildComponent::PrimaryReleased()
 	HoldTime = 0.0f;
 }
 
-void UFactoryBuildComponent::Rotate(int32 Direction, bool bFine)
+void UFactoryBuildComponent::Scroll(int32 Direction, bool bFine)
 {
-	if (Mode == EFactoryBuildMode::Place)
+	// Stützen und Bänder: Mausrad = Höhe neuer Stützen, Strg + Mausrad dreht die Stütze
+	if ((Mode == EFactoryBuildMode::Pole && !bFine) || Mode == EFactoryBuildMode::Belt)
+	{
+		PoleHeight = FMath::Clamp(PoleHeight + Direction, AFactoryBeltPole::MinHeight, AFactoryBeltPole::MaxHeight);
+
+		if (Mode == EFactoryBuildMode::Pole && Hologram)
+		{
+			Hologram->SetPole(PoleHeight);
+		}
+
+		return;
+	}
+
+	if (Mode == EFactoryBuildMode::Place || Mode == EFactoryBuildMode::Pole)
 	{
 		PlaceYaw = FRotator::NormalizeAxis(PlaceYaw + Direction * (bFine ? 15.0 : 90.0));
+	}
+}
+
+void UFactoryBuildComponent::CycleMode()
+{
+	if (Mode == EFactoryBuildMode::Belt)
+	{
+		BeltMode = static_cast<EFactoryBeltMode>((static_cast<uint8>(BeltMode) + 1) % static_cast<uint8>(EFactoryBeltMode::Count));
 	}
 }
 
@@ -196,10 +311,23 @@ bool UFactoryBuildComponent::TraceView(double Range, FHitResult& OutHit) const
 	return World->LineTraceSingleByChannel(OutHit, ViewLocation, ViewLocation + ViewRotation.Vector() * Range, ECC_Visibility, Params);
 }
 
+bool UFactoryBuildComponent::IsFree(const FVector& Center, const FQuat& Rotation, const FVector& HalfSize) const
+{
+	FCollisionQueryParams Params(TEXT("BuildOverlap"), false);
+
+	if (Hologram)
+	{
+		Params.AddIgnoredActor(Hologram);
+	}
+
+	TArray<FOverlapResult> Overlaps;
+	GetWorld()->OverlapMultiByObjectType(Overlaps, Center, Rotation, GetBlockingObjectTypes(), FCollisionShape::MakeBox(HalfSize), Params);
+	return !Overlaps.ContainsByPredicate([](const FOverlapResult& Overlap) { return IsFactoryActor(Overlap.GetActor()); });
+}
+
 void UFactoryBuildComponent::UpdatePlacement()
 {
-	const UFactoryBuildingDatabase* Buildings = UFactoryBuildingDatabase::Get(this);
-	const FFactoryBuildingDefinition* Building = Buildings ? Buildings->FindBuilding(BuildingId) : nullptr;
+	const FFactoryBuildingDefinition* Building = GetBuilding();
 	const AFactoryGamePlayerController* PlayerController = GetPlayerController();
 	UWorld* World = GetWorld();
 
@@ -284,29 +412,20 @@ void UFactoryBuildComponent::UpdatePlacement()
 	}
 	else
 	{
-		FCollisionObjectQueryParams ObjectTypes;
-		ObjectTypes.AddObjectTypesToQuery(ECC_WorldStatic);
-		ObjectTypes.AddObjectTypesToQuery(ECC_WorldDynamic);
-		ObjectTypes.AddObjectTypesToQuery(ECC_Pawn);
-		ObjectTypes.AddObjectTypesToQuery(ECC_PhysicsBody);
-
-		FCollisionQueryParams OverlapParams(TEXT("BuildOverlap"), false);
-		OverlapParams.AddIgnoredActor(Hologram);
-
 		// 1. kein anderes Gebäude, Band oder Spieler im ganzen Footprint (5 cm Luft, damit Nachbarn anliegen dürfen)
-		TArray<FOverlapResult> Overlaps;
 		const FVector HalfSize = Size * 0.5 - FVector(5.0);
-		World->OverlapMultiByObjectType(Overlaps, Location + FVector(0.0, 0.0, Size.Z * 0.5), Rotation, ObjectTypes, FCollisionShape::MakeBox(HalfSize), OverlapParams);
-
-		bool bBlocked = Overlaps.ContainsByPredicate([](const FOverlapResult& Overlap) { return IsFactoryActor(Overlap.GetActor()); });
+		bool bBlocked = !IsFree(Location + FVector(0.0, 0.0, Size.Z * 0.5), Rotation, HalfSize);
 
 		// 2. oberhalb der Einsink-Zone darf gar nichts sein (Felsen, Wände, Gelände)
 		const double FreeBottom = MaxGroundDifference + 5.0;
 
 		if (!bBlocked && Size.Z > FreeBottom + 10.0)
 		{
+			FCollisionQueryParams OverlapParams(TEXT("BuildOverlap"), false);
+			OverlapParams.AddIgnoredActor(Hologram);
+
 			const double FreeHalfHeight = (Size.Z - FreeBottom) * 0.5 - 1.0;
-			bBlocked = World->OverlapAnyTestByObjectType(Location + FVector(0.0, 0.0, FreeBottom + FreeHalfHeight), Rotation, ObjectTypes,
+			bBlocked = World->OverlapAnyTestByObjectType(Location + FVector(0.0, 0.0, FreeBottom + FreeHalfHeight), Rotation, GetBlockingObjectTypes(),
 				FCollisionShape::MakeBox(FVector(HalfSize.X, HalfSize.Y, FreeHalfHeight)), OverlapParams);
 		}
 
@@ -327,29 +446,17 @@ void UFactoryBuildComponent::UpdatePlacement()
 
 bool UFactoryBuildComponent::PlaceBuilding()
 {
-	const UFactoryBuildingDatabase* Buildings = UFactoryBuildingDatabase::Get(this);
-	const FFactoryBuildingDefinition* Building = Buildings ? Buildings->FindBuilding(BuildingId) : nullptr;
-	AFactoryGamePlayerController* PlayerController = GetPlayerController();
-	const AFactoryGameCharacter* Character = PlayerController ? Cast<AFactoryGameCharacter>(PlayerController->GetPawn()) : nullptr;
-	UFactoryInventoryComponent* Inventory = Character ? Character->GetInventory() : nullptr;
-
 	// noch einmal prüfen: zwischen Tick und Klick kann sich etwas geändert haben
 	UpdatePlacement();
 
-	if (!Building || !Inventory || !bPlaceValid)
+	const FFactoryBuildingDefinition* Building = GetBuilding();
+
+	if (!Building || !bPlaceValid)
 	{
 		return false;
 	}
 
-	for (const FFactoryItemStack& Cost : Building->GetCosts())
-	{
-		Inventory->RemoveItem(Cost.ItemId, Cost.Count);
-
-		if (UFactoryHUDWidget* HUD = PlayerController->GetHUDWidget())
-		{
-			HUD->ShowItemNotification(Cost.ItemId, -Cost.Count);
-		}
-	}
+	PayCosts(Building->GetCosts());
 
 	FActorSpawnParameters SpawnParams;
 	SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
@@ -362,12 +469,413 @@ bool UFactoryBuildComponent::PlaceBuilding()
 	return true;
 }
 
+void UFactoryBuildComponent::UpdatePole()
+{
+	const FFactoryBuildingDefinition* Building = GetBuilding();
+
+	if (!Building || !Hologram)
+	{
+		StopBuilding();
+		return;
+	}
+
+	TArray<TPair<FText, bool>> CostLines;
+	const bool bEnoughMaterial = CheckCosts(Building->GetCosts(), CostLines);
+	const FText Controls = FactoryLoc::Format(TEXT("Build_Controls_Pole"), { PoleHeight });
+	bPlaceValid = false;
+
+	FHitResult Hit;
+
+	if (!TraceView(BuildRange, Hit))
+	{
+		Hologram->SetActorHiddenInGame(true);
+		ShowPanel(Building->GetDisplayName(), CostLines, FactoryLoc::Get(TEXT("Build_Error_NoGround")), Controls);
+		return;
+	}
+
+	Hologram->SetActorHiddenInGame(false);
+
+	// Stützen stehen auf 1-m-Rasterpunkten, wie die Ports der Maschinen
+	FVector Foot = Hit.ImpactPoint;
+	Foot.X = FMath::GridSnap(Foot.X, 100.0);
+	Foot.Y = FMath::GridSnap(Foot.Y, 100.0);
+
+	const FQuat Rotation = FRotator(0.0, PlaceYaw, 0.0).Quaternion();
+	PlaceTransform = FTransform(Rotation, Foot);
+	Hologram->SetActorTransform(PlaceTransform);
+
+	FText Error;
+
+	if (IsFactoryActor(Hit.GetActor()) || !IsFree(Foot + FVector(0.0, 0.0, PoleHeight * 50.0 + 5.0), Rotation, FVector(35.0, 35.0, PoleHeight * 50.0 - 10.0)))
+	{
+		Error = FactoryLoc::Get(TEXT("Build_Error_Blocked"));
+	}
+	else if (!bEnoughMaterial)
+	{
+		Error = FactoryLoc::Get(TEXT("Build_Error_Materials"));
+	}
+
+	bPlaceValid = Error.IsEmpty();
+	Hologram->SetValid(bPlaceValid);
+	ShowPanel(Building->GetDisplayName(), CostLines, Error, Controls);
+}
+
+bool UFactoryBuildComponent::PlacePole()
+{
+	UpdatePole();
+
+	const FFactoryBuildingDefinition* Building = GetBuilding();
+
+	if (!Building || !bPlaceValid)
+	{
+		return false;
+	}
+
+	PayCosts(Building->GetCosts());
+	SpawnPole(PlaceTransform.GetLocation(), PoleHeight, PlaceTransform.GetRotation().GetForwardVector());
+	return true;
+}
+
+AFactoryBeltPole* UFactoryBuildComponent::SpawnPole(const FVector& Foot, int32 Height, const FVector& Direction) const
+{
+	FActorSpawnParameters SpawnParams;
+	SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
+
+	AFactoryBeltPole* Pole = GetWorld()->SpawnActor<AFactoryBeltPole>(Foot, FRotator(0.0, Direction.Rotation().Yaw, 0.0), SpawnParams);
+
+	if (Pole)
+	{
+		Pole->SetHeight(Height);
+	}
+
+	return Pole;
+}
+
+bool UFactoryBuildComponent::FindBeltEnd(bool bStart, FFactoryBeltEnd& OutEnd, FText& OutError) const
+{
+	OutEnd = FFactoryBeltEnd();
+	FHitResult Hit;
+
+	if (!TraceView(BuildRange, Hit))
+	{
+		OutError = FactoryLoc::Get(TEXT("Build_Error_NoGround"));
+		return false;
+	}
+
+	// Start braucht einen freien Ausgang, Ende einen freien Eingang
+	auto UseMachinePort = [&OutEnd](AFactoryMachine* Machine, int32 PortIndex)
+	{
+		const FFactoryPort Port = Machine->GetWorldPorts()[PortIndex];
+		OutEnd.Machine = Machine;
+		OutEnd.Port = PortIndex;
+		OutEnd.Location = Port.Location;
+		OutEnd.Direction = Port.Direction;
+	};
+
+	auto UsePole = [&OutEnd](AFactoryBeltPole* Pole)
+	{
+		OutEnd.Pole = Pole;
+		OutEnd.Location = Pole->GetConnectionLocation();
+		// ist schon ein Band angeschlossen, ist die Fluss-Richtung der Stütze festgelegt
+		OutEnd.Direction = Pole->HasAnyBelt() ? Pole->GetActorForwardVector() : FVector::ZeroVector;
+	};
+
+	auto PoleIsFree = [bStart](const AFactoryBeltPole* Pole)
+	{
+		return bStart ? !Pole->GetOutputBelt() : !Pole->GetInputBelt();
+	};
+
+	if (AFactoryMachine* Machine = Cast<AFactoryMachine>(Hit.GetActor()))
+	{
+		const int32 PortIndex = Machine->FindFreePort(!bStart, Hit.ImpactPoint, 300.0);
+
+		if (PortIndex == INDEX_NONE)
+		{
+			OutError = FactoryLoc::Get(TEXT("Build_Error_NoPort"));
+			return false;
+		}
+
+		UseMachinePort(Machine, PortIndex);
+		return true;
+	}
+
+	if (AFactoryBeltPole* Pole = Cast<AFactoryBeltPole>(Hit.GetActor()))
+	{
+		if (!PoleIsFree(Pole))
+		{
+			OutError = FactoryLoc::Get(TEXT("Build_Error_NoPort"));
+			return false;
+		}
+
+		UsePole(Pole);
+		return true;
+	}
+
+	if (IsFactoryActor(Hit.GetActor()))
+	{
+		OutError = FactoryLoc::Get(TEXT("Build_Error_NoPort"));
+		return false;
+	}
+
+	// Boden: in der Nähe eines freien Ports oder einer Stütze dort einrasten
+	for (TActorIterator<AFactoryMachine> It(GetWorld()); It; ++It)
+	{
+		if (FVector::DistSquared2D(It->GetActorLocation(), Hit.ImpactPoint) < FMath::Square(2000.0))
+		{
+			const int32 PortIndex = It->FindFreePort(!bStart, Hit.ImpactPoint + FVector(0.0, 0.0, 100.0), SnapDistance);
+
+			if (PortIndex != INDEX_NONE)
+			{
+				UseMachinePort(*It, PortIndex);
+				return true;
+			}
+		}
+	}
+
+	for (TActorIterator<AFactoryBeltPole> It(GetWorld()); It; ++It)
+	{
+		if (PoleIsFree(*It) && FVector::Dist2D(It->GetActorLocation(), Hit.ImpactPoint) < SnapDistance * 0.67)
+		{
+			UsePole(*It);
+			return true;
+		}
+	}
+
+	// sonst entsteht hier eine neue Stütze (1-m-Raster, Höhe per Mausrad)
+	OutEnd.bNewPole = true;
+	OutEnd.PoleFoot = FVector(FMath::GridSnap(Hit.ImpactPoint.X, 100.0), FMath::GridSnap(Hit.ImpactPoint.Y, 100.0), Hit.ImpactPoint.Z);
+	OutEnd.PoleHeight = PoleHeight;
+	OutEnd.Location = OutEnd.PoleFoot + FVector(0.0, 0.0, PoleHeight * 100.0);
+
+	if (!IsFree(OutEnd.PoleFoot + FVector(0.0, 0.0, PoleHeight * 50.0 + 5.0), FQuat::Identity, FVector(35.0, 35.0, PoleHeight * 50.0 - 10.0)))
+	{
+		OutError = FactoryLoc::Get(TEXT("Build_Error_Blocked"));
+		return false;
+	}
+
+	return true;
+}
+
+void UFactoryBuildComponent::UpdateBelt()
+{
+	const FFactoryBuildingDefinition* Building = GetBuilding();
+	const UFactoryBuildingDatabase* Buildings = UFactoryBuildingDatabase::Get(this);
+	const FFactoryBuildingDefinition* PoleBuilding = Buildings ? Buildings->FindBuilding(PoleId) : nullptr;
+
+	if (!Building || !Hologram)
+	{
+		StopBuilding();
+		return;
+	}
+
+	// der Start (Maschine/Stütze) kann inzwischen abgerissen worden sein
+	if (bHasBeltStart && !BeltStart.bNewPole && !BeltStart.Machine.IsValid() && !BeltStart.Pole.IsValid())
+	{
+		bHasBeltStart = false;
+	}
+
+	const FText Title = FactoryLoc::Format(TEXT("Build_BeltTitle"), { Building->GetDisplayName(), GetBeltModeText(BeltMode) });
+	const FText Controls = FactoryLoc::Format(bHasBeltStart ? TEXT("Build_Controls_BeltEnd") : TEXT("Build_Controls_BeltStart"), { PoleHeight });
+
+	// Hologramm steht im Ursprung, Kurve und Stützen werden in Weltkoordinaten gezeigt
+	Hologram->SetActorTransform(FTransform::Identity);
+	Hologram->SetActorHiddenInGame(false);
+	bPlaceValid = false;
+
+	FText Error;
+	TArray<TPair<FText, bool>> CostLines;
+	TArray<FFactoryItemStack> Costs;
+	TArray<FTransform> NewPoles;
+
+	auto AddNewPole = [&Costs, &NewPoles, PoleBuilding](const FFactoryBeltEnd& End, const FVector& Direction)
+	{
+		if (End.bNewPole)
+		{
+			NewPoles.Emplace(FRotator(0.0, Direction.Rotation().Yaw, 0.0), End.PoleFoot, FVector(1.0, 1.0, End.PoleHeight));
+			AddStacks(Costs, PoleBuilding ? PoleBuilding->GetCosts() : TArray<FFactoryItemStack>());
+		}
+	};
+
+	if (!bHasBeltStart)
+	{
+		// 1. Schritt: Start suchen
+		FFactoryBeltEnd Start;
+
+		if (FindBeltEnd(true, Start, Error))
+		{
+			AddNewPole(Start, Start.Direction.IsZero() ? FVector::ForwardVector : Start.Direction);
+		}
+
+		CheckCosts(Costs, CostLines);
+		CostLines.Insert(TPair<FText, bool>(FactoryLoc::Get(TEXT("Build_BeltPickStart")), true), 0);
+		Hologram->SetBelt(nullptr, NewPoles);
+		Hologram->SetValid(Error.IsEmpty());
+		ShowPanel(Title, CostLines, Error, Controls);
+		return;
+	}
+
+	// 2. Schritt: Ende suchen und die Kurve berechnen
+	const bool bFoundEnd = FindBeltEnd(false, BeltEnd, Error);
+
+	if (bFoundEnd && BeltEnd.IsSameAs(BeltStart))
+	{
+		Error = FactoryLoc::Get(TEXT("Build_Error_TooShort"));
+	}
+
+	EFactoryBeltPathProblem Problem = EFactoryBeltPathProblem::None;
+
+	if (Error.IsEmpty())
+	{
+		Problem = FactoryBeltPath::Build(BeltMode, BeltStart.Location, BeltStart.Direction, BeltEnd.Location, BeltEnd.Direction, BeltPath);
+		Error = GetPathProblemText(Problem);
+
+		AddStacks(Costs, AFactoryBelt::GetBuildCostsForLength(this, BeltPath.Length, 1));
+		AddNewPole(BeltStart, BeltPath.StartDirection);
+		AddNewPole(BeltEnd, BeltPath.EndDirection);
+	}
+
+	const bool bEnoughMaterial = CheckCosts(Costs, CostLines);
+
+	if (Error.IsEmpty() && !bEnoughMaterial)
+	{
+		Error = FactoryLoc::Get(TEXT("Build_Error_Materials"));
+	}
+
+	// die Kurve auch zeigen, wenn sie nur zu steil oder zu eng ist, damit man sieht, was nicht passt
+	const bool bShowPath = bFoundEnd && BeltPath.Points.Num() >= 2 && Problem != EFactoryBeltPathProblem::Impossible;
+	Hologram->SetBelt(bShowPath ? &BeltPath : nullptr, NewPoles);
+
+	bPlaceValid = Error.IsEmpty();
+	Hologram->SetValid(bPlaceValid);
+	ShowPanel(Title, CostLines, Error, Controls);
+}
+
+bool UFactoryBuildComponent::PlaceBelt()
+{
+	// 1. Klick: Start merken (gebaut wird erst mit dem Ende)
+	if (!bHasBeltStart)
+	{
+		FText Error;
+
+		if (FindBeltEnd(true, BeltStart, Error))
+		{
+			bHasBeltStart = true;
+		}
+
+		return false;
+	}
+
+	UpdateBelt();
+
+	if (!bPlaceValid)
+	{
+		return false;
+	}
+
+	const UFactoryBuildingDatabase* Buildings = UFactoryBuildingDatabase::Get(this);
+	const FFactoryBuildingDefinition* PoleBuilding = Buildings ? Buildings->FindBuilding(PoleId) : nullptr;
+
+	TArray<FFactoryItemStack> Costs = AFactoryBelt::GetBuildCostsForLength(this, BeltPath.Length, 1);
+
+	// neue Stützen an den Enden mitbauen, ausgerichtet in Fluss-Richtung
+	AFactoryBeltPole* StartPole = BeltStart.Pole.Get();
+	AFactoryBeltPole* EndPole = BeltEnd.Pole.Get();
+
+	if (BeltStart.bNewPole)
+	{
+		StartPole = SpawnPole(BeltStart.PoleFoot, BeltStart.PoleHeight, BeltPath.StartDirection);
+		AddStacks(Costs, PoleBuilding ? PoleBuilding->GetCosts() : TArray<FFactoryItemStack>());
+	}
+
+	if (BeltEnd.bNewPole)
+	{
+		EndPole = SpawnPole(BeltEnd.PoleFoot, BeltEnd.PoleHeight, BeltPath.EndDirection);
+		AddStacks(Costs, PoleBuilding ? PoleBuilding->GetCosts() : TArray<FFactoryItemStack>());
+	}
+
+	// eine bisher freie Stütze übernimmt die Richtung des ersten Bandes
+	if (StartPole && !StartPole->HasAnyBelt())
+	{
+		StartPole->SetActorRotation(FRotator(0.0, BeltPath.StartDirection.Rotation().Yaw, 0.0));
+	}
+
+	if (EndPole && !EndPole->HasAnyBelt())
+	{
+		EndPole->SetActorRotation(FRotator(0.0, BeltPath.EndDirection.Rotation().Yaw, 0.0));
+	}
+
+	PayCosts(Costs);
+
+	AFactoryBelt* NewBelt = AFactoryBelt::SpawnBelt(GetWorld(), BeltPath, 1);
+
+	if (!NewBelt)
+	{
+		return false;
+	}
+
+	if (BeltStart.Machine.IsValid())
+	{
+		NewBelt->ConnectStartToMachine(BeltStart.Machine.Get(), BeltStart.Port);
+	}
+	else
+	{
+		NewBelt->ConnectStartToPole(StartPole);
+	}
+
+	if (BeltEnd.Machine.IsValid())
+	{
+		NewBelt->ConnectEndToMachine(BeltEnd.Machine.Get(), BeltEnd.Port);
+
+		// an einer Maschine ist die Kette zu Ende, der nächste Klick wählt einen neuen Start
+		bHasBeltStart = false;
+		return true;
+	}
+
+	NewBelt->ConnectEndToPole(EndPole);
+
+	// an eine bestehende Bandkette angeschlossen: auch hier ist die Kette zu Ende
+	if (!EndPole || EndPole->GetOutputBelt())
+	{
+		bHasBeltStart = false;
+		return true;
+	}
+
+	// Kette: das nächste Band beginnt an der Stütze, an der dieses endet
+	BeltStart = FFactoryBeltEnd();
+	BeltStart.Pole = EndPole;
+	BeltStart.Location = EndPole ? EndPole->GetConnectionLocation() : BeltEnd.Location;
+	BeltStart.Direction = BeltPath.EndDirection;
+	return true;
+}
+
+void UFactoryBuildComponent::PayCosts(const TArray<FFactoryItemStack>& Costs) const
+{
+	const AFactoryGamePlayerController* PlayerController = GetPlayerController();
+	const AFactoryGameCharacter* Character = PlayerController ? Cast<AFactoryGameCharacter>(PlayerController->GetPawn()) : nullptr;
+	UFactoryInventoryComponent* Inventory = Character ? Character->GetInventory() : nullptr;
+
+	if (!Inventory)
+	{
+		return;
+	}
+
+	for (const FFactoryItemStack& Cost : Costs)
+	{
+		Inventory->RemoveItem(Cost.ItemId, Cost.Count);
+
+		if (UFactoryHUDWidget* HUD = PlayerController->GetHUDWidget())
+		{
+			HUD->ShowItemNotification(Cost.ItemId, -Cost.Count);
+		}
+	}
+}
+
 void UFactoryBuildComponent::UpdateDemolish(float DeltaTime)
 {
 	FHitResult Hit;
 	AActor* Target = nullptr;
 
-	if (TraceView(BuildRange, Hit) && (Cast<AFactoryMachine>(Hit.GetActor()) || Cast<AFactoryBelt>(Hit.GetActor())))
+	if (TraceView(BuildRange, Hit) && (Hit.GetActor() && (Hit.GetActor()->IsA<AFactoryMachine>() || Hit.GetActor()->IsA<AFactoryBelt>() || Hit.GetActor()->IsA<AFactoryBeltPole>())))
 	{
 		Target = Hit.GetActor();
 	}
@@ -387,16 +895,20 @@ void UFactoryBuildComponent::UpdateDemolish(float DeltaTime)
 		return;
 	}
 
+	const UFactoryBuildingDatabase* Buildings = UFactoryBuildingDatabase::Get(this);
 	FText TargetName;
 
 	if (const AFactoryMachine* Machine = Cast<AFactoryMachine>(Target))
 	{
-		const UFactoryBuildingDatabase* Buildings = UFactoryBuildingDatabase::Get(this);
 		TargetName = Buildings ? Buildings->GetDisplayName(Machine->GetProduction()->GetBuildingId()) : FText::GetEmpty();
 	}
 	else if (const AFactoryBelt* Belt = Cast<AFactoryBelt>(Target))
 	{
 		TargetName = FactoryLoc::Format(TEXT("Belt_Name"), { Belt->GetBelt()->GetTier() });
+	}
+	else
+	{
+		TargetName = Buildings ? Buildings->GetDisplayName(PoleId) : FText::GetEmpty();
 	}
 
 	TArray<TPair<FText, bool>> Lines;
@@ -426,6 +938,7 @@ void UFactoryBuildComponent::UpdateDemolish(float DeltaTime)
 void UFactoryBuildComponent::Demolish(AActor* Target)
 {
 	AFactoryGamePlayerController* PlayerController = GetPlayerController();
+	const UFactoryBuildingDatabase* Buildings = UFactoryBuildingDatabase::Get(this);
 
 	if (!Target || !PlayerController)
 	{
@@ -434,22 +947,9 @@ void UFactoryBuildComponent::Demolish(AActor* Target)
 
 	// alles zurück: Baukosten + Inhalt
 	TArray<FFactoryItemStack> Refund;
+	TArray<AActor*> ToDestroy = { Target };
 
-	if (AFactoryMachine* Machine = Cast<AFactoryMachine>(Target))
-	{
-		const UFactoryBuildingDatabase* Buildings = UFactoryBuildingDatabase::Get(this);
-
-		if (const FFactoryBuildingDefinition* Building = Buildings ? Buildings->FindBuilding(Machine->GetProduction()->GetBuildingId()) : nullptr)
-		{
-			AddStacks(Refund, Building->GetCosts());
-		}
-
-		// Rezept abwählen gibt Puffer und die Zutaten eines laufenden Durchlaufs heraus
-		TArray<FFactoryItemStack> Contents;
-		Machine->GetProduction()->SetRecipe(NAME_None, Contents);
-		AddStacks(Refund, Contents);
-	}
-	else if (AFactoryBelt* Belt = Cast<AFactoryBelt>(Target))
+	auto RefundBelt = [&Refund](AFactoryBelt* Belt)
 	{
 		AddStacks(Refund, Belt->GetBuildCosts());
 
@@ -459,6 +959,41 @@ void UFactoryBuildComponent::Demolish(AActor* Target)
 		for (const FName& ItemId : Items)
 		{
 			AddStacks(Refund, { FFactoryItemStack(ItemId, 1) });
+		}
+	};
+
+	if (AFactoryMachine* Machine = Cast<AFactoryMachine>(Target))
+	{
+		if (const FFactoryBuildingDefinition* Building = Buildings ? Buildings->FindBuilding(Machine->GetProduction()->GetBuildingId()) : nullptr)
+		{
+			AddStacks(Refund, Building->GetCosts());
+		}
+
+		// Rezept abwählen gibt Puffer und die Zutaten eines laufenden Durchlaufs heraus.
+		// Angeschlossene Bänder bleiben stehen, ihr Ende ist dann offen
+		TArray<FFactoryItemStack> Contents;
+		Machine->GetProduction()->SetRecipe(NAME_None, Contents);
+		AddStacks(Refund, Contents);
+	}
+	else if (AFactoryBelt* Belt = Cast<AFactoryBelt>(Target))
+	{
+		RefundBelt(Belt);
+	}
+	else if (AFactoryBeltPole* Pole = Cast<AFactoryBeltPole>(Target))
+	{
+		if (const FFactoryBuildingDefinition* PoleBuilding = Buildings ? Buildings->FindBuilding(PoleId) : nullptr)
+		{
+			AddStacks(Refund, PoleBuilding->GetCosts());
+		}
+
+		// eine Stütze trägt ihre Bänder: die werden mit abgerissen
+		for (AFactoryBelt* PoleBelt : { Pole->GetInputBelt(), Pole->GetOutputBelt() })
+		{
+			if (PoleBelt)
+			{
+				RefundBelt(PoleBelt);
+				ToDestroy.Add(PoleBelt);
+			}
 		}
 	}
 
@@ -485,33 +1020,42 @@ void UFactoryBuildComponent::Demolish(AActor* Target)
 		}
 	}
 
-	Target->Destroy();
+	for (AActor* Actor : ToDestroy)
+	{
+		Actor->Destroy();
+	}
 }
 
 void UFactoryBuildComponent::SetDemolishTarget(AActor* NewTarget)
 {
-	if (AActor* Old = DemolishTarget.Get())
+	auto Highlight = [](AActor* Actor, bool bOn)
 	{
-		if (AFactoryMachine* Machine = Cast<AFactoryMachine>(Old))
+		if (AFactoryMachine* Machine = Cast<AFactoryMachine>(Actor))
 		{
-			Machine->SetDemolishHighlight(false);
+			Machine->SetDemolishHighlight(bOn);
 		}
-		else if (AFactoryBelt* Belt = Cast<AFactoryBelt>(Old))
+		else if (AFactoryBelt* Belt = Cast<AFactoryBelt>(Actor))
 		{
-			Belt->SetDemolishHighlight(false);
+			Belt->SetDemolishHighlight(bOn);
 		}
-	}
+		else if (AFactoryBeltPole* Pole = Cast<AFactoryBeltPole>(Actor))
+		{
+			Pole->SetDemolishHighlight(bOn);
 
+			// die Bänder an der Stütze werden mit abgerissen, also auch markieren
+			for (AFactoryBelt* PoleBelt : { Pole->GetInputBelt(), Pole->GetOutputBelt() })
+			{
+				if (PoleBelt)
+				{
+					PoleBelt->SetDemolishHighlight(bOn);
+				}
+			}
+		}
+	};
+
+	Highlight(DemolishTarget.Get(), false);
 	DemolishTarget = NewTarget;
-
-	if (AFactoryMachine* Machine = Cast<AFactoryMachine>(NewTarget))
-	{
-		Machine->SetDemolishHighlight(true);
-	}
-	else if (AFactoryBelt* Belt = Cast<AFactoryBelt>(NewTarget))
-	{
-		Belt->SetDemolishHighlight(true);
-	}
+	Highlight(NewTarget, true);
 }
 
 void UFactoryBuildComponent::UpdateIdle()
