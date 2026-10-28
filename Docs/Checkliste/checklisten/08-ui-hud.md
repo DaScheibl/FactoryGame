@@ -29,7 +29,7 @@ Legende: `PT` Prototyp · `VS` Vertical Slice · `EA` Early Access · `1.0` Rele
 
 - [ ] **HUD: Fadenkreuz, Hotbar, Hinweise** · `UI_HUD` · `PT` · [Doku](../../Standards/10-items-inventar.md) — _Umgesetzt: Fadenkreuz, 10er-Hotbar, Hinweiszeile. Layout = Entwurf, Freigabe offen_
 - [ ] **Inventar** · `UI_Inventory` · `PT` · [Doku](../../Standards/10-items-inventar.md) — _Umgesetzt: Ausrüstung (Kopf/Körper/Rücken/Hand) + 20er-Raster (bis 60 über Forschung), Stapel am Cursor, Rechtsklick halb/einzeln, Shift-/Strg-Klick, Drag & Drop, Sortieren, Maus + Gamepad. Tasten/Layout = Entwurf, Freigabe offen; Icons kommen mit `TOOL_IconRig`_
-- [ ] **Baumenü mit Kategorien & Suche** · `UI_BuildMenu` · `PT`
+- [ ] **Baumenü mit Kategorien & Suche** · `UI_BuildMenu` · `PT` — _Schritt 3 des Bausystems; bis dahin füllt sich eine leere Hotbar mit allen Gebäuden_
 - [ ] **Maschinen-Panel (Rezept, Status, Overclock)** · `UI_MachinePanel` · `PT`
 - [ ] **Tech-Tree / Forschung** · `UI_Research` · `VS`
 - [ ] **Karte + Markierungen** · `UI_Map` · `EA`

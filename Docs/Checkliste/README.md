@@ -21,13 +21,13 @@ Unreal Engine 5 · Blender · Ziel: Steam Early Access → 1.0.
 | [Audio](checklisten/09-audio.md) | 0/21 | `░░░░░░░░░░░░░░░░░░░░`  0.0% |
 | [VFX](checklisten/10-vfx.md) | 0/15 | `░░░░░░░░░░░░░░░░░░░░`  0.0% |
 | [Story, Text & Cinematics](checklisten/11-story-cinematics.md) | 0/8 | `░░░░░░░░░░░░░░░░░░░░`  0.0% |
-| [Technik & Systeme (nicht-Asset, aber 1.0-relevant)](checklisten/12-technik-systeme.md) | 4/18 | `████░░░░░░░░░░░░░░░░` 22.2% |
+| [Technik & Systeme (nicht-Asset, aber 1.0-relevant)](checklisten/12-technik-systeme.md) | 4/19 | `████░░░░░░░░░░░░░░░░` 21.1% |
 | [Release, Marketing & Recht](checklisten/13-release-marketing.md) | 0/30 | `░░░░░░░░░░░░░░░░░░░░`  0.0% |
-| **Gesamt** | **13/1052** | `░░░░░░░░░░░░░░░░░░░░`  1.2% |
+| **Gesamt** | **13/1053** | `░░░░░░░░░░░░░░░░░░░░`  1.2% |
 
 | Meilenstein | Assets fertig | Fortschritt |
 |---|---|---|
-| `PT` Prototyp | 11/43 | `█████░░░░░░░░░░░░░░░` 25.6% |
+| `PT` Prototyp | 11/44 | `█████░░░░░░░░░░░░░░░` 25.0% |
 | `VS` Vertical Slice | 1/108 | `░░░░░░░░░░░░░░░░░░░░`  0.9% |
 | `EA` Early Access | 0/171 | `░░░░░░░░░░░░░░░░░░░░`  0.0% |
 | `1.0` Release 1.0 | 0/75 | `░░░░░░░░░░░░░░░░░░░░`  0.0% |

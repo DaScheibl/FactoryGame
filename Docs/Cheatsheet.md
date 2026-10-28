@@ -46,6 +46,16 @@ Alle Test-Befehle von FactoryGame auf einen Blick. Sie funktionieren im Editor (
 
 Farben der Graybox: grau = kein Rezept · gelb = wartet auf Zutaten · grün = arbeitet · rot = Ausgang voll.
 
+## Bauen
+
+Steuerung: `1`–`0` Gebäude wählen · Linksklick bauen · Mausrad drehen (`Strg`: 15°) · Rechtsklick/`Esc` abbrechen · `F` Abriss-Modus (Linksklick halten) · `E` Abriss-Kiste leeren. Details: [13 Bauen](Standards/13-bauen.md)
+
+| Befehl | Wirkung | Beispiel |
+|---|---|---|
+| `GiveBuildCosts <Gebäude> [Anzahl]` | Material für ein oder mehrere Gebäude ins Inventar | `GiveBuildCosts Smelter 5` |
+| `ListBuildings` | Alle Gebäude mit Größe, Ports und Kosten ins Log | |
+| `ReloadBuildings` | `DT_Buildings.csv` neu laden und prüfen | |
+
 ## Förderbänder
 
 „Band im Blick“ = das unter dem Fadenkreuz (bis 15 m), sonst das nächste im Umkreis von 20 m.
@@ -77,6 +87,13 @@ MachineInfo
 TakeOutput
 SimSpeed 1
 ```
+
+**Bauen:**
+```
+GiveBuildCosts Smelter 3
+GiveBuildCosts Constructor 2
+```
+Dann `1` (Schmelzofen) bzw. `2` (Konstruktor) drücken, Linksklick baut, `F` + Linksklick halten reißt ab.
 
 **Förderband:**
 ```

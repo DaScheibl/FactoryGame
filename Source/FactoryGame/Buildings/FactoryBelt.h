@@ -4,11 +4,13 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
+#include "FactoryItemTypes.h"
 #include "FactoryBelt.generated.h"
 
 class UStaticMesh;
 class UStaticMeshComponent;
 class UMaterialInterface;
+class UMaterialInstanceDynamic;
 class UInstancedStaticMeshComponent;
 class UTextRenderComponent;
 class UFactoryBeltComponent;
@@ -46,6 +48,12 @@ public:
 	/** Spawns a belt from the output of one machine to the input of another and connects both */
 	static AFactoryBelt* SpawnBetween(UWorld* World, AActor* SourceMachine, AActor* TargetMachine, int32 Tier);
 
+	/** Returns the build costs: 1 iron plate per started 2 m (Docs/Standards/13-bauen.md) */
+	TArray<FFactoryItemStack> GetBuildCosts() const;
+
+	/** Tints the belt red while it is targeted for demolition */
+	void SetDemolishHighlight(bool bHighlighted);
+
 	virtual void Tick(float DeltaSeconds) override;
 
 protected:
@@ -82,6 +90,10 @@ private:
 	/** Engine material with a "Color" parameter */
 	UPROPERTY()
 	TObjectPtr<UMaterialInterface> ColorMaterial;
+
+	/** Material instance of the belt body, to change its color */
+	UPROPERTY()
+	TObjectPtr<UMaterialInstanceDynamic> BodyMaterial;
 
 	/** One instanced cube component per item type on this belt */
 	UPROPERTY()

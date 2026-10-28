@@ -16,7 +16,7 @@ RCP_SteelIngot,,,2,BLD_Foundry,False,4,ITM_IronOre,3,ITM_Coal,3,,0,,0,ITM_SteelI
 RCP_SteelBeam,,,2,BLD_Constructor,False,4,ITM_SteelIngot,4,,0,,0,,0,ITM_SteelBeam,1,,0
 RCP_SteelPipe,,,2,BLD_Constructor,False,6,ITM_SteelIngot,3,,0,,0,,0,ITM_SteelPipe,2,,0
 RCP_Gear,,,2,BLD_Constructor,False,4,ITM_IronPlate,2,,0,,0,,0,ITM_Gear,1,,0
-RCP_Rotor,,,2,BLD_Assembler,False,15,ITM_IronRod,5,ITM_Screw,25,,0,,0,ITM_Rotor,1,,0
+RCP_Rotor,,,2,BLD_Assembler,True,15,ITM_IronRod,5,ITM_Screw,25,,0,,0,ITM_Rotor,1,,0
 RCP_Stator,,,2,BLD_Assembler,False,12,ITM_SteelPipe,3,ITM_CopperWire,8,,0,,0,ITM_Stator,1,,0
 RCP_Motor,,,2,BLD_Assembler,False,12,ITM_Rotor,2,ITM_Stator,2,,0,,0,ITM_Motor,1,,0
 RCP_QuartzCrystal,,,2,BLD_Constructor,False,8,ITM_Quartz,5,,0,,0,,0,ITM_QuartzCrystal,3,,0

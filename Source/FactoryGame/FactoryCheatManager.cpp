@@ -9,6 +9,7 @@
 #include "FactoryMachine.h"
 #include "FactoryBelt.h"
 #include "FactoryBeltComponent.h"
+#include "FactoryBuildingDatabase.h"
 #include "FactorySimulationSubsystem.h"
 #include "FactoryGame.h"
 #include "GameFramework/Pawn.h"
@@ -292,7 +293,8 @@ AFactoryMachine* UFactoryCheatManager::SpawnMachineAt(FVector Location, const FR
 		return nullptr;
 	}
 
-	Machine->GetProduction()->SetBuildingId(WithPrefix(BuildingId, TEXT("BLD_")));
+	// Größe und Ports aus DT_Buildings; unbekannte Gebäude bleiben ein 4-m-Würfel
+	Machine->InitBuilding(WithPrefix(BuildingId, TEXT("BLD_")));
 
 	if (!RecipeId.IsNone())
 	{
@@ -302,6 +304,57 @@ AFactoryMachine* UFactoryCheatManager::SpawnMachineAt(FVector Location, const FR
 
 	UE_LOG(LogFactoryGame, Display, TEXT("SpawnMachine: %s at %s."), *Machine->GetProduction()->GetBuildingId().ToString(), *Location.ToString());
 	return Machine;
+}
+
+void UFactoryCheatManager::ListBuildings()
+{
+	const UFactoryBuildingDatabase* Buildings = UFactoryBuildingDatabase::Get(this);
+
+	if (!Buildings)
+	{
+		return;
+	}
+
+	for (const FName& Id : Buildings->GetAllBuildingIds())
+	{
+		const FFactoryBuildingDefinition* Building = Buildings->FindBuilding(Id);
+		TArray<FString> Costs;
+
+		for (const FFactoryItemStack& Cost : Building->GetCosts())
+		{
+			Costs.Add(FString::Printf(TEXT("%d %s"), Cost.Count, *Cost.ItemId.ToString()));
+		}
+
+		UE_LOG(LogFactoryGame, Display, TEXT("T%d  %-20s %dx%dx%d m  in %d  out %d  cost: %s"), Building->Tier, *Id.ToString(),
+			Building->SizeX, Building->SizeY, Building->SizeZ, Building->Inputs, Building->Outputs, *FString::Join(Costs, TEXT(", ")));
+	}
+}
+
+void UFactoryCheatManager::ReloadBuildings()
+{
+	if (UFactoryBuildingDatabase* Buildings = UFactoryBuildingDatabase::Get(this))
+	{
+		const int32 NumProblems = Buildings->Reload();
+		UE_LOG(LogFactoryGame, Display, TEXT("ReloadBuildings: %d buildings, %d problems."), Buildings->GetAllBuildingIds().Num(), NumProblems);
+	}
+}
+
+void UFactoryCheatManager::GiveBuildCosts(FName BuildingId, int32 Times)
+{
+	AFactoryGamePlayerController* PlayerController = Cast<AFactoryGamePlayerController>(GetPlayerController());
+	const UFactoryBuildingDatabase* Buildings = UFactoryBuildingDatabase::Get(this);
+	const FFactoryBuildingDefinition* Building = Buildings ? Buildings->FindBuilding(WithPrefix(BuildingId, TEXT("BLD_"))) : nullptr;
+
+	if (!PlayerController || !Building)
+	{
+		UE_LOG(LogFactoryGame, Warning, TEXT("GiveBuildCosts: unknown building '%s'. Use ListBuildings to see all ids."), *BuildingId.ToString());
+		return;
+	}
+
+	for (const FFactoryItemStack& Cost : Building->GetCosts())
+	{
+		PlayerController->GiveItems(Cost.ItemId, Cost.Count * FMath::Max(1, Times));
+	}
 }
 
 void UFactoryCheatManager::SpawnMachine(FName BuildingId, FName RecipeId)

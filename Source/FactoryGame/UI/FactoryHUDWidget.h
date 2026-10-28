@@ -38,6 +38,12 @@ public:
 	/** Shows a hint above the hotbar for the given time */
 	void ShowHint(const FText& Text, float Duration = 4.0f);
 
+	/**
+	 *  Shows the build panel above the hotbar: title, cost lines (red if missing), error and key hints.
+	 *  Called every frame by the build tool, the HUD is only rebuilt when something changed. All empty hides it
+	 */
+	void SetBuildPanel(const FText& Title, const TArray<TPair<FText, bool>>& Lines, const FText& Error, const FText& Controls);
+
 protected:
 
 	/** Makes the HUD ignore all input */
@@ -54,6 +60,7 @@ private:
 	UWidget* BuildCrosshair();
 	UWidget* BuildHotbar();
 	UWidget* BuildNotifications();
+	UWidget* BuildBuildPanel();
 
 	struct FNotification
 	{
@@ -70,4 +77,12 @@ private:
 
 	FText HintText;
 	double HintExpiresAt = 0.0;
+
+	FText BuildTitle;
+	TArray<TPair<FText, bool>> BuildLines;
+	FText BuildError;
+	FText BuildControls;
+
+	/** All build panel texts joined, to detect changes cheaply */
+	FString BuildSignature;
 };

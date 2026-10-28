@@ -69,13 +69,25 @@ void AFactoryBelt::BeginPlay()
 	Super::BeginPlay();
 
 	// Band-Körper dunkelgrau, damit die farbigen Item-Würfel darauf gut zu sehen sind
-	if (UMaterialInstanceDynamic* Material = BodyMesh->CreateAndSetMaterialInstanceDynamic(0))
-	{
-		Material->SetVectorParameterValue(TEXT("Color"), FLinearColor(0.04f, 0.04f, 0.045f));
-	}
+	BodyMaterial = BodyMesh->CreateAndSetMaterialInstanceDynamic(0);
+	SetDemolishHighlight(false);
 
 	TArray<FName> Ignored;
 	SetEndpoints(GetActorLocation(), GetActorLocation() + GetActorForwardVector() * Belt->GetLength() * 0.1, Ignored);
+}
+
+TArray<FFactoryItemStack> AFactoryBelt::GetBuildCosts() const
+{
+	// höhere Stufen bekommen später eigene Materialien, bis dahin kostet jede Stufe gleich viel
+	return { FFactoryItemStack(TEXT("ITM_IronPlate"), FMath::Max(1, FMath::DivideAndRoundUp(Belt->GetLength(), 2000))) };
+}
+
+void AFactoryBelt::SetDemolishHighlight(bool bHighlighted)
+{
+	if (BodyMaterial)
+	{
+		BodyMaterial->SetVectorParameterValue(TEXT("Color"), bHighlighted ? FLinearColor(1.0f, 0.02f, 0.02f) : FLinearColor(0.04f, 0.04f, 0.045f));
+	}
 }
 
 void AFactoryBelt::SetEndpoints(const FVector& Start, const FVector& End, TArray<FName>& OutRemoved)

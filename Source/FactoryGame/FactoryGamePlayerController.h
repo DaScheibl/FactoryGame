@@ -11,6 +11,7 @@ class UUserWidget;
 class UPauseMenuWidget;
 class UFactoryHUDWidget;
 class UFactoryInventoryWidget;
+class UFactoryBuildComponent;
 
 /**
  *  Simple first person Player Controller
@@ -19,7 +20,9 @@ class UFactoryInventoryWidget;
  *
  *  Zentrale Stelle für alles, was der Spieler im Spiel bedient:
  *  - erzeugt HUD, Pausemenü und Inventarfenster (C++-Widgets, kein Widget Blueprint)
- *  - bindet die festen Tasten: Esc/P = Pause, Tab/I = Inventar, 1-0 = Hotbar
+ *  - bindet die festen Tasten: Esc/P = Pause, Tab/I = Inventar, 1-0 = Hotbar,
+ *    Bauen: Linksklick, Mausrad, Rechtsklick, F (Abriss), E (Kiste leeren), siehe Docs/Standards/13-bauen.md
+ *  - besitzt das Bauwerkzeug (UFactoryBuildComponent); ein Gebäude auf der Hotbar wählen startet das Platzieren
  *  - verwaltet die Hotbar (10 Slots mit Bau-Shortcuts), die mit der Welt gespeichert wird
  *  - schaltet zwischen Spiel-Eingabe (Maus dreht Kamera) und UI-Eingabe (Mauszeiger) um
  *  - registriert den Cheat Manager für Konsolenbefehle zum Testen
@@ -80,6 +83,10 @@ protected:
 	UPROPERTY()
 	TObjectPtr<UFactoryInventoryWidget> InventoryWidget;
 
+	/** Build tool: placing, demolishing, emptying crates */
+	UPROPERTY(VisibleAnywhere, Category="Build")
+	TObjectPtr<UFactoryBuildComponent> BuildComponent;
+
 	/** Build shortcuts on the hotbar, None for an empty slot */
 	UPROPERTY()
 	TArray<FName> HotbarSlots;
@@ -111,6 +118,21 @@ protected:
 
 	/** Switches back to game input if no menu is open */
 	void RestoreGameInput();
+
+	/** Build keys, forwarded to the build tool */
+	void HandlePrimaryPressed();
+	void HandlePrimaryReleased();
+	void HandleCancel();
+	void HandleRotateLeft();
+	void HandleRotateRight();
+	void HandleToggleDemolish();
+	void HandleInteract();
+
+	/** Escape/P: leaves the build mode first, opens the pause menu otherwise */
+	void HandlePauseKey();
+
+	/** Fills an empty hotbar with all buildings, as long as there is no build menu */
+	void FillDefaultHotbar();
 
 public:
 
@@ -158,4 +180,6 @@ public:
 
 	/** Selects a hotbar slot, or deselects it if it's already selected */
 	void SelectHotbarSlot(int32 Index);
+
+	UFactoryBuildComponent* GetBuildComponent() const { return BuildComponent; }
 };

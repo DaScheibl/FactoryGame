@@ -3,6 +3,7 @@
 #include "FactoryHUDWidget.h"
 #include "FactoryGamePlayerController.h"
 #include "FactoryItemDatabase.h"
+#include "FactoryBuildingDatabase.h"
 #include "FactoryLocalization.h"
 #include "Components/Border.h"
 #include "Components/Overlay.h"
@@ -109,6 +110,60 @@ void UFactoryHUDWidget::ShowHint(const FText& Text, float Duration)
 	RebuildMenu();
 }
 
+void UFactoryHUDWidget::SetBuildPanel(const FText& Title, const TArray<TPair<FText, bool>>& Lines, const FText& Error, const FText& Controls)
+{
+	FString Signature = Title.ToString() + TEXT("|") + Error.ToString() + TEXT("|") + Controls.ToString();
+
+	for (const TPair<FText, bool>& Line : Lines)
+	{
+		Signature += FString::Printf(TEXT("|%s%d"), *Line.Key.ToString(), Line.Value ? 1 : 0);
+	}
+
+	// wird jedes Bild aufgerufen, neu gebaut wird nur bei einer Änderung
+	if (Signature == BuildSignature)
+	{
+		return;
+	}
+
+	BuildSignature = Signature;
+	BuildTitle = Title;
+	BuildLines = Lines;
+	BuildError = Error;
+	BuildControls = Controls;
+	RebuildMenu();
+}
+
+UWidget* UFactoryHUDWidget::BuildBuildPanel()
+{
+	UVerticalBox* Panel = NewWidget<UVerticalBox>();
+
+	auto AddLine = [this, Panel](const FText& Text, float FontSize, const FLinearColor& Color, bool bBold)
+	{
+		if (!Text.IsEmpty())
+		{
+			UTextBlock* Line = MakeText(Text, FontSize, Color, bBold);
+			Line->SetJustification(ETextJustify::Center);
+			AddRow(Panel, Line, FMargin(0.0f, 1.0f));
+		}
+	};
+
+	AddLine(BuildTitle, 18.0f, TextColor, true);
+
+	for (const TPair<FText, bool>& Line : BuildLines)
+	{
+		AddLine(Line.Key, 15.0f, Line.Value ? TextColor : ErrorColor, false);
+	}
+
+	AddLine(BuildError, 15.0f, ErrorColor, true);
+	AddLine(BuildControls, 13.0f, SubtleTextColor, false);
+
+	UBorder* Box = NewWidget<UBorder>();
+	Box->SetBrush(FSlateRoundedBoxBrush(FLinearColor(FColor(14, 15, 19, 190)), 6.0f));
+	Box->SetPadding(FMargin(16.0f, 8.0f));
+	Box->SetContent(Panel);
+	return Box;
+}
+
 UWidget* UFactoryHUDWidget::BuildContent()
 {
 	// Overlay = Ebenen übereinander mit eigener Ausrichtung:
@@ -123,6 +178,12 @@ UWidget* UFactoryHUDWidget::BuildContent()
 
 	// hint line above the hotbar
 	UVerticalBox* Bottom = NewWidget<UVerticalBox>();
+
+	// build panel (Bauen/Abriss/Kiste) above the hint line
+	if (!BuildSignature.IsEmpty() && BuildSignature != TEXT("||"))
+	{
+		AddRow(Bottom, BuildBuildPanel(), FMargin(0.0f, 0.0f, 0.0f, 10.0f));
+	}
 
 	if (!HintText.IsEmpty())
 	{
@@ -187,10 +248,11 @@ UWidget* UFactoryHUDWidget::BuildHotbar()
 			KeySlot->SetPadding(FMargin(6.0f, 3.0f));
 		}
 
-		// Platzhalter: der Shortcut-Name als Text, bis es Gebäude-Icons gibt
+		// Platzhalter: der Gebäudename als Text, bis es Gebäude-Icons gibt
 		if (!Shortcut.IsNone())
 		{
-			UTextBlock* ShortcutText = MakeText(FText::FromName(Shortcut), 10.0f);
+			const UFactoryBuildingDatabase* Buildings = UFactoryBuildingDatabase::Get(this);
+			UTextBlock* ShortcutText = MakeText(Buildings ? Buildings->GetDisplayName(Shortcut) : FText::FromName(Shortcut), 10.0f);
 			ShortcutText->SetJustification(ETextJustify::Center);
 			ShortcutText->SetAutoWrapText(true);
 

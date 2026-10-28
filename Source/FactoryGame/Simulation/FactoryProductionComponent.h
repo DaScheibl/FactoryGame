@@ -28,6 +28,34 @@ enum class EFactoryMachineState : uint8
 
 DECLARE_MULTICAST_DELEGATE_OneParam(FOnFactoryMachineStateChanged, EFactoryMachineState);
 
+/** Everything a production machine needs to continue after loading */
+USTRUCT()
+struct FACTORYGAME_API FFactoryProductionSaveData
+{
+	GENERATED_BODY()
+
+	UPROPERTY(SaveGame)
+	FName RecipeId;
+
+	UPROPERTY(SaveGame)
+	TArray<FFactoryItemStack> Inputs;
+
+	UPROPERTY(SaveGame)
+	TArray<FFactoryItemStack> Outputs;
+
+	UPROPERTY(SaveGame)
+	int32 Progress = 0;
+
+	UPROPERTY(SaveGame)
+	bool bCycleRunning = false;
+
+	UPROPERTY(SaveGame)
+	int64 CyclesCompleted = 0;
+
+	UPROPERTY(SaveGame)
+	int32 SpeedPercent = 100;
+};
+
 /**
  *  Runs recipes in the factory simulation: takes items from the input buffers, waits the recipe duration and puts the result into the output buffers.
  *  Used by every production building (smelter, constructor, assembler ...).
@@ -100,6 +128,12 @@ public:
 	int32 GetSpeedPercent() const { return SpeedPercent; }
 
 	void SetSpeedPercent(int32 NewSpeedPercent) { SpeedPercent = FMath::Clamp(NewSpeedPercent, 1, 250); }
+
+	/** Returns the state for the world save */
+	FFactoryProductionSaveData GetSaveData() const;
+
+	/** Restores a saved state. The building id must be set before */
+	void LoadSaveData(const FFactoryProductionSaveData& Data);
 
 	/** Returns the number of finished cycles since the machine was built */
 	int64 GetCyclesCompleted() const { return CyclesCompleted; }

@@ -11,13 +11,17 @@
 #include "FactoryInventoryComponent.h"
 #include "FactoryGameCharacter.h"
 #include "Misc/Guid.h"
+#include "FactoryMachine.h"
+#include "FactoryCrate.h"
+#include "EngineUtils.h"
+#include "Engine/World.h"
 
 UFactoryGameInstance::UFactoryGameInstance()
 {
-	// Vorläufig ist die Template-Map Spielwelt und Menü-Hintergrund zugleich.
+	// Vorläufig: flache Testwelt zum Bauen (Tools/CreateFlatMap.py), die Template-Map bleibt Menü-Hintergrund.
 	// Beide Properties sind "Config" und lassen sich in DefaultGame.ini überschreiben.
-	GameplayMap = TSoftObjectPtr<UWorld>(FSoftObjectPath(TEXT("/Game/FirstPerson/Lvl_FirstPerson.Lvl_FirstPerson")));
-	MainMenuMap = GameplayMap;
+	GameplayMap = TSoftObjectPtr<UWorld>(FSoftObjectPath(TEXT("/Game/FactoryGame/Maps/Lvl_Flat.Lvl_Flat")));
+	MainMenuMap = TSoftObjectPtr<UWorld>(FSoftObjectPath(TEXT("/Game/FirstPerson/Lvl_FirstPerson.Lvl_FirstPerson")));
 }
 
 UFactoryGameInstance* UFactoryGameInstance::Get(const UObject* WorldContextObject)
@@ -255,6 +259,8 @@ void UFactoryGameInstance::RestorePlayerState(APlayerController* PlayerControlle
 		FactoryController->SetHotbarSlots(CurrentWorldSave->HotbarSlots);
 	}
 
+	RestoreBuildings(PlayerController->GetWorld());
+
 	bPendingPlayerRestore = false;
 }
 
@@ -346,6 +352,62 @@ void UFactoryGameInstance::CapturePlayerState()
 	{
 		CurrentWorldSave->HotbarSlots = FactoryController->GetHotbarSlots();
 	}
+
+	// Gebäude nur zusammen mit dem Spieler erfassen: fehlt der Pawn, wird die Welt gerade abgebaut
+	CaptureBuildings(Pawn->GetWorld());
+}
+
+void UFactoryGameInstance::CaptureBuildings(UWorld* World)
+{
+	if (!World || !CurrentWorldSave)
+	{
+		return;
+	}
+
+	CurrentWorldSave->Machines.Reset();
+	CurrentWorldSave->Crates.Reset();
+
+	for (TActorIterator<AFactoryMachine> It(World); It; ++It)
+	{
+		FFactorySavedMachine& Saved = CurrentWorldSave->Machines.AddDefaulted_GetRef();
+		Saved.BuildingId = It->GetProduction()->GetBuildingId();
+		Saved.Transform = It->GetActorTransform();
+		Saved.Production = It->GetProduction()->GetSaveData();
+	}
+
+	for (TActorIterator<AFactoryCrate> It(World); It; ++It)
+	{
+		FFactorySavedCrate& Saved = CurrentWorldSave->Crates.AddDefaulted_GetRef();
+		Saved.Location = It->GetActorLocation() - FVector(0.0, 0.0, 50.0);
+		Saved.Items = It->GetItems();
+	}
+}
+
+void UFactoryGameInstance::RestoreBuildings(UWorld* World)
+{
+	if (!World || !CurrentWorldSave)
+	{
+		return;
+	}
+
+	FActorSpawnParameters SpawnParams;
+	SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
+
+	for (const FFactorySavedMachine& Saved : CurrentWorldSave->Machines)
+	{
+		if (AFactoryMachine* Machine = World->SpawnActor<AFactoryMachine>(Saved.Transform.GetLocation(), Saved.Transform.Rotator(), SpawnParams))
+		{
+			Machine->InitBuilding(Saved.BuildingId);
+			Machine->GetProduction()->LoadSaveData(Saved.Production);
+		}
+	}
+
+	for (const FFactorySavedCrate& Saved : CurrentWorldSave->Crates)
+	{
+		AFactoryCrate::SpawnCrate(World, Saved.Location, Saved.Items);
+	}
+
+	UE_LOG(LogFactoryGame, Log, TEXT("Restored %d machines and %d crates."), CurrentWorldSave->Machines.Num(), CurrentWorldSave->Crates.Num());
 }
 
 void UFactoryGameInstance::OpenMap(const TSoftObjectPtr<UWorld>& Map)

@@ -693,7 +693,7 @@ _Raketenbau, Startkomplex, Spielende_
 
 - [ ] **Bau-Shader (Einblenden/Materialisieren)** · `MAT_BuildDissolve` · `VS`
 - [ ] **Abriss-Shader + Teile-Effekt** · `MAT_Deconstruct` · `VS`
-- [ ] **Hologramm-Material gültig/ungültig** · `MAT_Hologram` · `PT`
+- [ ] **Hologramm-Material gültig/ungültig** · `MAT_Hologram` · `PT` — _bis dahin deckender grün/roter Graybox-Würfel_
 - [ ] **Lackier-System (Farbslots, Muster)** · `SYS_Paint` · `EA`
 - [ ] **Status-Leuchten (an/aus/Fehler/kein Strom) als Modul** · `MESH_StatusLight` · `VS`
 - [ ] **Maschinen-Fundament-Sockel & Wartungsklappen-Kit** · `KIT_MachineDetail` · `EA`

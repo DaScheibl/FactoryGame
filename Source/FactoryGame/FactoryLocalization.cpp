@@ -102,6 +102,23 @@ namespace FactoryLoc
 			// belts
 			{ TEXT("Belt_Label"),				{ TEXT("Conveyor Mk{0}  {1}/min  {2} items"), TEXT("Förderband Mk{0}  {1}/min  {2} Items") } },
 			{ TEXT("Belt_Blocked"),				{ TEXT("Jammed"),						TEXT("Gestaut") } },
+			{ TEXT("Belt_Name"),				{ TEXT("Conveyor Mk{0}"),				TEXT("Förderband Mk{0}") } },
+
+			// building
+			{ TEXT("Build_Controls_Place"),		{ TEXT("LMB: Build  ·  Wheel: Rotate (Ctrl: 15°)  ·  RMB: Cancel"), TEXT("Linksklick: Bauen  ·  Mausrad: Drehen (Strg: 15°)  ·  Rechtsklick: Abbrechen") } },
+			{ TEXT("Build_Controls_Demolish"),	{ TEXT("Hold LMB: Demolish  ·  F / RMB: Exit"), TEXT("Linksklick halten: Abreißen  ·  F / Rechtsklick: Beenden") } },
+			{ TEXT("Build_Cost"),				{ TEXT("{0} / {1}  {2}"),				TEXT("{0} / {1}  {2}") } },
+			{ TEXT("Build_Error_NoGround"),		{ TEXT("Aim at the ground"),			TEXT("Auf den Boden zielen") } },
+			{ TEXT("Build_Error_Uneven"),		{ TEXT("Ground too uneven"),			TEXT("Boden zu uneben") } },
+			{ TEXT("Build_Error_Blocked"),		{ TEXT("Something is in the way"),		TEXT("Etwas ist im Weg") } },
+			{ TEXT("Build_Error_Materials"),	{ TEXT("Not enough materials"),			TEXT("Nicht genug Material") } },
+			{ TEXT("Build_Error_NoTarget"),		{ TEXT("Aim at a building"),			TEXT("Auf ein Gebäude zielen") } },
+			{ TEXT("Build_DemolishTitle"),		{ TEXT("Demolish"),						TEXT("Abriss-Modus") } },
+			{ TEXT("Build_DemolishTarget"),		{ TEXT("Demolish: {0}"),				TEXT("Abreißen: {0}") } },
+			{ TEXT("Build_DemolishProgress"),	{ TEXT("Demolishing … {0} %"),			TEXT("Abreißen … {0} %") } },
+			{ TEXT("Crate_Label"),				{ TEXT("Demolition crate: {0} items"),	TEXT("Abriss-Kiste: {0} Items") } },
+			{ TEXT("Crate_Prompt"),				{ TEXT("E: Take items"),				TEXT("E: Items nehmen") } },
+			{ TEXT("Notify_CrateSpawned"),		{ TEXT("Inventory full – the rest is in a demolition crate"), TEXT("Inventar voll – der Rest liegt in einer Abriss-Kiste") } },
 
 			// common
 			{ TEXT("Common_On"),				{ TEXT("On"),							TEXT("An") } },

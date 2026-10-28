@@ -64,6 +64,18 @@ public:
 	UFUNCTION(Exec)
 	void SetHotbar(int32 SlotNumber, FName Shortcut);
 
+	/** Prints all buildings with size, ports and costs to the log */
+	UFUNCTION(Exec)
+	void ListBuildings();
+
+	/** Reloads the building table from disk and checks it */
+	UFUNCTION(Exec)
+	void ReloadBuildings();
+
+	/** Gives the player the materials for a building, optionally several times: "GiveBuildCosts Smelter 3" */
+	UFUNCTION(Exec)
+	void GiveBuildCosts(FName BuildingId, int32 Times = 1);
+
 	/** Spawns a graybox machine in front of the player. Prefixes are optional: "SpawnMachine Smelter IronIngot" */
 	UFUNCTION(Exec)
 	void SpawnMachine(FName BuildingId, FName RecipeId = NAME_None);

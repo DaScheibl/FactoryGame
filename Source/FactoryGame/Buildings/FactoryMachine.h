@@ -5,6 +5,7 @@
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
 #include "FactoryProductionComponent.h"
+#include "FactoryBuildingTypes.h"
 #include "FactoryMachine.generated.h"
 
 class UStaticMeshComponent;
@@ -18,6 +19,8 @@ class UMaterialInstanceDynamic;
  *  Der Actor ist nur die Optik: er hört auf OnStateChanged, färbt den Würfel ein und
  *  aktualisiert jedes Bild den Text darüber. Farben (Graybox, nicht final):
  *  grau = kein Rezept, gelb = wartet auf Zutaten, grün = arbeitet, rot = Ausgang voll.
+ *  Größe und Ports kommen aus DT_Buildings (InitBuilding). Ports sind kleine Platten an der Kante:
+ *  blau = Eingang (hinten), orange = Ausgang (vorn).
  *  Zum Testen: Konsole "SpawnMachine Smelter IronIngot", siehe Docs/Standards/12-simulation.md
  */
 UCLASS()
@@ -31,8 +34,17 @@ public:
 
 	UFactoryProductionComponent* GetProduction() const { return Production; }
 
+	/** Sets building id, size and ports from the building table. Unknown buildings keep the default 4 x 4 x 4 m cube */
+	void InitBuilding(FName BuildingId);
+
 	/** Sets size of the graybox cube in meters. The actor origin is the center of the bottom face */
 	void SetGrayboxSize(const FVector& SizeInMeters);
+
+	/** Returns the belt ports in world space */
+	TArray<FFactoryPort> GetWorldPorts() const;
+
+	/** Tints the machine red while it is targeted for demolition */
+	void SetDemolishHighlight(bool bHighlighted);
 
 	virtual void Tick(float DeltaSeconds) override;
 
@@ -47,6 +59,12 @@ protected:
 private:
 
 	void HandleStateChanged(EFactoryMachineState NewState);
+
+	/** Sets the cube color from the state and the demolish highlight */
+	void UpdateColor();
+
+	/** Creates the port plates from the building table */
+	void CreatePortMarkers();
 
 	/** Updates the status text above the cube */
 	void UpdateLabel();
@@ -63,8 +81,17 @@ private:
 	UPROPERTY(VisibleAnywhere, Category="Components")
 	TObjectPtr<UFactoryProductionComponent> Production;
 
+	/** Port plates, created by InitBuilding */
+	UPROPERTY()
+	TArray<TObjectPtr<UStaticMeshComponent>> PortMarkers;
+
+	/** Belt ports relative to the actor, from the building table */
+	TArray<FFactoryPort> Ports;
+
 	/** Text currently shown by the label */
 	FString LabelText;
+
+	bool bDemolishHighlight = false;
 
 	/** Material instance of the cube, to change its color */
 	UPROPERTY()

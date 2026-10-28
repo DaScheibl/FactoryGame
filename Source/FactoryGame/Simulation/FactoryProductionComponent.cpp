@@ -272,6 +272,61 @@ int32 UFactoryProductionComponent::InsertInput(FName ItemId, int32 Count)
 	return Inserted;
 }
 
+FFactoryProductionSaveData UFactoryProductionComponent::GetSaveData() const
+{
+	FFactoryProductionSaveData Data;
+	Data.RecipeId = RecipeId;
+	Data.Inputs = Inputs;
+	Data.Outputs = Outputs;
+	Data.Progress = Progress;
+	Data.bCycleRunning = bCycleRunning;
+	Data.CyclesCompleted = CyclesCompleted;
+	Data.SpeedPercent = SpeedPercent;
+	return Data;
+}
+
+void UFactoryProductionComponent::LoadSaveData(const FFactoryProductionSaveData& Data)
+{
+	// SetRecipe prüft das Rezept und legt passende leere Puffer an; danach den gespeicherten Inhalt einsetzen
+	TArray<FFactoryItemStack> Ignored;
+
+	if (!SetRecipe(Data.RecipeId, Ignored) || RecipeId.IsNone())
+	{
+		return;
+	}
+
+	// nur übernehmen, wenn die Puffer noch zum Rezept passen (die Rezept-Tabelle kann sich seitdem geändert haben)
+	auto SameItems = [](const TArray<FFactoryItemStack>& A, const TArray<FFactoryItemStack>& B)
+	{
+		if (A.Num() != B.Num())
+		{
+			return false;
+		}
+
+		for (int32 Index = 0; Index < A.Num(); ++Index)
+		{
+			if (A[Index].ItemId != B[Index].ItemId)
+			{
+				return false;
+			}
+		}
+
+		return true;
+	};
+
+	if (SameItems(Inputs, Data.Inputs) && SameItems(Outputs, Data.Outputs))
+	{
+		Inputs = Data.Inputs;
+		Outputs = Data.Outputs;
+		Progress = FMath::Clamp(Data.Progress, 0, CycleLength);
+		bCycleRunning = Data.bCycleRunning;
+	}
+
+	CyclesCompleted = Data.CyclesCompleted;
+	SetSpeedPercent(Data.SpeedPercent);
+	SetState(bCycleRunning ? EFactoryMachineState::Working : EFactoryMachineState::WaitingForInput);
+}
+
 bool UFactoryProductionComponent::ReceiveItem(FName ItemId, int32 Offset)
 {
 	// Items, die nicht zum Rezept passen oder keinen Platz haben, bleiben auf dem Band

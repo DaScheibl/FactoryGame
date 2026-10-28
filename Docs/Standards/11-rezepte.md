@@ -52,7 +52,7 @@ Beim Laden prüft das Spiel jedes Rezept und schreibt Fehler ins Output-Log (`Lo
 | 2 | Stahlträger | Konstruktor | – | 4 s | 4 Stahlbarren | 1 Stahlträger | 15 |
 | 2 | Stahlrohr | Konstruktor | – | 6 s | 3 Stahlbarren | 2 Stahlrohre | 20 |
 | 2 | Zahnrad | Konstruktor | – | 4 s | 2 Eisenplatten | 1 Zahnrad | 15 |
-| 2 | Rotor | Assembler | – | 15 s | 5 Eisenstangen, 25 Schrauben | 1 Rotor | 4 |
+| 2 | Rotor | Assembler | ✔ | 15 s | 5 Eisenstangen, 25 Schrauben | 1 Rotor | 4 |
 | 2 | Stator | Assembler | – | 12 s | 3 Stahlrohre, 8 Kupferdraht | 1 Stator | 5 |
 | 2 | Motor | Assembler | – | 12 s | 2 Rotoren, 2 Statoren | 1 Motor | 5 |
 | 2 | Quarzkristall | Konstruktor | – | 8 s | 5 Rohquarz | 3 Quarzkristalle | 22,5 |

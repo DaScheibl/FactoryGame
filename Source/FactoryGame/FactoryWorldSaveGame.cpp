@@ -39,6 +39,13 @@ bool UFactoryWorldSaveGame::MigrateToLatest()
 		}
 	}
 
+	if (SaveVersion < static_cast<int32>(EFactoryWorldSaveVersion::Buildings))
+	{
+		// older worlds had no buildings
+		Machines.Reset();
+		Crates.Reset();
+	}
+
 	if (SaveVersion < Latest)
 	{
 		UE_LOG(LogFactoryGame, Log, TEXT("Migrated world '%s' from save version %d to %d."), *DisplayName, SaveVersion, Latest);

@@ -3,6 +3,7 @@
 #include "FactoryMachine.h"
 #include "FactoryItemDatabase.h"
 #include "FactoryRecipeDatabase.h"
+#include "FactoryBuildingDatabase.h"
 #include "FactoryLocalization.h"
 #include "Components/StaticMeshComponent.h"
 #include "Components/TextRenderComponent.h"
@@ -91,6 +92,87 @@ void AFactoryMachine::SetGrayboxSize(const FVector& SizeInMeters)
 	Label->SetRelativeLocation(FVector(0.0, 0.0, GrayboxSize.Z * 100.0 + 30.0));
 }
 
+void AFactoryMachine::InitBuilding(FName BuildingId)
+{
+	Production->SetBuildingId(BuildingId);
+
+	const UFactoryBuildingDatabase* Buildings = UFactoryBuildingDatabase::Get(this);
+	const FFactoryBuildingDefinition* Building = Buildings ? Buildings->FindBuilding(BuildingId) : nullptr;
+
+	if (!Building)
+	{
+		return;
+	}
+
+	SetGrayboxSize(FVector(Building->SizeX, Building->SizeY, Building->SizeZ));
+	Ports = Building->GetPorts();
+	CreatePortMarkers();
+}
+
+void AFactoryMachine::CreatePortMarkers()
+{
+	for (UStaticMeshComponent* Marker : PortMarkers)
+	{
+		Marker->DestroyComponent();
+	}
+
+	PortMarkers.Reset();
+
+	// Graybox: eine Platte in Bandbreite (0,8 m), die 0,3 m aus der Kante ragt, Oberkante auf Port-Höhe
+	for (const FFactoryPort& Port : Ports)
+	{
+		UStaticMeshComponent* Marker = NewObject<UStaticMeshComponent>(this);
+		Marker->SetStaticMesh(Mesh->GetStaticMesh());
+		Marker->SetMaterial(0, Mesh->GetMaterial(0));
+		Marker->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+		Marker->SetupAttachment(Root);
+		Marker->SetRelativeScale3D(FVector(0.3, 0.8, 0.1));
+		Marker->SetRelativeLocation(Port.Location + Port.Direction * (Port.bInput ? -15.0 : 15.0) - FVector(0.0, 0.0, 5.0));
+		Marker->RegisterComponent();
+		AddInstanceComponent(Marker);
+
+		// blau = Eingang, orange = Ausgang
+		if (UMaterialInstanceDynamic* MarkerMaterial = Marker->CreateAndSetMaterialInstanceDynamic(0))
+		{
+			MarkerMaterial->SetVectorParameterValue(TEXT("Color"), Port.bInput ? FLinearColor(0.05f, 0.25f, 0.8f) : FLinearColor(0.9f, 0.4f, 0.05f));
+		}
+
+		PortMarkers.Add(Marker);
+	}
+}
+
+TArray<FFactoryPort> AFactoryMachine::GetWorldPorts() const
+{
+	TArray<FFactoryPort> WorldPorts = Ports;
+	const FTransform& Transform = GetActorTransform();
+
+	for (FFactoryPort& Port : WorldPorts)
+	{
+		Port.Location = Transform.TransformPosition(Port.Location);
+		Port.Direction = Transform.TransformVectorNoScale(Port.Direction);
+	}
+
+	return WorldPorts;
+}
+
+void AFactoryMachine::SetDemolishHighlight(bool bHighlighted)
+{
+	if (bDemolishHighlight != bHighlighted)
+	{
+		bDemolishHighlight = bHighlighted;
+		UpdateColor();
+	}
+}
+
+void AFactoryMachine::UpdateColor()
+{
+	if (Material)
+	{
+		// Abriss-Markierung hat Vorrang vor der Zustandsfarbe
+		Material->SetVectorParameterValue(TEXT("Color"), bDemolishHighlight ? FLinearColor(1.0f, 0.02f, 0.02f) : GetStateColor(Production->GetState()));
+	}
+}
+
 void AFactoryMachine::BeginPlay()
 {
 	Super::BeginPlay();
@@ -105,11 +187,7 @@ void AFactoryMachine::BeginPlay()
 
 void AFactoryMachine::HandleStateChanged(EFactoryMachineState NewState)
 {
-	if (Material)
-	{
-		Material->SetVectorParameterValue(TEXT("Color"), GetStateColor(NewState));
-	}
-
+	UpdateColor();
 	UpdateLabel();
 }
 
@@ -142,8 +220,8 @@ void AFactoryMachine::UpdateLabel()
 	default:									StateText = FactoryLoc::Get(TEXT("Machine_NoRecipe")); break;
 	}
 
-	// Gebäude haben noch keine eigene Tabelle, deshalb steht hier vorerst die ID
-	FString Text = Production->GetBuildingId().ToString();
+	const UFactoryBuildingDatabase* Buildings = UFactoryBuildingDatabase::Get(this);
+	FString Text = (Buildings ? Buildings->GetDisplayName(Production->GetBuildingId()) : FText::FromName(Production->GetBuildingId())).ToString();
 
 	if (!Production->GetRecipeId().IsNone())
 	{

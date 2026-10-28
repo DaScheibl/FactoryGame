@@ -26,7 +26,7 @@ Legende: `PT` Prototyp · `VS` Vertical Slice · `EA` Early Access · `1.0` Rele
 
 ## Werkzeuge
 
-- [ ] **Bauwerkzeug (Hologramm-Projektor)** · `EQP_BuildGun` · `PT`
+- [ ] **Bauwerkzeug (Hologramm-Projektor)** · `EQP_BuildGun` · `PT` — _Funktion steht (`SYS_Build`, [13 Bauen](../../Standards/13-bauen.md)), Mesh/Animation fehlen_
 - [ ] **Handbohrer / Abbau-Werkzeug** · `EQP_HandDrill` · `PT`
 - [ ] **Ressourcen-Scanner** · `EQP_Scanner` · `VS`
 - [ ] **Kettensäge / Rodungswerkzeug** · `EQP_Chainsaw` · `EA`

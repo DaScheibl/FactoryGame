@@ -5,6 +5,7 @@
 #include "CoreMinimal.h"
 #include "GameFramework/SaveGame.h"
 #include "FactoryItemTypes.h"
+#include "FactoryProductionComponent.h"
 #include "FactoryWorldSaveGame.generated.h"
 
 /**
@@ -72,8 +73,40 @@ enum class EFactoryWorldSaveVersion : int32
 	/** Equipment slots, player inventory starts with 20 slots */
 	Equipment = 2,
 
+	/** Placed machines and demolition crates */
+	Buildings = 3,
+
 	LatestPlusOne,
 	Latest = LatestPlusOne - 1
+};
+
+/** A placed production machine */
+USTRUCT()
+struct FFactorySavedMachine
+{
+	GENERATED_BODY()
+
+	UPROPERTY(SaveGame)
+	FName BuildingId;
+
+	UPROPERTY(SaveGame)
+	FTransform Transform;
+
+	UPROPERTY(SaveGame)
+	FFactoryProductionSaveData Production;
+};
+
+/** A demolition crate with the items that didn't fit into the inventory */
+USTRUCT()
+struct FFactorySavedCrate
+{
+	GENERATED_BODY()
+
+	UPROPERTY(SaveGame)
+	FVector Location = FVector::ZeroVector;
+
+	UPROPERTY(SaveGame)
+	TArray<FFactoryItemStack> Items;
 };
 
 /**
@@ -129,4 +162,11 @@ public:
 	/** Build shortcuts on the hotbar */
 	UPROPERTY(SaveGame)
 	TArray<FName> HotbarSlots;
+
+	/** Placed machines. Belts are not saved yet, they follow with belt building */
+	UPROPERTY(SaveGame)
+	TArray<FFactorySavedMachine> Machines;
+
+	UPROPERTY(SaveGame)
+	TArray<FFactorySavedCrate> Crates;
 };

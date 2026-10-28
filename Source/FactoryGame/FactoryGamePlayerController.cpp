@@ -15,6 +15,8 @@
 #include "FactoryGameCharacter.h"
 #include "FactoryItemDatabase.h"
 #include "FactoryCheatManager.h"
+#include "FactoryBuildComponent.h"
+#include "FactoryBuildingDatabase.h"
 #include "FactoryLocalization.h"
 #include "Blueprint/UserWidget.h"
 #include "FactoryGame.h"
@@ -35,6 +37,8 @@ AFactoryGamePlayerController::AFactoryGamePlayerController()
 
 	// alle 10 Slots existieren immer, leere Slots enthalten NAME_None
 	HotbarSlots.SetNum(NumHotbarSlots);
+
+	BuildComponent = CreateDefaultSubobject<UFactoryBuildComponent>(TEXT("BuildComponent"));
 }
 
 void AFactoryGamePlayerController::BeginPlay()
@@ -107,6 +111,8 @@ void AFactoryGamePlayerController::OnPossess(APawn* InPawn)
 		// nach dem Laden einer Welt Position, Inventar und Hotbar zurückholen (tut nichts, wenn nichts ansteht)
 		GameInstance->RestorePlayerState(this);
 	}
+
+	FillDefaultHotbar();
 }
 
 void AFactoryGamePlayerController::SetupInputComponent()
@@ -116,8 +122,8 @@ void AFactoryGamePlayerController::SetupInputComponent()
 	// Feste UI-Tasten werden direkt per BindKey gebunden. Die Bewegung der Spielfigur läuft
 	// dagegen über Enhanced Input (AFactoryGameCharacter::SetupPlayerInputComponent).
 	// pause menu keys. P is also bound because Escape ends Play In Editor by default
-	InputComponent->BindKey(EKeys::Escape, IE_Pressed, this, &AFactoryGamePlayerController::TogglePauseMenu);
-	InputComponent->BindKey(EKeys::P, IE_Pressed, this, &AFactoryGamePlayerController::TogglePauseMenu);
+	InputComponent->BindKey(EKeys::Escape, IE_Pressed, this, &AFactoryGamePlayerController::HandlePauseKey);
+	InputComponent->BindKey(EKeys::P, IE_Pressed, this, &AFactoryGamePlayerController::HandlePauseKey);
 	InputComponent->BindKey(EKeys::Gamepad_Special_Right, IE_Pressed, this, &AFactoryGamePlayerController::TogglePauseMenu);
 
 	// inventory
@@ -133,6 +139,22 @@ void AFactoryGamePlayerController::SetupInputComponent()
 
 	InputComponent->BindKey(EKeys::Gamepad_DPad_Left, IE_Pressed, this, &AFactoryGamePlayerController::SelectPreviousHotbarSlot);
 	InputComponent->BindKey(EKeys::Gamepad_DPad_Right, IE_Pressed, this, &AFactoryGamePlayerController::SelectNextHotbarSlot);
+
+	// build tool (Docs/Standards/13-bauen.md)
+	InputComponent->BindKey(EKeys::LeftMouseButton, IE_Pressed, this, &AFactoryGamePlayerController::HandlePrimaryPressed);
+	InputComponent->BindKey(EKeys::LeftMouseButton, IE_Released, this, &AFactoryGamePlayerController::HandlePrimaryReleased);
+	InputComponent->BindKey(EKeys::Gamepad_RightTrigger, IE_Pressed, this, &AFactoryGamePlayerController::HandlePrimaryPressed);
+	InputComponent->BindKey(EKeys::Gamepad_RightTrigger, IE_Released, this, &AFactoryGamePlayerController::HandlePrimaryReleased);
+	InputComponent->BindKey(EKeys::RightMouseButton, IE_Pressed, this, &AFactoryGamePlayerController::HandleCancel);
+	InputComponent->BindKey(EKeys::Gamepad_FaceButton_Right, IE_Pressed, this, &AFactoryGamePlayerController::HandleCancel);
+	InputComponent->BindKey(EKeys::MouseScrollUp, IE_Pressed, this, &AFactoryGamePlayerController::HandleRotateRight);
+	InputComponent->BindKey(EKeys::MouseScrollDown, IE_Pressed, this, &AFactoryGamePlayerController::HandleRotateLeft);
+	InputComponent->BindKey(EKeys::Gamepad_RightShoulder, IE_Pressed, this, &AFactoryGamePlayerController::HandleRotateRight);
+	InputComponent->BindKey(EKeys::Gamepad_LeftShoulder, IE_Pressed, this, &AFactoryGamePlayerController::HandleRotateLeft);
+	InputComponent->BindKey(EKeys::F, IE_Pressed, this, &AFactoryGamePlayerController::HandleToggleDemolish);
+	InputComponent->BindKey(EKeys::Gamepad_DPad_Down, IE_Pressed, this, &AFactoryGamePlayerController::HandleToggleDemolish);
+	InputComponent->BindKey(EKeys::E, IE_Pressed, this, &AFactoryGamePlayerController::HandleInteract);
+	InputComponent->BindKey(EKeys::Gamepad_FaceButton_Left, IE_Pressed, this, &AFactoryGamePlayerController::HandleInteract);
 
 	// only add IMCs for local player controllers
 	if (IsLocalPlayerController())
@@ -373,6 +395,19 @@ void AFactoryGamePlayerController::SelectHotbarSlot(int32 Index)
 	// erneutes Drücken derselben Taste wählt den Slot wieder ab
 	SelectedHotbarSlot = SelectedHotbarSlot == Index ? INDEX_NONE : Index;
 
+	// ein Gebäude auf dem Slot startet das Platzieren, abwählen beendet es
+	if (BuildComponent)
+	{
+		if (SelectedHotbarSlot != INDEX_NONE && !HotbarSlots[SelectedHotbarSlot].IsNone())
+		{
+			BuildComponent->BeginPlacing(HotbarSlots[SelectedHotbarSlot]);
+		}
+		else if (BuildComponent->GetMode() == EFactoryBuildMode::Place)
+		{
+			BuildComponent->StopBuilding();
+		}
+	}
+
 	if (!HUDWidget)
 	{
 		return;
@@ -411,4 +446,116 @@ void AFactoryGamePlayerController::SelectPreviousHotbarSlot()
 void AFactoryGamePlayerController::SelectNextHotbarSlot()
 {
 	SelectHotbarSlot(SelectedHotbarSlot == INDEX_NONE ? 0 : (SelectedHotbarSlot + 1) % NumHotbarSlots);
+}
+
+void AFactoryGamePlayerController::HandlePauseKey()
+{
+	// Esc bricht zuerst das Bauen ab, erst danach öffnet es das Pausemenü
+	if (BuildComponent && BuildComponent->GetMode() != EFactoryBuildMode::None && !(PauseMenuWidget && PauseMenuWidget->IsInViewport()))
+	{
+		HandleCancel();
+		return;
+	}
+
+	TogglePauseMenu();
+}
+
+void AFactoryGamePlayerController::HandlePrimaryPressed()
+{
+	if (BuildComponent)
+	{
+		BuildComponent->PrimaryPressed();
+	}
+}
+
+void AFactoryGamePlayerController::HandlePrimaryReleased()
+{
+	if (BuildComponent)
+	{
+		BuildComponent->PrimaryReleased();
+	}
+}
+
+void AFactoryGamePlayerController::HandleCancel()
+{
+	if (BuildComponent)
+	{
+		BuildComponent->StopBuilding();
+	}
+
+	// der Hotbar-Slot gehört zum Platzieren, also mit abwählen
+	if (SelectedHotbarSlot != INDEX_NONE)
+	{
+		SelectedHotbarSlot = INDEX_NONE;
+
+		if (HUDWidget)
+		{
+			HUDWidget->RebuildMenu();
+		}
+	}
+}
+
+void AFactoryGamePlayerController::HandleRotateLeft()
+{
+	if (BuildComponent)
+	{
+		BuildComponent->Rotate(-1, IsInputKeyDown(EKeys::LeftControl) || IsInputKeyDown(EKeys::RightControl));
+	}
+}
+
+void AFactoryGamePlayerController::HandleRotateRight()
+{
+	if (BuildComponent)
+	{
+		BuildComponent->Rotate(1, IsInputKeyDown(EKeys::LeftControl) || IsInputKeyDown(EKeys::RightControl));
+	}
+}
+
+void AFactoryGamePlayerController::HandleToggleDemolish()
+{
+	if (!BuildComponent)
+	{
+		return;
+	}
+
+	// der Abriss-Modus ersetzt das Platzieren, der Hotbar-Slot wird dabei abgewählt
+	const bool bWasDemolishing = BuildComponent->GetMode() == EFactoryBuildMode::Demolish;
+	HandleCancel();
+
+	if (!bWasDemolishing)
+	{
+		BuildComponent->ToggleDemolish();
+	}
+}
+
+void AFactoryGamePlayerController::HandleInteract()
+{
+	if (BuildComponent)
+	{
+		BuildComponent->Interact();
+	}
+}
+
+void AFactoryGamePlayerController::FillDefaultHotbar()
+{
+	// Übergangslösung bis zum Baumenü (UI_BuildMenu): eine leere Hotbar bekommt alle Gebäude der Tabelle
+	if (HotbarSlots.ContainsByPredicate([](const FName& Shortcut) { return !Shortcut.IsNone(); }))
+	{
+		return;
+	}
+
+	if (const UFactoryBuildingDatabase* Buildings = UFactoryBuildingDatabase::Get(this))
+	{
+		const TArray<FName>& Ids = Buildings->GetAllBuildingIds();
+
+		for (int32 Index = 0; Index < Ids.Num() && Index < NumHotbarSlots; ++Index)
+		{
+			HotbarSlots[Index] = Ids[Index];
+		}
+	}
+
+	if (HUDWidget)
+	{
+		HUDWidget->RebuildMenu();
+	}
 }
