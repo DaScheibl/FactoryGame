@@ -272,6 +272,12 @@ int32 UFactoryProductionComponent::InsertInput(FName ItemId, int32 Count)
 	return Inserted;
 }
 
+bool UFactoryProductionComponent::ReceiveItem(FName ItemId, int32 Offset)
+{
+	// Items, die nicht zum Rezept passen oder keinen Platz haben, bleiben auf dem Band
+	return InsertInput(ItemId, 1) == 1;
+}
+
 FFactoryItemStack UFactoryProductionComponent::ExtractOutput(FName ItemId, int32 MaxCount)
 {
 	for (FFactoryItemStack& Output : Outputs)

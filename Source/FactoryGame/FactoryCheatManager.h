@@ -8,6 +8,7 @@
 
 class UFactoryInventoryComponent;
 class AFactoryMachine;
+class AFactoryBelt;
 
 /**
  *  Console commands for testing. Available in the editor and in development builds.
@@ -95,12 +96,54 @@ public:
 	UFUNCTION(Exec)
 	void SimSpeed(float Speed = 1.0f);
 
+	/**
+	 *  Connects two machines with a graybox belt. First call: machine in view is the source,
+	 *  second call: machine in view is the target. Tier 1-5 (Mk1-Mk5), "ConnectBelt 3"
+	 */
+	UFUNCTION(Exec)
+	void ConnectBelt(int32 Tier = 0);
+
+	/** Spawns a smelter and a constructor connected by a belt, ready to run: "BeltTest 2" */
+	UFUNCTION(Exec)
+	void BeltTest(int32 Tier = 1);
+
+	/** Puts items onto the belt in view, packed from the end. Without count: as many as fit */
+	UFUNCTION(Exec)
+	void FeedBelt(FName ItemId, int32 Count = 0);
+
+	/** Changes the tier of the belt in view (1-5) */
+	UFUNCTION(Exec)
+	void SetBeltTier(int32 Tier);
+
+	/** Prints the state of the belt in view to the log */
+	UFUNCTION(Exec)
+	void BeltInfo();
+
+	/** Removes the belt in view. The items on it go to the player inventory */
+	UFUNCTION(Exec)
+	void DestroyBelt();
+
 private:
 
 	UFactoryInventoryComponent* GetPlayerInventory() const;
 
 	/** Returns the machine under the crosshair, or else the nearest machine within 20 m */
 	AFactoryMachine* GetTargetMachine() const;
+
+	/** Returns the belt under the crosshair, or else the nearest belt within 20 m */
+	AFactoryBelt* GetTargetBelt() const;
+
+	/** Returns a point the given distance in front of the player, snapped to the 1 m grid, and a facing in 90° steps */
+	bool GetSpawnPoint(double Distance, FVector& OutLocation, FRotator& OutFacing) const;
+
+	/** Spawns a graybox machine on the ground at the given location */
+	AFactoryMachine* SpawnMachineAt(FVector Location, const FRotator& Facing, FName BuildingId, FName RecipeId);
+
+	/** Source machine remembered by the first ConnectBelt call */
+	TWeakObjectPtr<AFactoryMachine> PendingBeltSource;
+
+	/** Tier given to the first ConnectBelt call */
+	int32 PendingBeltTier = 0;
 
 	/** Adds a prefix like ITM_ if the id doesn't have it yet */
 	static FName WithPrefix(FName Id, const TCHAR* Prefix);

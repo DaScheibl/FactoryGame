@@ -5,6 +5,7 @@
 #include "CoreMinimal.h"
 #include "Components/ActorComponent.h"
 #include "FactorySimulated.h"
+#include "FactoryItemReceiver.h"
 #include "FactoryItemTypes.h"
 #include "FactoryProductionComponent.generated.h"
 
@@ -41,7 +42,7 @@ DECLARE_MULTICAST_DELEGATE_OneParam(FOnFactoryMachineStateChanged, EFactoryMachi
  *  Die Komponente tickt nicht selbst, sondern wird vom UFactorySimulationSubsystem aufgerufen.
  */
 UCLASS(ClassGroup=(Factory), meta=(BlueprintSpawnableComponent))
-class FACTORYGAME_API UFactoryProductionComponent : public UActorComponent, public IFactorySimulated
+class FACTORYGAME_API UFactoryProductionComponent : public UActorComponent, public IFactorySimulated, public IFactoryItemReceiver
 {
 	GENERATED_BODY()
 
@@ -54,6 +55,9 @@ public:
 
 	// IFactorySimulated
 	virtual void SimTick(int64 Tick) override;
+
+	// IFactoryItemReceiver: belts deliver into the input buffers
+	virtual bool ReceiveItem(FName ItemId, int32 Offset) override;
 
 	/** Returns the building id, e.g. BLD_Smelter */
 	FName GetBuildingId() const { return BuildingId; }

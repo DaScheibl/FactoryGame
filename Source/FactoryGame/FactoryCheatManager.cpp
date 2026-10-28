@@ -7,6 +7,8 @@
 #include "FactoryItemDatabase.h"
 #include "FactoryRecipeDatabase.h"
 #include "FactoryMachine.h"
+#include "FactoryBelt.h"
+#include "FactoryBeltComponent.h"
 #include "FactorySimulationSubsystem.h"
 #include "FactoryGame.h"
 #include "GameFramework/Pawn.h"
@@ -240,29 +242,40 @@ AFactoryMachine* UFactoryCheatManager::GetTargetMachine() const
 	return Nearest;
 }
 
-void UFactoryCheatManager::SpawnMachine(FName BuildingId, FName RecipeId)
+bool UFactoryCheatManager::GetSpawnPoint(double Distance, FVector& OutLocation, FRotator& OutFacing) const
 {
 	const APlayerController* PlayerController = GetPlayerController();
-	UWorld* World = GetWorld();
 
-	if (!PlayerController || !World || BuildingId.IsNone())
+	if (!PlayerController)
 	{
-		return;
+		return false;
 	}
 
 	FVector ViewLocation;
 	FRotator ViewRotation;
 	PlayerController->GetPlayerViewPoint(ViewLocation, ViewRotation);
 
-	// 8 m vor dem Spieler, auf das 1-m-Raster gerastet und um 90° gedreht (Docs/Standards/03-raster.md)
-	const FRotator Facing(0.0, FMath::GridSnap(ViewRotation.Yaw, 90.0), 0.0);
-	FVector Location = ViewLocation + FRotator(0.0, ViewRotation.Yaw, 0.0).Vector() * 800.0;
-	Location.X = FMath::GridSnap(Location.X, 100.0);
-	Location.Y = FMath::GridSnap(Location.Y, 100.0);
+	// vor dem Spieler, auf das 1-m-Raster gerastet und um 90° gedreht (Docs/Standards/03-raster.md)
+	OutFacing = FRotator(0.0, FMath::GridSnap(ViewRotation.Yaw, 90.0), 0.0);
+	OutLocation = ViewLocation + FRotator(0.0, ViewRotation.Yaw, 0.0).Vector() * Distance;
+	OutLocation.X = FMath::GridSnap(OutLocation.X, 100.0);
+	OutLocation.Y = FMath::GridSnap(OutLocation.Y, 100.0);
+	return true;
+}
+
+AFactoryMachine* UFactoryCheatManager::SpawnMachineAt(FVector Location, const FRotator& Facing, FName BuildingId, FName RecipeId)
+{
+	const APlayerController* PlayerController = GetPlayerController();
+	UWorld* World = GetWorld();
+
+	if (!World || BuildingId.IsNone())
+	{
+		return nullptr;
+	}
 
 	// auf den Boden setzen
 	FHitResult Hit;
-	FCollisionQueryParams Params(TEXT("CheatSpawnTrace"), false, PlayerController->GetPawn());
+	FCollisionQueryParams Params(TEXT("CheatSpawnTrace"), false, PlayerController ? PlayerController->GetPawn() : nullptr);
 
 	if (World->LineTraceSingleByChannel(Hit, Location + FVector(0.0, 0.0, 1000.0), Location - FVector(0.0, 0.0, 5000.0), ECC_Visibility, Params))
 	{
@@ -276,7 +289,7 @@ void UFactoryCheatManager::SpawnMachine(FName BuildingId, FName RecipeId)
 
 	if (!Machine)
 	{
-		return;
+		return nullptr;
 	}
 
 	Machine->GetProduction()->SetBuildingId(WithPrefix(BuildingId, TEXT("BLD_")));
@@ -288,6 +301,19 @@ void UFactoryCheatManager::SpawnMachine(FName BuildingId, FName RecipeId)
 	}
 
 	UE_LOG(LogFactoryGame, Display, TEXT("SpawnMachine: %s at %s."), *Machine->GetProduction()->GetBuildingId().ToString(), *Location.ToString());
+	return Machine;
+}
+
+void UFactoryCheatManager::SpawnMachine(FName BuildingId, FName RecipeId)
+{
+	FVector Location;
+	FRotator Facing;
+
+	// 8 m vor dem Spieler
+	if (GetSpawnPoint(800.0, Location, Facing))
+	{
+		SpawnMachineAt(Location, Facing, BuildingId, RecipeId);
+	}
 }
 
 void UFactoryCheatManager::SetMachineRecipe(FName RecipeId)
@@ -414,4 +440,227 @@ void UFactoryCheatManager::SimSpeed(float Speed)
 		Simulation->SetSpeed(Speed);
 		UE_LOG(LogFactoryGame, Display, TEXT("SimSpeed: x%.2f"), Simulation->GetSpeed());
 	}
+}
+
+AFactoryBelt* UFactoryCheatManager::GetTargetBelt() const
+{
+	const APlayerController* PlayerController = GetPlayerController();
+	UWorld* World = GetWorld();
+
+	if (!PlayerController || !World)
+	{
+		return nullptr;
+	}
+
+	FVector ViewLocation;
+	FRotator ViewRotation;
+	PlayerController->GetPlayerViewPoint(ViewLocation, ViewRotation);
+
+	// zuerst das Band unter dem Fadenkreuz (bis 15 m) ...
+	FHitResult Hit;
+	FCollisionQueryParams Params(TEXT("CheatBeltTrace"), false, PlayerController->GetPawn());
+
+	if (World->LineTraceSingleByChannel(Hit, ViewLocation, ViewLocation + ViewRotation.Vector() * 1500.0, ECC_Visibility, Params))
+	{
+		if (AFactoryBelt* Belt = Cast<AFactoryBelt>(Hit.GetActor()))
+		{
+			return Belt;
+		}
+	}
+
+	// ... sonst das nächste im Umkreis von 20 m (gemessen zur Bandlinie, nicht zum Anfang)
+	AFactoryBelt* Nearest = nullptr;
+	double NearestDistSq = FMath::Square(2000.0);
+
+	for (TActorIterator<AFactoryBelt> It(World); It; ++It)
+	{
+		const FVector Start = It->GetActorLocation();
+		const FVector End = Start + It->GetActorForwardVector() * It->GetBelt()->GetLength() * 0.1;
+		const double DistSq = FVector::DistSquared(FMath::ClosestPointOnSegment(ViewLocation, Start, End), ViewLocation);
+
+		if (DistSq < NearestDistSq)
+		{
+			Nearest = *It;
+			NearestDistSq = DistSq;
+		}
+	}
+
+	if (!Nearest)
+	{
+		UE_LOG(LogFactoryGame, Warning, TEXT("No belt in view or within 20 m."));
+	}
+
+	return Nearest;
+}
+
+void UFactoryCheatManager::ConnectBelt(int32 Tier)
+{
+	AFactoryMachine* Machine = GetTargetMachine();
+
+	if (!Machine)
+	{
+		return;
+	}
+
+	// erster Aufruf: Quelle merken
+	if (!PendingBeltSource.IsValid())
+	{
+		PendingBeltSource = Machine;
+		PendingBeltTier = Tier;
+		UE_LOG(LogFactoryGame, Display, TEXT("ConnectBelt: source %s. Now look at the target machine and enter ConnectBelt again."), *Machine->GetName());
+		return;
+	}
+
+	AFactoryMachine* Source = PendingBeltSource.Get();
+	PendingBeltSource.Reset();
+
+	if (Source == Machine)
+	{
+		UE_LOG(LogFactoryGame, Display, TEXT("ConnectBelt: same machine twice, cancelled."));
+		return;
+	}
+
+	// Stufe aus dem zweiten Aufruf, sonst aus dem ersten, sonst Mk1
+	const int32 UsedTier = Tier > 0 ? Tier : (PendingBeltTier > 0 ? PendingBeltTier : 1);
+	const AFactoryBelt* Belt = AFactoryBelt::SpawnBetween(GetWorld(), Source, Machine, UsedTier);
+
+	if (!Belt)
+	{
+		UE_LOG(LogFactoryGame, Warning, TEXT("ConnectBelt: the machines are too close together (at least 0.5 m between them)."));
+		return;
+	}
+
+	UE_LOG(LogFactoryGame, Display, TEXT("ConnectBelt: %s -> %s, Mk%d, %.1f m, %d items/min."), *Source->GetName(), *Machine->GetName(),
+		Belt->GetBelt()->GetTier(), Belt->GetBelt()->GetLength() / 1000.0, UFactoryBeltComponent::GetItemsPerMinute(Belt->GetBelt()->GetTier()));
+}
+
+void UFactoryCheatManager::BeltTest(int32 Tier)
+{
+	FVector Location;
+	FRotator Facing;
+
+	if (!GetSpawnPoint(1000.0, Location, Facing))
+	{
+		return;
+	}
+
+	// Schmelzofen links, Konstruktor 12 m rechts davon: zwischen den 4-m-Würfeln bleiben 8 m Band
+	const FVector Right = FRotationMatrix(Facing).GetUnitAxis(EAxis::Y);
+	AFactoryMachine* Smelter = SpawnMachineAt(Location - Right * 600.0, Facing, TEXT("Smelter"), TEXT("IronIngot"));
+	AFactoryMachine* Constructor = SpawnMachineAt(Location + Right * 600.0, Facing, TEXT("Constructor"), TEXT("IronPlate"));
+
+	if (!Smelter || !Constructor)
+	{
+		return;
+	}
+
+	UFactoryProductionComponent* Production = Smelter->GetProduction();
+	Production->InsertInput(TEXT("ITM_IronOre"), Production->GetInputSpace(TEXT("ITM_IronOre")));
+	AFactoryBelt::SpawnBetween(GetWorld(), Smelter, Constructor, Tier);
+	UE_LOG(LogFactoryGame, Display, TEXT("BeltTest: smelter (full of iron ore) -> Mk%d belt -> constructor."), FMath::Clamp(Tier, 1, UFactoryBeltComponent::MaxTier));
+}
+
+void UFactoryCheatManager::FeedBelt(FName ItemId, int32 Count)
+{
+	AFactoryBelt* Belt = GetTargetBelt();
+	const UFactoryItemDatabase* Database = UFactoryItemDatabase::Get(this);
+	ItemId = WithPrefix(ItemId, TEXT("ITM_"));
+
+	if (!Belt || !Database)
+	{
+		return;
+	}
+
+	if (!Database->FindItem(ItemId))
+	{
+		UE_LOG(LogFactoryGame, Warning, TEXT("FeedBelt: unknown item '%s'. Use ListItems to see all ids."), *ItemId.ToString());
+		return;
+	}
+
+	// mit riesigem Offset landet jedes Item direkt hinter dem letzten, das Band füllt sich also von vorn
+	const int32 MaxCount = Count > 0 ? Count : MAX_int32;
+	int32 Added = 0;
+
+	while (Added < MaxCount && Belt->GetBelt()->ReceiveItem(ItemId, MAX_int32))
+	{
+		++Added;
+	}
+
+	UE_LOG(LogFactoryGame, Display, TEXT("FeedBelt: %d x %s added."), Added, *ItemId.ToString());
+}
+
+void UFactoryCheatManager::SetBeltTier(int32 Tier)
+{
+	if (AFactoryBelt* Belt = GetTargetBelt())
+	{
+		Belt->GetBelt()->SetTier(Tier);
+		UE_LOG(LogFactoryGame, Display, TEXT("SetBeltTier: Mk%d, %d items/min."), Belt->GetBelt()->GetTier(), UFactoryBeltComponent::GetItemsPerMinute(Belt->GetBelt()->GetTier()));
+	}
+}
+
+void UFactoryCheatManager::BeltInfo()
+{
+	const AFactoryBelt* Belt = GetTargetBelt();
+
+	if (!Belt)
+	{
+		return;
+	}
+
+	const UFactoryBeltComponent* Component = Belt->GetBelt();
+	const UFactoryProductionComponent* Source = Component->GetSource();
+	const UObject* Target = Component->GetTarget();
+
+	UE_LOG(LogFactoryGame, Display, TEXT("%s  Mk%d  %d mm/tick  %d items/min  length %.1f m  %d items  %s  delivered %lld"),
+		*Belt->GetName(), Component->GetTier(), Component->GetSpeed(), UFactoryBeltComponent::GetItemsPerMinute(Component->GetTier()),
+		Component->GetLength() / 1000.0, Component->GetItems().Num(), Component->IsBlocked() ? TEXT("JAMMED") : TEXT("running"), Component->GetItemsDelivered());
+
+	UE_LOG(LogFactoryGame, Display, TEXT("  from %s  to %s"),
+		Source ? *GetNameSafe(Source->GetOwner()) : TEXT("-"),
+		Target ? *GetNameSafe(Target->GetTypedOuter<AActor>()) : TEXT("-"));
+
+	// Anzahl pro Sorte
+	TMap<FName, int32> Counts;
+
+	for (const FFactoryBeltItem& Item : Component->GetItems())
+	{
+		++Counts.FindOrAdd(Item.ItemId);
+	}
+
+	for (const TPair<FName, int32>& Pair : Counts)
+	{
+		UE_LOG(LogFactoryGame, Display, TEXT("  %4d %s"), Pair.Value, *Pair.Key.ToString());
+	}
+}
+
+void UFactoryCheatManager::DestroyBelt()
+{
+	AFactoryBelt* Belt = GetTargetBelt();
+	AFactoryGamePlayerController* PlayerController = Cast<AFactoryGamePlayerController>(GetPlayerController());
+
+	if (!Belt)
+	{
+		return;
+	}
+
+	// Items gehen ins Inventar (was nicht passt, ist weg; ist ja nur ein Test-Befehl)
+	TArray<FName> Removed;
+	Belt->GetBelt()->ClearItems(Removed);
+
+	if (PlayerController)
+	{
+		TMap<FName, int32> Counts;
+
+		for (const FName& ItemId : Removed)
+		{
+			++Counts.FindOrAdd(ItemId);
+		}
+
+		for (const TPair<FName, int32>& Pair : Counts)
+		{
+			PlayerController->GiveItems(Pair.Key, Pair.Value);
+		}
+	}
+
+	Belt->Destroy();
 }

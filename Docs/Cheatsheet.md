@@ -46,6 +46,19 @@ Alle Test-Befehle von FactoryGame auf einen Blick. Sie funktionieren im Editor (
 
 Farben der Graybox: grau = kein Rezept · gelb = wartet auf Zutaten · grün = arbeitet · rot = Ausgang voll.
 
+## Förderbänder
+
+„Band im Blick“ = das unter dem Fadenkreuz (bis 15 m), sonst das nächste im Umkreis von 20 m.
+
+| Befehl | Wirkung | Beispiel |
+|---|---|---|
+| `BeltTest [Stufe]` | Fertiger Aufbau: Schmelzofen (voll Eisenerz) → Band → Konstruktor, 10 m vor dir | `BeltTest 2` |
+| `ConnectBelt [Stufe]` | Zweimal eingeben: erst auf die Quell-, dann auf die Zielmaschine schauen. Baut ein gerades Band (Stufe 1–5, Standard Mk1) | `ConnectBelt 3` |
+| `FeedBelt <Item> [Anzahl]` | Items aufs Band legen, von vorn dicht gepackt (ohne Anzahl: bis voll) | `FeedBelt IronOre 10` |
+| `SetBeltTier <1–5>` | Stufe ändern (Mk1 60 · Mk2 120 · Mk3 240 · Mk4 480 · Mk5 960 Items/min) | `SetBeltTier 5` |
+| `BeltInfo` | Stufe, Tempo, Länge, Items pro Sorte, gestaut?, ausgelieferte Items ins Log | |
+| `DestroyBelt` | Band entfernen, Items gehen ins Inventar | |
+
 ## Simulation
 
 | Befehl | Wirkung | Beispiel |
@@ -62,6 +75,15 @@ FeedMachine
 SimSpeed 20
 MachineInfo
 TakeOutput
+SimSpeed 1
+```
+
+**Förderband:**
+```
+BeltTest
+SimSpeed 10
+BeltInfo
+SetBeltTier 5
 SimSpeed 1
 ```
 

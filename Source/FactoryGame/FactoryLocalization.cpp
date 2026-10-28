@@ -99,6 +99,10 @@ namespace FactoryLoc
 			{ TEXT("Machine_Working"),			{ TEXT("Working {0} %"),				TEXT("Arbeitet {0} %") } },
 			{ TEXT("Machine_OutputFull"),		{ TEXT("Output full"),					TEXT("Ausgang voll") } },
 
+			// belts
+			{ TEXT("Belt_Label"),				{ TEXT("Conveyor Mk{0}  {1}/min  {2} items"), TEXT("Förderband Mk{0}  {1}/min  {2} Items") } },
+			{ TEXT("Belt_Blocked"),				{ TEXT("Jammed"),						TEXT("Gestaut") } },
+
 			// common
 			{ TEXT("Common_On"),				{ TEXT("On"),							TEXT("An") } },
 			{ TEXT("Common_Off"),				{ TEXT("Off"),							TEXT("Aus") } },
