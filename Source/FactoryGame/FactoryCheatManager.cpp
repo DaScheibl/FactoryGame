@@ -7,6 +7,7 @@
 #include "FactoryItemDatabase.h"
 #include "FactoryRecipeDatabase.h"
 #include "FactoryMachine.h"
+#include "FactoryResourceNode.h"
 #include "FactoryBelt.h"
 #include "FactoryBeltComponent.h"
 #include "FactoryBuildingDatabase.h"
@@ -367,6 +368,23 @@ void UFactoryCheatManager::SpawnMachine(FName BuildingId, FName RecipeId)
 	{
 		SpawnMachineAt(Location, Facing, BuildingId, RecipeId);
 	}
+}
+
+void UFactoryCheatManager::SpawnNode(FName ItemId, FName Purity)
+{
+	FVector Location;
+	FRotator Facing;
+
+	if (ItemId.IsNone() || !GetSpawnPoint(800.0, Location, Facing))
+	{
+		return;
+	}
+
+	const EFactoryNodePurity NodePurity = Purity == TEXT("Impure") ? EFactoryNodePurity::Impure
+		: Purity == TEXT("Pure") ? EFactoryNodePurity::Pure
+		: EFactoryNodePurity::Normal;
+
+	AFactoryResourceNode::SpawnNode(GetWorld(), Location, WithPrefix(ItemId, TEXT("ITM_")), NodePurity);
 }
 
 void UFactoryCheatManager::SetMachineRecipe(FName RecipeId)

@@ -48,13 +48,14 @@ Farben der Graybox: grau = kein Rezept · gelb = wartet auf Zutaten · grün = a
 
 ## Bauen
 
-Steuerung: `1`–`0` Gebäude wählen · Linksklick bauen · Mausrad drehen (`Strg`: 15°) bzw. Stützenhöhe · `R` Band-Modus · Rechtsklick/`Esc` abbrechen · `F` Abriss-Modus (Linksklick halten) · `E` Abriss-Kiste leeren. Details: [13 Bauen](Standards/13-bauen.md)
+Steuerung: `1`–`0` Gebäude wählen · Linksklick bauen · Mausrad drehen (`Strg`: 15°) bzw. Stützenhöhe · `R` Band-Modus · Rechtsklick/`Esc` abbrechen · `F` Abriss-Modus (Linksklick halten) · `E` Abriss-Kiste leeren / Maschine öffnen, auf einem Vorkommen halten = Erz abbauen · `Q` Baumenü. Details: [13 Bauen](Standards/13-bauen.md), [15 Abbau](Standards/15-abbau.md)
 
 | Befehl | Wirkung | Beispiel |
 |---|---|---|
 | `GiveBuildCosts <Gebäude> [Anzahl]` | Material für ein oder mehrere Gebäude ins Inventar | `GiveBuildCosts Smelter 5` |
 | `ListBuildings` | Alle Gebäude mit Größe, Ports und Kosten ins Log | |
 | `ReloadBuildings` | `DT_Buildings.csv` neu laden und prüfen | |
+| `SpawnNode <Erz> [Impure/Normal/Pure]` | Erz-Vorkommen 8 m vor dir setzen (Standard: Normal) | `SpawnNode CopperOre Pure` |
 
 ## Förderbänder
 

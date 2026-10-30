@@ -8,6 +8,7 @@
 #include "FactoryBeltPole.h"
 #include "FactoryBeltComponent.h"
 #include "FactoryCrate.h"
+#include "FactoryResourceNode.h"
 #include "FactoryGamePlayerController.h"
 #include "FactoryGameCharacter.h"
 #include "FactoryInventoryComponent.h"
@@ -148,7 +149,7 @@ void UFactoryBuildComponent::TickComponent(float DeltaTime, ELevelTick TickType,
 	case EFactoryBuildMode::Pole:		UpdatePole(); break;
 	case EFactoryBuildMode::Belt:		UpdateBelt(); break;
 	case EFactoryBuildMode::Demolish:	UpdateDemolish(DeltaTime); break;
-	default:							UpdateIdle(); break;
+	default:							UpdateIdle(DeltaTime); break;
 	}
 }
 
@@ -449,6 +450,31 @@ void UFactoryBuildComponent::UpdatePlacement()
 	Location.X = FMath::GridSnap(Location.X - OffsetX, 100.0) + OffsetX;
 	Location.Y = FMath::GridSnap(Location.Y - OffsetY, 100.0) + OffsetY;
 
+	// Bohrer rasten mittig auf ein freies Vorkommen in der Nähe des Fadenkreuzes statt aufs Raster
+	AFactoryResourceNode* Node = nullptr;
+	FText NodeError;
+
+	if (Building->Type == EFactoryBuildingType::Drill)
+	{
+		Node = AFactoryResourceNode::FindNodeNear(World, Hit.ImpactPoint, AFactoryResourceNode::Radius + 200.0);
+
+		if (!Node)
+		{
+			NodeError = FactoryLoc::Get(TEXT("Build_Error_NoNode"));
+		}
+		else if (Node->FindDrill())
+		{
+			NodeError = FactoryLoc::Get(TEXT("Build_Error_NodeTaken"));
+		}
+		else
+		{
+			Location.X = Node->GetActorLocation().X;
+			Location.Y = Node->GetActorLocation().Y;
+		}
+	}
+
+	PlaceNode = Node;
+
 	// Boden unter Mitte und Ecken messen; das Gebäude steht auf dem tiefsten Punkt und sinkt in den Rest ein
 	FCollisionQueryParams GroundParams(TEXT("BuildGround"), false, PlayerController->GetPawn());
 	GroundParams.AddIgnoredActor(Hologram);
@@ -520,6 +546,12 @@ void UFactoryBuildComponent::UpdatePlacement()
 		}
 	}
 
+	// ohne passendes Vorkommen geht ein Bohrer nie, das ist dann der wichtigste Grund
+	if (!NodeError.IsEmpty())
+	{
+		Error = NodeError;
+	}
+
 	bPlaceValid = Error.IsEmpty();
 	Hologram->SetValid(bPlaceValid);
 	ShowPanel(Building->GetDisplayName(), CostLines, Error, Controls);
@@ -545,6 +577,16 @@ bool UFactoryBuildComponent::PlaceBuilding()
 	if (AFactoryMachine* Machine = GetWorld()->SpawnActor<AFactoryMachine>(PlaceTransform.GetLocation(), PlaceTransform.Rotator(), SpawnParams))
 	{
 		Machine->InitBuilding(BuildingId);
+
+		// ein Bohrer baut das Erz seines Vorkommens ab, die Reinheit bestimmt das Tempo
+		const AFactoryResourceNode* Node = PlaceNode.Get();
+
+		if (Node && Building->Type == EFactoryBuildingType::Drill)
+		{
+			TArray<FFactoryItemStack> Ignored;
+			Machine->GetProduction()->SetRecipe(Node->GetMiningRecipe(), Ignored);
+			Machine->GetProduction()->SetSpeedPercent(AFactoryResourceNode::GetSpeedPercent(Node->GetPurity()));
+		}
 	}
 
 	return true;
@@ -1195,11 +1237,45 @@ void UFactoryBuildComponent::SetDemolishTarget(AActor* NewTarget)
 	Highlight(NewTarget, true);
 }
 
-void UFactoryBuildComponent::UpdateIdle()
+void UFactoryBuildComponent::UpdateIdle(float DeltaTime)
 {
 	FHitResult Hit;
+	const bool bHit = TraceView(InteractRange, Hit);
+	AFactoryResourceNode* Node = bHit ? Cast<AFactoryResourceNode>(Hit.GetActor()) : nullptr;
 
-	if (TraceView(InteractRange, Hit) && Cast<AFactoryCrate>(Hit.GetActor()))
+	// Abbau von Hand: solange E (Gamepad X) auf einem Vorkommen gehalten wird, 1 Erz pro Sekunde.
+	// Gefragt wird der Tastenzustand direkt, damit ein Loslassen im Menü nicht verloren geht
+	AFactoryGamePlayerController* PlayerController = GetPlayerController();
+	const bool bHoldingInteract = PlayerController && (PlayerController->IsInputKeyDown(EKeys::E) || PlayerController->IsInputKeyDown(EKeys::Gamepad_FaceButton_Left));
+
+	if (!Node || !bHoldingInteract)
+	{
+		MiningTime = 0.0f;
+	}
+
+	if (Node)
+	{
+		const UFactoryItemDatabase* Items = UFactoryItemDatabase::Get(this);
+		const FText Name = Items ? Items->GetDisplayName(Node->GetItemId()) : FText::FromName(Node->GetItemId());
+
+		if (bHoldingInteract)
+		{
+			MiningTime += DeltaTime;
+
+			if (MiningTime >= HandMiningTime)
+			{
+				MiningTime -= HandMiningTime;
+				PlayerController->GiveItems(Node->GetItemId(), 1);
+			}
+
+			ShowPanel(FText::GetEmpty(), {}, FText::GetEmpty(), FactoryLoc::Format(TEXT("Node_Mining"), { Name, FMath::FloorToInt32(MiningTime / HandMiningTime * 100.0f) }));
+		}
+		else
+		{
+			ShowPanel(FText::GetEmpty(), {}, FText::GetEmpty(), FactoryLoc::Format(TEXT("Node_Prompt"), { Name, AFactoryResourceNode::GetPurityText(Node->GetPurity()) }));
+		}
+	}
+	else if (bHit && Cast<AFactoryCrate>(Hit.GetActor()))
 	{
 		ShowPanel(FText::GetEmpty(), {}, FText::GetEmpty(), FactoryLoc::Get(TEXT("Crate_Prompt")));
 	}

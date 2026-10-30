@@ -90,7 +90,7 @@ Jeder Port ist ein **schwarzer Anschlusskasten** in der Wand (1,1 m breit, 0,3�
 | `NameEN` / `NameDE` | Anzeigename |
 | `Tier` | 0–8, Freischalt-Tier (wird noch nicht geprüft) |
 | `Category` | Kategorie fürs Baumenü: `Production`, `Logistics`, `Power`, `Storage`, `Structure` oder `Misc` |
-| `Type` | `Machine` (Gebäude), `Belt` (Kosten gelten pro angefangene 2 m) oder `Pole` |
+| `Type` | `Machine` (Gebäude), `Drill` (Bohrer, nur auf Vorkommen), `Belt` (Kosten gelten pro angefangene 2 m) oder `Pole` |
 | `SizeX` | Länge in Fluss-Richtung (hinten → vorn) in m |
 | `SizeY` | Breite in m |
 | `SizeZ` | Höhe in m |
@@ -109,6 +109,7 @@ Beim Laden wird jede Zeile geprüft (unbekannte oder nicht tragbare Kosten-Items
 | Gießerei | 2 | 8 × 4 × 6 m | 2 → 1 | 10 Zahnräder, 10 Beton |
 | Förderband Mk1 | 0 | – | – | 1 Eisenplatte pro 2 m |
 | Bandstütze | 0 | 1–7 m hoch | – | 1 Eisenstange, 1 Eisenplatte |
+| Bergbaubohrer Mk1 ✏️ | 0 | 4 × 4 × 6 m | 0 → 1 | 12 Eisenplatten, 6 Eisenstangen (Entwurf, siehe [15 Abbau](15-abbau.md)) |
 
 Damit der erste Assembler baubar ist, gibt es den **Rotor jetzt auch an der Werkbank** (`DT_Recipes.csv`: `Workbench = True`).
 

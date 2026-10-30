@@ -89,7 +89,7 @@ _Handarbeit, erste Brennstoff-Maschinen_
 
 _Erste Automatisierung, Strom, Forschungspaket I_
 
-- [ ] **Bergbaubohrer Mk1** · `BLD_Drill_Mk1` · `PT`
+- [ ] **Bergbaubohrer Mk1** · `BLD_Drill_Mk1` · `PT` · [Doku](../../Standards/15-abbau.md) — _Funktion steht (Graybox, rastet auf Vorkommen, Reinheit = Tempo), Test offen. Größe/Kosten = Entwurf, Freigabe offen_
   - [ ] Blockout (Graybox, Footprint im Raster, Ein-/Ausgänge markiert)
   - [ ] Konzept/Paintover & Silhouette freigegeben
   - [ ] High-Detail-Mesh (Nanite, Fallback-Mesh geprüft)

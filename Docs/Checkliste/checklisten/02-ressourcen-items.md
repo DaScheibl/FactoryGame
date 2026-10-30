@@ -21,19 +21,19 @@ Legende: `PT` Prototyp · `VS` Vertical Slice · `EA` Early Access · `1.0` Rele
 
 _Pro Ressource: Vorkommen-Mesh in 3 Varianten + Reinheitsstufen (unrein/normal/rein), Abbau-VFX, Abbau-SFX, Scanner-Icon, Karten-Icon, Rohstoff-Item._
 
-- [ ] **Eisenerz** · `RES_IronOre` · `PT` — Tier 0
+- [ ] **Eisenerz** · `RES_IronOre` · `PT` — Tier 0 · _Vorkommen + Abbau stehen (Graybox, [15 Abbau](../../Standards/15-abbau.md)), Test offen; Mesh/Material fehlen_
   - [ ] Vorkommen-Mesh (3 Varianten)
   - [ ] Reinheitsstufen-Visual
   - [ ] Abbau-VFX & -SFX
   - [ ] Scanner- & Karten-Icon
   - [ ] Rohstoff-Item (Icon + Belt-Mesh)
-- [ ] **Kupfererz** · `RES_CopperOre` · `PT` — Tier 0
+- [ ] **Kupfererz** · `RES_CopperOre` · `PT` — Tier 0 · _Vorkommen + Abbau stehen (Graybox, [15 Abbau](../../Standards/15-abbau.md)), Test offen; Mesh/Material fehlen_
   - [ ] Vorkommen-Mesh (3 Varianten)
   - [ ] Reinheitsstufen-Visual
   - [ ] Abbau-VFX & -SFX
   - [ ] Scanner- & Karten-Icon
   - [ ] Rohstoff-Item (Icon + Belt-Mesh)
-- [ ] **Kalkstein** · `RES_Limestone` · `PT` — Tier 0
+- [ ] **Kalkstein** · `RES_Limestone` · `PT` — Tier 0 · _Vorkommen + Abbau stehen (Graybox, [15 Abbau](../../Standards/15-abbau.md)), Test offen; Mesh/Material fehlen_
   - [ ] Vorkommen-Mesh (3 Varianten)
   - [ ] Reinheitsstufen-Visual
   - [ ] Abbau-VFX & -SFX

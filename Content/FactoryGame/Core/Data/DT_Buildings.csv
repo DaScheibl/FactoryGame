@@ -1,4 +1,5 @@
 ---,NameEN,NameDE,Tier,Category,Type,SizeX,SizeY,SizeZ,Inputs,Outputs,Cost1,Cost1Amount,Cost2,Cost2Amount,Cost3,Cost3Amount,Cost4,Cost4Amount
+BLD_Drill_Mk1,Miner Mk1,Bergbaubohrer Mk1,0,Production,Drill,4,4,6,0,1,ITM_IronPlate,12,ITM_IronRod,6,,0,,0
 BLD_Smelter,Smelter,Schmelzofen,1,Production,Machine,4,4,5,1,1,ITM_IronPlate,10,,0,,0,,0
 BLD_Constructor,Constructor,Konstruktor,1,Production,Machine,8,4,4,1,1,ITM_IronPlate,8,ITM_CopperWire,8,,0,,0
 BLD_Assembler,Assembler,Assembler,2,Production,Machine,8,8,5,2,1,ITM_ReinforcedIronPlate,6,ITM_Rotor,4,,0,,0

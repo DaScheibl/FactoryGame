@@ -24,7 +24,10 @@ enum class EFactoryBuildingType : uint8
 	Belt,
 
 	/** Conveyor pole (AFactoryBeltPole) */
-	Pole
+	Pole,
+
+	/** Mining drill: a machine that has to stand on a resource node (AFactoryResourceNode) */
+	Drill
 };
 
 /** Where in a building a belt port sits */
@@ -62,7 +65,7 @@ struct FACTORYGAME_API FFactoryBuildingDefinition : public FTableRowBase
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category="Building")
 	FName Category;
 
-	/** Machine, belt or pole */
+	/** Machine, belt, pole or drill */
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category="Building")
 	EFactoryBuildingType Type = EFactoryBuildingType::Machine;
 
@@ -124,6 +127,9 @@ struct FACTORYGAME_API FFactoryBuildingDefinition : public FTableRowBase
 
 	/** Returns the display name in the current UI language */
 	FText GetDisplayName() const;
+
+	/** True for everything that is an AFactoryMachine (machines and drills) */
+	bool IsMachine() const { return Type == EFactoryBuildingType::Machine || Type == EFactoryBuildingType::Drill; }
 
 	/** Returns the build menu category: the Category column if it is one of GetMenuCategories(), Misc otherwise */
 	FName GetMenuCategory() const;

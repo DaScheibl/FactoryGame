@@ -56,6 +56,9 @@ protected:
 private:
 
 	UWidget* BuildRecipes();
+
+	/** Drills: what and how fast they mine, instead of the recipe list */
+	UWidget* BuildMiningInfo();
 	UWidget* BuildBuffers();
 
 	/** One buffer slot as a button, plus the item count in the inventory and, for inputs, a take-back button */

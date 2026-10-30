@@ -376,6 +376,25 @@ UWidget* UFactoryMachineWidget::BuildRecipes()
 	return ScrollSize;
 }
 
+UWidget* UFactoryMachineWidget::BuildMiningInfo()
+{
+	const UFactoryProductionComponent* Production = Machine.IsValid() ? Machine->GetProduction() : nullptr;
+	const UFactoryRecipeDatabase* Recipes = UFactoryRecipeDatabase::Get(this);
+	const UFactoryItemDatabase* Items = UFactoryItemDatabase::Get(this);
+	const FFactoryRecipeDefinition* Recipe = Production && Recipes ? Recipes->FindRecipe(Production->GetRecipeId()) : nullptr;
+	const TArray<FFactoryItemStack> Outputs = Recipe ? Recipe->GetOutputs() : TArray<FFactoryItemStack>();
+
+	if (Outputs.IsEmpty())
+	{
+		return MakeText(FactoryLoc::Get("MachinePanel_NoNode"), 15.0f, ErrorColor);
+	}
+
+	// "Baut Eisenerz ab · 120/min (200 % durch die Reinheit)"
+	const float PerMinute = Recipe->GetPerMinute(Outputs[0].Count) * Production->GetSpeedPercent() / 100.0f;
+	return MakeText(FactoryLoc::Format("MachinePanel_Mining", { Items ? Items->GetDisplayName(Outputs[0].ItemId) : FText::FromName(Outputs[0].ItemId),
+		FText::AsNumber(PerMinute), Production->GetSpeedPercent() }), 15.0f, TextColor);
+}
+
 UWidget* UFactoryMachineWidget::BuildBufferSlot(int32 Index, bool bInput)
 {
 	const UFactoryProductionComponent* Production = Machine.IsValid() ? Machine->GetProduction() : nullptr;
@@ -525,8 +544,18 @@ UWidget* UFactoryMachineWidget::BuildContent()
 
 	AddRow(Content, BuildBuffers(), FMargin(0.0f, 0.0f, 0.0f, 18.0f));
 
-	AddRow(Content, MakeText(FactoryLoc::Get("MachinePanel_Recipe"), 14.0f, SubtleTextColor), FMargin(0.0f, 0.0f, 0.0f, 6.0f));
-	AddRow(Content, BuildRecipes(), FMargin(0.0f));
+	// Bohrer: das Rezept kommt vom Vorkommen und lässt sich nicht wechseln
+	const FFactoryBuildingDefinition* Building = Buildings ? Buildings->FindBuilding(BuildingId) : nullptr;
+
+	if (Building && Building->Type == EFactoryBuildingType::Drill)
+	{
+		AddRow(Content, BuildMiningInfo(), FMargin(0.0f));
+	}
+	else
+	{
+		AddRow(Content, MakeText(FactoryLoc::Get("MachinePanel_Recipe"), 14.0f, SubtleTextColor), FMargin(0.0f, 0.0f, 0.0f, 6.0f));
+		AddRow(Content, BuildRecipes(), FMargin(0.0f));
+	}
 
 	HintText = MakeText(FText::GetEmpty(), 13.0f, SubtleTextColor);
 	HintText->SetAutoWrapText(true);

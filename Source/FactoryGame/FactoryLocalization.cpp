@@ -150,6 +150,15 @@ namespace FactoryLoc
 			{ TEXT("Build_DemolishTarget"),		{ TEXT("Demolish: {0}"),				TEXT("Abreißen: {0}") } },
 			{ TEXT("Build_DemolishProgress"),	{ TEXT("Demolishing … {0} %"),			TEXT("Abreißen … {0} %") } },
 			{ TEXT("Crate_Label"),				{ TEXT("Demolition crate: {0} items"),	TEXT("Abriss-Kiste: {0} Items") } },
+			{ TEXT("Node_Impure"),				{ TEXT("impure"),						TEXT("unrein") } },
+			{ TEXT("Node_Normal"),				{ TEXT("normal"),						TEXT("normal") } },
+			{ TEXT("Node_Pure"),				{ TEXT("pure"),							TEXT("rein") } },
+			{ TEXT("Node_Prompt"),				{ TEXT("Hold E: Mine {0} ({1})"),		TEXT("E halten: {0} abbauen ({1})") } },
+			{ TEXT("Node_Mining"),				{ TEXT("Mining {0} … {1} %"),			TEXT("{0} abbauen … {1} %") } },
+			{ TEXT("Build_Error_NoNode"),		{ TEXT("Aim at a resource node"),		TEXT("Auf ein Erzvorkommen zielen") } },
+			{ TEXT("Build_Error_NodeTaken"),	{ TEXT("This node already has a drill"), TEXT("Auf diesem Vorkommen steht schon ein Bohrer") } },
+			{ TEXT("MachinePanel_Mining"),		{ TEXT("Mines {0}  ·  {1}/min ({2} % from the node purity)"), TEXT("Baut {0} ab  ·  {1}/min ({2} % durch die Reinheit)") } },
+			{ TEXT("MachinePanel_NoNode"),		{ TEXT("Not standing on a resource node."), TEXT("Steht auf keinem Erzvorkommen.") } },
 			{ TEXT("Machine_Prompt"),			{ TEXT("E: Open {0}"),					TEXT("E: {0} öffnen") } },
 
 			// machine panel

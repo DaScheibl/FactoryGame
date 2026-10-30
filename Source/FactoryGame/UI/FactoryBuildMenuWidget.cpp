@@ -490,7 +490,7 @@ void UFactoryBuildMenuWidget::ShowDetails(FName BuildingId)
 		*FFactoryBuildingDefinition::GetCategoryDisplayName(Building->GetMenuCategory()).ToString(),
 		*FactoryLoc::Format("Inv_Tier", { FText::AsNumber(Building->Tier) }).ToString());
 
-	if (Building->Type == EFactoryBuildingType::Machine)
+	if (Building->IsMachine())
 	{
 		Info += FString::Printf(TEXT("  ·  %d × %d × %d m  ·  %s"), Building->SizeX, Building->SizeY, Building->SizeZ,
 			*FactoryLoc::Format("BuildMenu_Ports", { FText::AsNumber(Building->Inputs), FText::AsNumber(Building->Outputs) }).ToString());

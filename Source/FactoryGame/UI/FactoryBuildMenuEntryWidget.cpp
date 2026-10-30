@@ -97,7 +97,7 @@ UWidget* UFactoryBuildMenuEntryWidget::BuildContent()
 		NameText->SetAutoWrapText(true);
 		AddRow(Lines, NameText, FMargin(0.0f));
 
-		if (Building && Building->Type == EFactoryBuildingType::Machine)
+		if (Building && Building->IsMachine())
 		{
 			UTextBlock* SizeText = MakeText(FText::FromString(FString::Printf(TEXT("%d × %d × %d m"), Building->SizeX, Building->SizeY, Building->SizeZ)), 11.0f, SubtleTextColor);
 			SizeText->SetJustification(ETextJustify::Center);

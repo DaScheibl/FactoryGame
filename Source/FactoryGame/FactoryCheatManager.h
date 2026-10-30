@@ -127,6 +127,10 @@ public:
 	UFUNCTION(Exec)
 	void SetBeltTier(int32 Tier);
 
+	/** Spawns a resource node 8 m in front of the player. Purity: Impure, Normal (default) or Pure */
+	UFUNCTION(Exec)
+	void SpawnNode(FName ItemId, FName Purity);
+
 	/** Prints the state of the belt in view to the log */
 	UFUNCTION(Exec)
 	void BeltInfo();

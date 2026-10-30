@@ -94,7 +94,7 @@ int32 UFactoryBuildingDatabase::Validate() const
 		}
 
 		// Ports müssen nebeneinander auf die Kante passen (mindestens 1 m pro Port)
-		if (Building->Type == EFactoryBuildingType::Machine && (Building->Inputs > Building->SizeY || Building->Outputs > Building->SizeY))
+		if (Building->IsMachine() && (Building->Inputs > Building->SizeY || Building->Outputs > Building->SizeY))
 		{
 			Report(BuildingId, TEXT("more ports than meters of edge"));
 		}

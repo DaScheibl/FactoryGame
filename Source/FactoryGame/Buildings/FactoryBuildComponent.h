@@ -12,6 +12,7 @@ class AFactoryGamePlayerController;
 class AFactoryHologram;
 class AFactoryMachine;
 class AFactoryBeltPole;
+class AFactoryResourceNode;
 class AActor;
 struct FFactoryBuildingDefinition;
 
@@ -103,6 +104,9 @@ public:
 	/** Highest ground difference under a building, in cm. The building sinks into the higher ground */
 	static constexpr double MaxGroundDifference = 100.0;
 
+	/** How long the interact key has to be held on a resource node for one ore, in seconds */
+	static constexpr float HandMiningTime = 1.0f;
+
 	/** How long the primary button has to be held to demolish, in seconds */
 	static constexpr float DemolishHoldTime = 0.5f;
 
@@ -143,7 +147,7 @@ public:
 	/** R: cycles the belt mode */
 	void CycleMode();
 
-	/** Interact key (E): empties the demolition crate in view */
+	/** Interact key (E): empties the demolition crate in view or opens the machine in view. Holding it on a resource node mines by hand */
 	void Interact();
 
 protected:
@@ -171,8 +175,8 @@ private:
 	/** Finds the demolish target and advances the hold timer */
 	void UpdateDemolish(float DeltaTime);
 
-	/** Shows the crate prompt when looking at a demolition crate */
-	void UpdateIdle();
+	/** Shows the prompts for crates, machines and resource nodes, mines by hand while E is held on a node */
+	void UpdateIdle(float DeltaTime);
 
 	/** Builds the current placement. Returns false if it isn't valid */
 	bool PlaceBuilding();
@@ -247,6 +251,12 @@ private:
 
 	UPROPERTY()
 	TWeakObjectPtr<AActor> DemolishTarget;
+
+	/** Resource node under a drill hologram, the drill gets its recipe from it */
+	TWeakObjectPtr<AFactoryResourceNode> PlaceNode;
+
+	/** Time the interact key has been held on a resource node */
+	float MiningTime = 0.0f;
 
 	/** True while the primary button is held in demolish mode */
 	bool bHoldingPrimary = false;
