@@ -5,7 +5,7 @@ Gehört zu `SYS_Build` (Bausystem), `EQP_BuildGun` und später `UI_BuildMenu`. R
 Das Bausystem kommt in drei Schritten:
 
 1. **Gebäude platzieren** (Hologramm, Drehen, Kosten, Abriss, Speichern) ✅ im Spiel getestet
-2. **Bänder bauen** (zwischen Ports ziehen, Modi, Bandstützen) – gebaut, Test im Spiel offen
+2. **Bänder bauen** (zwischen Ports ziehen, Modi, Bandstützen) ✅ im Spiel getestet
 3. **Baumenü** (`UI_BuildMenu`, Kategorien & Suche)
 
 ## Entscheidungen
@@ -44,7 +44,7 @@ Das Bausystem kommt in drei Schritten:
 
 ### Ports an Maschinen
 
-> ✏️ **Entwurf, von dir freizugeben** (auf deinen Vorschlag): Jeder Port ist ein **schwarzer Anschlusskasten** in der Wand (1,1 m breit, 0,3–1,5 m hoch, Band dockt auf 1 m an). Darüber ragt ein flacher **Pfeil in Fluss-Richtung** 0,6 m aus der Wand: **blau = Eingang** (zeigt in die Maschine), **orange = Ausgang** (zeigt heraus). Das Hologramm zeigt dieselben Kästen und Pfeile.
+Jeder Port ist ein **schwarzer Anschlusskasten** in der Wand (1,1 m breit, 0,3–1,5 m hoch, Band dockt auf 1 m an). Darüber ragt ein flacher **Pfeil in Fluss-Richtung** 0,6 m aus der Wand: **blau = Eingang** (zeigt in die Maschine), **orange = Ausgang** (zeigt heraus). Das Hologramm zeigt dieselben Kästen und Pfeile.
 - **Abriss:** Eine Stütze reißt die Bänder an ihr mit ab (alles wird erstattet). Eine Maschine lässt ihre Bänder stehen, deren Ende ist dann offen.
 - Bänder prüfen noch **keine Kollision** mit Gebäuden auf ihrer Strecke, nur an den Enden.
 
@@ -61,7 +61,7 @@ Das Bausystem kommt in drei Schritten:
 | Abriss-Modus an/aus | `F`, dann Linksklick **halten** | Steuerkreuz runter, RT halten |
 | Abriss-Kiste leeren | `E` | X |
 
-> ✏️ **Entwurf, von dir freizugeben:** `E` / Gamepad X als allgemeine Interaktions-Taste (bisher nur für Kisten, später auch Maschinen-Fenster).
+`E` / Gamepad X ist die allgemeine Interaktions-Taste (bisher Kisten, später auch Maschinen-Fenster).
 
 ## Gebäude-Tabelle
 
@@ -92,8 +92,6 @@ Beim Laden wird jede Zeile geprüft (unbekannte oder nicht tragbare Kosten-Items
 | Gießerei | 2 | 8 × 4 × 6 m | 2 → 1 | 10 Zahnräder, 10 Beton |
 | Förderband Mk1 | 0 | – | – | 1 Eisenplatte pro 2 m |
 | Bandstütze | 0 | 1–7 m hoch | – | 1 Eisenstange, 1 Eisenplatte |
-
-> ✏️ **Entwurf, von dir freizugeben:** die **Höhen** (5 / 4 / 5 / 6 m), Größe und Kosten hast du festgelegt.
 
 Damit der erste Assembler baubar ist, gibt es den **Rotor jetzt auch an der Werkbank** (`DT_Recipes.csv`: `Workbench = True`).
 
