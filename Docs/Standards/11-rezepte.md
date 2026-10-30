@@ -35,8 +35,8 @@ Beim Laden prüft das Spiel jedes Rezept und schreibt Fehler ins Output-Log (`Lo
 
 | Tier | Rezept | Gebäude | Werkbank | Dauer | Eingang | Ausgang | pro Minute (Ausgang) |
 |---|---|---|---|---|---|---|---|
-| 0 | Eisenbarren | Schmelzofen | – | 2 s | 1 Eisenerz | 1 Eisenbarren | 30 |
-| 0 | Kupferbarren | Schmelzofen | – | 2 s | 1 Kupfererz | 1 Kupferbarren | 30 |
+| 0 | Eisenbarren | Schmelzofen | ✔ | 2 s | 1 Eisenerz | 1 Eisenbarren | 30 |
+| 0 | Kupferbarren | Schmelzofen | ✔ | 2 s | 1 Kupfererz | 1 Kupferbarren | 30 |
 | 0 | Eisenplatte | Konstruktor | ✔ | 6 s | 3 Eisenbarren | 2 Eisenplatten | 20 |
 | 0 | Eisenstange | Konstruktor | ✔ | 4 s | 1 Eisenbarren | 1 Eisenstange | 15 |
 | 0 | Schraube | Konstruktor | ✔ | 6 s | 1 Eisenstange | 4 Schrauben | 40 |

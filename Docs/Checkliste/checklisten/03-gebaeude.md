@@ -12,7 +12,7 @@ Legende: `PT` Prototyp · `VS` Vertical Slice · `EA` Early Access · `1.0` Rele
 
 _Handarbeit, erste Brennstoff-Maschinen_
 
-- [ ] **Werkbank (Handcrafting)** · `BLD_Workbench` · `VS`
+- [ ] **Werkbank (Handcrafting)** · `BLD_Workbench` · `VS` — _Steckt im HUB ([16 HUB](../../Standards/16-hub.md)): Rezept wählen, Herstellen gedrückt halten; eigenes Werkbank-Gebäude offen_
   - [ ] Blockout (Graybox, Footprint im Raster, Ein-/Ausgänge markiert)
   - [ ] Konzept/Paintover & Silhouette freigegeben
   - [ ] High-Detail-Mesh (Nanite, Fallback-Mesh geprüft)
@@ -72,7 +72,7 @@ _Handarbeit, erste Brennstoff-Maschinen_
   - [ ] Icon (256 px) + Bau-Hologramm/Vorschau
   - [ ] UI-Panel (Rezeptwahl, Status, Ein-/Ausgabe-Slots)
   - [ ] Ingame integriert, Rezepte verknüpft, Performance geprüft
-- [ ] **Notunterkunft / HUB (Startgebäude)** · `BLD_Hub` · `PT`
+- [ ] **Notunterkunft / HUB (Startgebäude)** · `BLD_Hub` · `PT` · [Doku](../../Standards/16-hub.md) — _Funktion steht (Graybox, Werkbank zum Halten, 24er-Lager, Meilensteine Tier 1–2, Tier-Sperren), Test offen. Handzeit, Größe und Mengen = Entwurf; Tier 2 braucht noch eine Lösung für Paket II_
   - [ ] Blockout (Graybox, Footprint im Raster, Ein-/Ausgänge markiert)
   - [ ] Konzept/Paintover & Silhouette freigegeben
   - [ ] High-Detail-Mesh (Nanite, Fallback-Mesh geprüft)

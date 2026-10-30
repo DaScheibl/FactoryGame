@@ -3,6 +3,7 @@
 #include "FactoryBuildMenuWidget.h"
 #include "FactoryBuildMenuEntryWidget.h"
 #include "FactoryBuildingDatabase.h"
+#include "FactoryHub.h"
 #include "FactoryGamePlayerController.h"
 #include "FactoryGameCharacter.h"
 #include "FactoryInventoryComponent.h"
@@ -158,7 +159,7 @@ TArray<FName> UFactoryBuildMenuWidget::GetVisibleCategories() const
 		{
 			const FFactoryBuildingDefinition* Building = Buildings->FindBuilding(Id);
 
-			if (Building && Building->GetMenuCategory() == Category)
+			if (Building && Building->Type != EFactoryBuildingType::Hub && Building->GetMenuCategory() == Category)
 			{
 				Categories.Add(Category);
 				break;
@@ -186,7 +187,7 @@ TArray<FName> UFactoryBuildMenuWidget::GetShownBuildings() const
 	{
 		const FFactoryBuildingDefinition* Building = Buildings->FindBuilding(Id);
 
-		if (!Building)
+		if (!Building || Building->Type == EFactoryBuildingType::Hub)
 		{
 			continue;
 		}
@@ -332,7 +333,7 @@ void UFactoryBuildMenuWidget::HandleEntryClick(UFactoryBuildMenuEntryWidget* Ent
 
 	const FName BuildingId = Entry->GetBuildingId();
 
-	if (BuildingId.IsNone())
+	if (BuildingId.IsNone() || ShowLockedHint(BuildingId))
 	{
 		return;
 	}
@@ -414,11 +415,30 @@ bool UFactoryBuildMenuWidget::HandleNumberKey(const FKey& Key)
 	return false;
 }
 
+bool UFactoryBuildMenuWidget::ShowLockedHint(FName BuildingId)
+{
+	const UFactoryBuildingDatabase* Buildings = UFactoryBuildingDatabase::Get(this);
+	const FFactoryBuildingDefinition* Building = Buildings ? Buildings->FindBuilding(BuildingId) : nullptr;
+
+	if (!Building || AFactoryHub::IsBuildingUnlocked(this, *Building))
+	{
+		return false;
+	}
+
+	if (HintText)
+	{
+		HintText->SetText(FactoryLoc::Format("Build_Locked", { Building->GetDisplayName(), Building->Tier }));
+	}
+
+	return true;
+}
+
 void UFactoryBuildMenuWidget::AssignHotbarSlot(int32 Index, FName BuildingId)
 {
 	AFactoryGamePlayerController* PlayerController = GetFactoryController();
 
-	if (!PlayerController)
+	// gesperrte Gebäude kommen nicht auf die Hotbar
+	if (!PlayerController || (!BuildingId.IsNone() && ShowLockedHint(BuildingId)))
 	{
 		return;
 	}

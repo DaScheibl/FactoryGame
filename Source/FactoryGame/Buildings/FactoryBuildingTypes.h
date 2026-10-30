@@ -27,7 +27,10 @@ enum class EFactoryBuildingType : uint8
 	Pole,
 
 	/** Mining drill: a machine that has to stand on a resource node (AFactoryResourceNode) */
-	Drill
+	Drill,
+
+	/** The start building (AFactoryHub). Every world has exactly one, it can't be built from the menu */
+	Hub
 };
 
 /** Where in a building a belt port sits */

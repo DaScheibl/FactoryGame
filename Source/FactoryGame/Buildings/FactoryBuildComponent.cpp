@@ -9,6 +9,7 @@
 #include "FactoryBeltComponent.h"
 #include "FactoryCrate.h"
 #include "FactoryResourceNode.h"
+#include "FactoryHub.h"
 #include "FactoryGamePlayerController.h"
 #include "FactoryGameCharacter.h"
 #include "FactoryInventoryComponent.h"
@@ -31,7 +32,7 @@ namespace
 	// Gebäude-Actors, die sich nie überlappen dürfen
 	bool IsFactoryActor(const AActor* Actor)
 	{
-		return Actor && (Actor->IsA<AFactoryMachine>() || Actor->IsA<AFactoryBelt>() || Actor->IsA<AFactoryBeltPole>() || Actor->IsA<AFactoryCrate>() || Actor->IsA<APawn>());
+		return Actor && (Actor->IsA<AFactoryMachine>() || Actor->IsA<AFactoryBelt>() || Actor->IsA<AFactoryBeltPole>() || Actor->IsA<AFactoryCrate>() || Actor->IsA<AFactoryHub>() || Actor->IsA<APawn>());
 	}
 
 	// gleiche Items zusammenfassen, damit die Meldungen "+10 Eisenplatte" statt zweimal "+5" zeigen
@@ -160,8 +161,24 @@ void UFactoryBuildComponent::BeginPlacing(FName NewBuildingId)
 	const UFactoryBuildingDatabase* Buildings = UFactoryBuildingDatabase::Get(this);
 	const FFactoryBuildingDefinition* Building = Buildings ? Buildings->FindBuilding(NewBuildingId) : nullptr;
 
-	if (!Building || !GetHologram())
+	if (!Building || Building->Type == EFactoryBuildingType::Hub || !GetHologram())
 	{
+		return;
+	}
+
+	// gesperrt: Hinweis statt Hologramm
+	if (!AFactoryHub::IsBuildingUnlocked(this, *Building))
+	{
+		StopBuilding();
+
+		if (const AFactoryGamePlayerController* PlayerController = GetPlayerController())
+		{
+			if (UFactoryHUDWidget* HUD = PlayerController->GetHUDWidget())
+			{
+				HUD->ShowHint(FactoryLoc::Format(TEXT("Build_Locked"), { Building->GetDisplayName(), Building->Tier }));
+			}
+		}
+
 		return;
 	}
 
@@ -1279,6 +1296,10 @@ void UFactoryBuildComponent::UpdateIdle(float DeltaTime)
 	{
 		ShowPanel(FText::GetEmpty(), {}, FText::GetEmpty(), FactoryLoc::Get(TEXT("Crate_Prompt")));
 	}
+	else if (bHit && Cast<AFactoryHub>(Hit.GetActor()))
+	{
+		ShowPanel(FText::GetEmpty(), {}, FText::GetEmpty(), FactoryLoc::Get(TEXT("Hub_Prompt")));
+	}
 	else if (const AFactoryMachine* Machine = Hit.bBlockingHit ? Cast<AFactoryMachine>(Hit.GetActor()) : nullptr)
 	{
 		const UFactoryBuildingDatabase* Buildings = UFactoryBuildingDatabase::Get(this);
@@ -1306,6 +1327,13 @@ void UFactoryBuildComponent::Interact()
 			if (AFactoryGamePlayerController* PlayerController = GetPlayerController())
 			{
 				PlayerController->OpenMachinePanel(Machine);
+			}
+		}
+		else if (AFactoryHub* Hub = Cast<AFactoryHub>(Hit.GetActor()))
+		{
+			if (AFactoryGamePlayerController* PlayerController = GetPlayerController())
+			{
+				PlayerController->OpenHubPanel(Hub);
 			}
 		}
 	}

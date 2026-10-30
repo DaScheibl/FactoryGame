@@ -21,7 +21,7 @@ Factorio-Prinzip: Jede Tier wird über ein neues **Forschungspaket** freigeschal
 - [ ] Taktzeiten & Durchsätze balanciert (ganze Verhältnisse wie 1:2, 2:3 bevorzugen)
 - [ ] Alternative Rezepte (Satisfactory-Style) – mind. 2 pro Tier ab Tier 2
 - [ ] Forschungs-UI: Tech-Tree-Graph mit Abhängigkeiten
-- [ ] Meilenstein-Belohnungen pro Tier (neues Gebäude, Ausrüstung, Kosmetik)
+- [ ] Meilenstein-Belohnungen pro Tier (neues Gebäude, Ausrüstung, Kosmetik) — _Freischalten per Forschungspaket-Abgabe im HUB steht für Tier 1–2 ([16 HUB](../../Standards/16-hub.md)); Belohnungen über Gebäude/Rezepte hinaus offen_
 - [ ] Infinite-/Endlos-Forschung nach Tier 8 (Produktivität, Bandgeschwindigkeit)
 - [ ] Freischalt-Sequenz durchgespielt: kein Softlock möglich
 - [ ] Ressourcen-Verteilung auf der Karte passt zur Tier-Reihenfolge

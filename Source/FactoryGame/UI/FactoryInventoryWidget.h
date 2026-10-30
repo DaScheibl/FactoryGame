@@ -36,6 +36,9 @@ public:
 	/** Sets the inventory and equipment to show */
 	void SetInventory(UFactoryInventoryComponent* InInventory, UFactoryInventoryComponent* InEquipment);
 
+	/** Shows a storage (e.g. the HUB storage) above the inventory, nullptr hides it. Shift-click then moves between storage and inventory */
+	void SetContainer(UFactoryInventoryComponent* InContainer, const FText& InTitle);
+
 	/** Gives the keyboard/gamepad focus to the last used slot */
 	void FocusCurrentSlot();
 
@@ -123,6 +126,13 @@ private:
 
 	TWeakObjectPtr<UFactoryInventoryComponent> Inventory;
 	TWeakObjectPtr<UFactoryInventoryComponent> Equipment;
+
+	/** Storage shown above the inventory, may be null */
+	TWeakObjectPtr<UFactoryInventoryComponent> Container;
+
+	FText ContainerTitle;
+
+	FDelegateHandle ContainerChangedHandle;
 
 	FDelegateHandle InventoryChangedHandle;
 	FDelegateHandle EquipmentChangedHandle;

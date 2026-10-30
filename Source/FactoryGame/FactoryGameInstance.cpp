@@ -13,6 +13,7 @@
 #include "Misc/Guid.h"
 #include "FactoryMachine.h"
 #include "FactoryCrate.h"
+#include "FactoryHub.h"
 #include "FactoryBelt.h"
 #include "FactoryBeltPole.h"
 #include "EngineUtils.h"
@@ -430,6 +431,17 @@ void UFactoryGameInstance::CaptureBuildings(UWorld* World)
 		Saved.End = SaveEnd(It->GetEndMachine(), It->GetEndPort(), It->GetEndPole());
 	}
 
+	CurrentWorldSave->bHasHub = false;
+
+	if (const AFactoryHub* Hub = AFactoryHub::Get(World))
+	{
+		CurrentWorldSave->bHasHub = true;
+		CurrentWorldSave->HubTransform = Hub->GetActorTransform();
+		CurrentWorldSave->HubStorage = Hub->GetStorage()->GetSlots();
+		CurrentWorldSave->UnlockedTier = Hub->GetTier();
+		CurrentWorldSave->MilestoneDelivered = Hub->GetDeliveredStacks();
+	}
+
 	for (TActorIterator<AFactoryCrate> It(World); It; ++It)
 	{
 		FFactorySavedCrate& Saved = CurrentWorldSave->Crates.AddDefaulted_GetRef();
@@ -522,6 +534,17 @@ void UFactoryGameInstance::RestoreBuildings(UWorld* World)
 	for (const FFactorySavedCrate& Saved : CurrentWorldSave->Crates)
 	{
 		AFactoryCrate::SpawnCrate(World, Saved.Location, Saved.Items);
+	}
+
+	// ohne gespeicherten HUB setzt der Player Controller danach einen neuen (EnsureHub)
+	if (CurrentWorldSave->bHasHub)
+	{
+		if (AFactoryHub* Hub = AFactoryHub::SpawnHub(World, CurrentWorldSave->HubTransform))
+		{
+			Hub->GetStorage()->SetSlots(CurrentWorldSave->HubStorage, AFactoryHub::StorageSlots);
+			Hub->SetTier(CurrentWorldSave->UnlockedTier);
+			Hub->SetDeliveredStacks(CurrentWorldSave->MilestoneDelivered);
+		}
 	}
 
 	UE_LOG(LogFactoryGame, Log, TEXT("Restored %d machines, %d poles, %d belts and %d crates."), CurrentWorldSave->Machines.Num(),

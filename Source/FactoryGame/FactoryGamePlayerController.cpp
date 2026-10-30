@@ -13,6 +13,8 @@
 #include "FactoryInventoryWidget.h"
 #include "FactoryBuildMenuWidget.h"
 #include "FactoryMachineWidget.h"
+#include "FactoryHubWidget.h"
+#include "FactoryHub.h"
 #include "FactoryCrate.h"
 #include "FactoryInventoryComponent.h"
 #include "FactoryGameCharacter.h"
@@ -36,6 +38,7 @@ AFactoryGamePlayerController::AFactoryGamePlayerController()
 	InventoryWidgetClass = UFactoryInventoryWidget::StaticClass();
 	BuildMenuWidgetClass = UFactoryBuildMenuWidget::StaticClass();
 	MachineWidgetClass = UFactoryMachineWidget::StaticClass();
+	HubWidgetClass = UFactoryHubWidget::StaticClass();
 
 	// console commands for testing
 	CheatClass = UFactoryCheatManager::StaticClass();
@@ -116,6 +119,9 @@ void AFactoryGamePlayerController::OnPossess(APawn* InPawn)
 		// nach dem Laden einer Welt Position, Inventar und Hotbar zurückholen (tut nichts, wenn nichts ansteht)
 		GameInstance->RestorePlayerState(this);
 	}
+
+	// jede Welt hat einen HUB: neue Welten und alte Spielstände bekommen ihn hier
+	AFactoryHub::EnsureHub(GetWorld());
 
 	FillDefaultHotbar();
 }
@@ -265,8 +271,9 @@ void AFactoryGamePlayerController::RestoreGameInput()
 	const bool bInventoryOpen = InventoryWidget && InventoryWidget->IsInViewport();
 	const bool bBuildMenuOpen = BuildMenuWidget && BuildMenuWidget->IsInViewport();
 	const bool bMachineOpen = MachineWidget && MachineWidget->IsInViewport();
+	const bool bHubOpen = HubWidget && HubWidget->IsInViewport();
 
-	if (bPauseOpen || bInventoryOpen || bBuildMenuOpen || bMachineOpen)
+	if (bPauseOpen || bInventoryOpen || bBuildMenuOpen || bMachineOpen || bHubOpen)
 	{
 		return;
 	}
@@ -319,6 +326,11 @@ void AFactoryGamePlayerController::OpenInventory()
 	}
 
 	InventoryWidget->SetInventory(FactoryCharacter->GetInventory(), FactoryCharacter->GetEquipment());
+
+	// das HUB-Lager steht nur über dem Inventar, wenn es über den HUB geöffnet wurde
+	AFactoryHub* Hub = StorageHub.Get();
+	StorageHub = nullptr;
+	InventoryWidget->SetContainer(Hub ? Hub->GetStorage() : nullptr, FactoryLoc::Get("Hub_StorageTitle"));
 	InventoryWidget->AddToPlayerScreen(50);
 
 	// the game keeps running while the inventory is open
@@ -344,7 +356,7 @@ void AFactoryGamePlayerController::CloseInventory()
 void AFactoryGamePlayerController::CloseWindows()
 {
 	// nur entfernen, nicht RestoreGameInput: das neue Fenster setzt gleich selbst den UI-Modus
-	for (UUserWidget* Window : { static_cast<UUserWidget*>(InventoryWidget), static_cast<UUserWidget*>(BuildMenuWidget), static_cast<UUserWidget*>(MachineWidget) })
+	for (UUserWidget* Window : { static_cast<UUserWidget*>(InventoryWidget), static_cast<UUserWidget*>(BuildMenuWidget), static_cast<UUserWidget*>(MachineWidget), static_cast<UUserWidget*>(HubWidget) })
 	{
 		if (Window && Window->IsInViewport())
 		{
@@ -395,6 +407,58 @@ void AFactoryGamePlayerController::CloseMachinePanel()
 	}
 
 	RestoreGameInput();
+}
+
+void AFactoryGamePlayerController::OpenHubPanel(AFactoryHub* Hub)
+{
+	if (!IsLocalPlayerController() || !HubWidgetClass || !Hub || (PauseMenuWidget && PauseMenuWidget->IsInViewport()))
+	{
+		return;
+	}
+
+	CloseWindows();
+
+	if (!HubWidget)
+	{
+		HubWidget = CreateWidget<UFactoryHubWidget>(this, HubWidgetClass);
+
+		if (!HubWidget)
+		{
+			UE_LOG(LogFactoryGame, Error, TEXT("Could not spawn HUB widget."));
+			return;
+		}
+
+		HubWidget->OnCloseRequested.BindUObject(this, &AFactoryGamePlayerController::CloseHubPanel);
+		HubWidget->OnStorageRequested.BindUObject(this, &AFactoryGamePlayerController::OpenHubStorage);
+	}
+
+	HubWidget->SetHub(Hub);
+	HubWidget->AddToPlayerScreen(50);
+
+	// the game keeps running while the window is open
+	FInputModeUIOnly InputMode;
+	InputMode.SetWidgetToFocus(HubWidget->TakeWidget());
+	SetInputMode(InputMode);
+	SetShowMouseCursor(true);
+
+	HubWidget->FocusFirstButton();
+}
+
+void AFactoryGamePlayerController::CloseHubPanel()
+{
+	if (HubWidget)
+	{
+		HubWidget->RemoveFromParent();
+	}
+
+	RestoreGameInput();
+}
+
+void AFactoryGamePlayerController::OpenHubStorage()
+{
+	// OpenInventory schließt das HUB-Fenster und zeigt das Lager über dem Inventar
+	StorageHub = AFactoryHub::Get(this);
+	OpenInventory();
 }
 
 void AFactoryGamePlayerController::GiveItemsOrCrate(const TArray<FFactoryItemStack>& Stacks, const FVector& CrateLocation)
@@ -570,6 +634,12 @@ void AFactoryGamePlayerController::SelectHotbarSlot(int32 Index)
 		if (SelectedHotbarSlot != INDEX_NONE && !HotbarSlots[SelectedHotbarSlot].IsNone())
 		{
 			BuildComponent->BeginPlacing(HotbarSlots[SelectedHotbarSlot]);
+
+			// gesperrtes Gebäude: BeginPlacing zeigt den Hinweis, der Slot bleibt nicht gewählt
+			if (BuildComponent->GetMode() == EFactoryBuildMode::None)
+			{
+				SelectedHotbarSlot = INDEX_NONE;
+			}
 		}
 		else if (BuildComponent->GetMode() != EFactoryBuildMode::None && BuildComponent->GetMode() != EFactoryBuildMode::Demolish)
 		{
@@ -732,7 +802,10 @@ void AFactoryGamePlayerController::FillDefaultHotbar()
 				break;
 			}
 
-			if (!HotbarSlots.Contains(Id))
+			// der HUB steht schon in der Welt, gesperrte Gebäude kommen erst nach dem Freischalten dazu
+			const FFactoryBuildingDefinition* Building = Buildings->FindBuilding(Id);
+
+			if (Building && Building->Type != EFactoryBuildingType::Hub && AFactoryHub::IsBuildingUnlocked(this, *Building) && !HotbarSlots.Contains(Id))
 			{
 				HotbarSlots[FreeSlot] = Id;
 			}

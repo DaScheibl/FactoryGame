@@ -53,6 +53,15 @@ bool UFactoryWorldSaveGame::MigrateToLatest()
 		Belts.Reset();
 	}
 
+	if (SaveVersion < static_cast<int32>(EFactoryWorldSaveVersion::Hub))
+	{
+		// older worlds get a new HUB at the start point (AFactoryHub::EnsureHub) and start at tier 0
+		bHasHub = false;
+		HubStorage.Reset();
+		UnlockedTier = 0;
+		MilestoneDelivered.Reset();
+	}
+
 	if (SaveVersion < Latest)
 	{
 		UE_LOG(LogFactoryGame, Log, TEXT("Migrated world '%s' from save version %d to %d."), *DisplayName, SaveVersion, Latest);

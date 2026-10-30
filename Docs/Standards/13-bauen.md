@@ -76,9 +76,18 @@ Jeder Port ist ein **schwarzer Anschlusskasten** in der Wand (1,1 m breit, 0,3�
 - **Details:** Name, Kategorie, Tier, Größe, Ports (`1 rein → 1 raus`) und Kosten als `hast / brauchst` (rot, wenn es fehlt). Bänder zeigen die Kosten pro 2 m.
 - **Hotbar im Menü:** Ziehen von Slot zu Slot tauscht die beiden, Rechtsklick leert einen Slot, Klick auf einen belegten Slot wählt das Gebäude. Jedes Gebäude liegt höchstens einmal auf der Hotbar.
 - Neue Welten starten mit den ersten Gebäuden der Tabelle auf der Hotbar, danach wird sie nicht mehr automatisch gefüllt.
-- Gesperrte Gebäude (Tier) gibt es noch nicht, alle Gebäude sind sichtbar. Das kommt mit der Forschung.
+- Gesperrte Gebäude (Tier höher als freigeschaltet) sind grau mit „ab Tier N“. Klick zeigt den Hinweis, auf die Hotbar kommen sie nicht ([16 HUB](16-hub.md)).
 
 > ✏️ **Entwurf, von dir freizugeben:** Gamepad im Baumenü: **Steuerkreuz hoch** öffnet, **LB / RB** = Kategorie, **A** = bauen, **Y** = Gebäude aufnehmen und mit **A** auf einen Hotbar-Slot legen, **X** auf einem Hotbar-Slot = leeren, **B** = zurück/schließen.
+
+## Fundamente (geplant, noch nicht gebaut)
+
+| Thema | Entscheidung |
+|---|---|
+| Einrasten | **An Nachbarn, sonst frei:** das erste Fundament steht frei auf dem 1-m-Raster und lässt sich drehen, jedes weitere rastet bündig an die Kante eines Fundaments in der Nähe (auch in der Höhe). Maschinen auf Fundamenten rasten auf dessen 1-m-Raster |
+| Bauweise | **Klicken + Ziehen:** Klick setzt eins, Linksklick halten und ziehen setzt eine Reihe oder Fläche (max. 10 × 10), das Hologramm zeigt alle und die Gesamtkosten |
+| Kosten | **Beton nach Höhe:** 1 m = 3, 2 m = 5, 4 m = 8 Beton. Rampen kosten wie das Fundament gleicher Höhe |
+| Größe | 8 × 8 m, Höhen 1 / 2 / 4 m ([03 Raster](03-raster.md)) |
 
 ## Gebäude-Tabelle
 
@@ -88,9 +97,9 @@ Jeder Port ist ein **schwarzer Anschlusskasten** in der Wand (1,1 m breit, 0,3�
 |---|---|
 | `---` | Gebäude-ID (`BLD_…`) |
 | `NameEN` / `NameDE` | Anzeigename |
-| `Tier` | 0–8, Freischalt-Tier (wird noch nicht geprüft) |
+| `Tier` | 0–8, Freischalt-Tier (Meilensteine im HUB, [16 HUB](16-hub.md)) |
 | `Category` | Kategorie fürs Baumenü: `Production`, `Logistics`, `Power`, `Storage`, `Structure` oder `Misc` |
-| `Type` | `Machine` (Gebäude), `Drill` (Bohrer, nur auf Vorkommen), `Belt` (Kosten gelten pro angefangene 2 m) oder `Pole` |
+| `Type` | `Machine` (Gebäude), `Drill` (Bohrer, nur auf Vorkommen), `Belt` (Kosten gelten pro angefangene 2 m), `Pole` oder `Hub` (Startgebäude, nicht im Baumenü) |
 | `SizeX` | Länge in Fluss-Richtung (hinten → vorn) in m |
 | `SizeY` | Breite in m |
 | `SizeZ` | Höhe in m |
@@ -103,8 +112,8 @@ Beim Laden wird jede Zeile geprüft (unbekannte oder nicht tragbare Kosten-Items
 
 | Gebäude | Tier | Größe (L × B × H) | Ports | Kosten |
 |---|---|---|---|---|
-| Schmelzofen | 1 | 4 × 4 × 5 m | 1 → 1 | 10 Eisenplatten |
-| Konstruktor | 1 | 8 × 4 × 4 m | 1 → 1 | 8 Eisenplatten, 8 Kupferdraht |
+| Schmelzofen | 0 | 4 × 4 × 5 m | 1 → 1 | 10 Eisenplatten |
+| Konstruktor | 0 | 8 × 4 × 4 m | 1 → 1 | 8 Eisenplatten, 8 Kupferdraht |
 | Assembler | 2 | 8 × 8 × 5 m | 2 → 1 | 6 Verst. Eisenplatten, 4 Rotoren |
 | Gießerei | 2 | 8 × 4 × 6 m | 2 → 1 | 10 Zahnräder, 10 Beton |
 | Förderband Mk1 | 0 | – | – | 1 Eisenplatte pro 2 m |

@@ -13,6 +13,8 @@ class UFactoryHUDWidget;
 class UFactoryInventoryWidget;
 class UFactoryBuildMenuWidget;
 class UFactoryMachineWidget;
+class UFactoryHubWidget;
+class AFactoryHub;
 class AFactoryMachine;
 struct FFactoryItemStack;
 class UFactoryBuildComponent;
@@ -102,6 +104,17 @@ protected:
 	/** Pointer to the machine panel widget */
 	UPROPERTY()
 	TObjectPtr<UFactoryMachineWidget> MachineWidget;
+
+	/** HUB window widget to spawn */
+	UPROPERTY(EditAnywhere, Category="UI")
+	TSubclassOf<UFactoryHubWidget> HubWidgetClass;
+
+	/** Pointer to the HUB window widget */
+	UPROPERTY()
+	TObjectPtr<UFactoryHubWidget> HubWidget;
+
+	/** HUB whose storage is open in the inventory window */
+	TWeakObjectPtr<AFactoryHub> StorageHub;
 
 	/** Build tool: placing, demolishing, emptying crates */
 	UPROPERTY(VisibleAnywhere, Category="Build")
@@ -195,6 +208,15 @@ public:
 
 	/** Hides the machine panel */
 	void CloseMachinePanel();
+
+	/** Shows the HUB window (E on the HUB) */
+	void OpenHubPanel(AFactoryHub* Hub);
+
+	/** Hides the HUB window */
+	void CloseHubPanel();
+
+	/** Shows the inventory with the HUB storage above it */
+	void OpenHubStorage();
 
 	/** Gives items to the pawn; what doesn't fit goes into a demolition crate at the location */
 	void GiveItemsOrCrate(const TArray<FFactoryItemStack>& Stacks, const FVector& CrateLocation);

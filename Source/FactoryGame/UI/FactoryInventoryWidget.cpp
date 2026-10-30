@@ -73,9 +73,34 @@ void UFactoryInventoryWidget::SetInventory(UFactoryInventoryComponent* InInvento
 	Refresh();
 }
 
+void UFactoryInventoryWidget::SetContainer(UFactoryInventoryComponent* InContainer, const FText& InTitle)
+{
+	if (Container.IsValid())
+	{
+		Container->OnInventoryChanged.Remove(ContainerChangedHandle);
+	}
+
+	Container = InContainer;
+	ContainerTitle = InTitle;
+	Held = FHeldStack();
+
+	if (Container.IsValid() && IsInViewport())
+	{
+		ContainerChangedHandle = Container->OnInventoryChanged.AddUObject(this, &UFactoryInventoryWidget::HandleInventoryChanged);
+	}
+
+	Refresh();
+}
+
 void UFactoryInventoryWidget::NativeConstruct()
 {
 	Super::NativeConstruct();
+
+	if (Container.IsValid())
+	{
+		Container->OnInventoryChanged.Remove(ContainerChangedHandle);
+		ContainerChangedHandle = Container->OnInventoryChanged.AddUObject(this, &UFactoryInventoryWidget::HandleInventoryChanged);
+	}
 
 	// NativeConstruct läuft bei jedem Öffnen. Erst die alte Bindung entfernen,
 	// damit HandleInventoryChanged nicht doppelt registriert wird.
@@ -107,6 +132,11 @@ void UFactoryInventoryWidget::NativeDestruct()
 	if (Equipment.IsValid())
 	{
 		Equipment->OnInventoryChanged.Remove(EquipmentChangedHandle);
+	}
+
+	if (Container.IsValid())
+	{
+		Container->OnInventoryChanged.Remove(ContainerChangedHandle);
 	}
 
 	// the held items never left their slot
@@ -245,7 +275,12 @@ int32 UFactoryInventoryWidget::GetHeldCount(const UFactoryInventoryComponent* Sl
 
 UFactoryInventoryComponent* UFactoryInventoryWidget::GetOtherInventory(const UFactoryInventoryComponent* SlotInventory) const
 {
-	// TODO: chests and machines become the other panel once they exist
+	// mit offenem Lager geht Shift-Klick zwischen Lager und Inventar, sonst zwischen Inventar und Ausrüstung
+	if (Container.IsValid())
+	{
+		return SlotInventory == Container.Get() ? Inventory.Get() : (SlotInventory == Inventory.Get() ? Container.Get() : Inventory.Get());
+	}
+
 	return SlotInventory == Equipment.Get() ? Inventory.Get() : Equipment.Get();
 }
 
@@ -485,6 +520,28 @@ UWidget* UFactoryInventoryWidget::BuildContent()
 
 	AddRow(Content, MakeText(FactoryLoc::Get("Inv_Header"), 30.0f, TextColor, true), FMargin(0.0f));
 	AddRow(Content, MakeColorBlock(AccentColor, 0.0f, 3.0f), FMargin(0.0f, 8.0f, 0.0f, 18.0f));
+
+	// Lager (z. B. HUB) über dem Inventar, gleiches 10er-Raster
+	if (Container.IsValid())
+	{
+		AddRow(Content, MakeText(ContainerTitle, 14.0f, SubtleTextColor), FMargin(0.0f, 0.0f, 0.0f, 8.0f));
+		UVerticalBox* ContainerGrid = NewWidget<UVerticalBox>();
+
+		for (int32 RowStart = 0; RowStart < Container->GetNumSlots(); RowStart += NumColumns)
+		{
+			UHorizontalBox* Row = NewWidget<UHorizontalBox>();
+
+			for (int32 Index = RowStart; Index < FMath::Min(RowStart + NumColumns, Container->GetNumSlots()); ++Index)
+			{
+				AddColumn(Row, BuildSlot(Container.Get(), Index), false, FMargin(0.0f, 0.0f, SlotSpacing, 0.0f));
+			}
+
+			AddRow(ContainerGrid, Row, FMargin(0.0f, 0.0f, 0.0f, SlotSpacing));
+		}
+
+		// eingerückt wie das Inventar-Raster neben der Ausrüstungsspalte
+		AddRow(Content, ContainerGrid, FMargin(UFactoryInventorySlotWidget::SlotSize + ColumnGap, 0.0f, 0.0f, 14.0f));
+	}
 
 	UHorizontalBox* Columns = NewWidget<UHorizontalBox>();
 

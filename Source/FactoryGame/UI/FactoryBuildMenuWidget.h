@@ -107,6 +107,9 @@ private:
 	/** Moves to the previous or next category */
 	void StepCategory(int32 Direction);
 
+	/** Shows "unlocks with tier N" in the hint line if the building is locked. Returns true if it is locked */
+	bool ShowLockedHint(FName BuildingId);
+
 	/** Puts a building on a hotbar slot. A building that already was on another slot is moved */
 	void AssignHotbarSlot(int32 Index, FName BuildingId);
 

@@ -2,8 +2,8 @@
 RCP_Mine_IronOre,,,0,BLD_Drill_Mk1,False,1,,0,,0,,0,,0,ITM_IronOre,1,,0
 RCP_Mine_CopperOre,,,0,BLD_Drill_Mk1,False,1,,0,,0,,0,,0,ITM_CopperOre,1,,0
 RCP_Mine_Limestone,,,0,BLD_Drill_Mk1,False,1,,0,,0,,0,,0,ITM_Limestone,1,,0
-RCP_IronIngot,,,0,BLD_Smelter,False,2,ITM_IronOre,1,,0,,0,,0,ITM_IronIngot,1,,0
-RCP_CopperIngot,,,0,BLD_Smelter,False,2,ITM_CopperOre,1,,0,,0,,0,ITM_CopperIngot,1,,0
+RCP_IronIngot,,,0,BLD_Smelter,True,2,ITM_IronOre,1,,0,,0,,0,ITM_IronIngot,1,,0
+RCP_CopperIngot,,,0,BLD_Smelter,True,2,ITM_CopperOre,1,,0,,0,,0,ITM_CopperIngot,1,,0
 RCP_IronPlate,,,0,BLD_Constructor,True,6,ITM_IronIngot,3,,0,,0,,0,ITM_IronPlate,2,,0
 RCP_IronRod,,,0,BLD_Constructor,True,4,ITM_IronIngot,1,,0,,0,,0,ITM_IronRod,1,,0
 RCP_Screw,,,0,BLD_Constructor,True,6,ITM_IronRod,1,,0,,0,,0,ITM_Screw,4,,0

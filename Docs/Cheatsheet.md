@@ -56,6 +56,7 @@ Steuerung: `1`–`0` Gebäude wählen · Linksklick bauen · Mausrad drehen (`St
 | `ListBuildings` | Alle Gebäude mit Größe, Ports und Kosten ins Log | |
 | `ReloadBuildings` | `DT_Buildings.csv` neu laden und prüfen | |
 | `SpawnNode <Erz> [Impure/Normal/Pure]` | Erz-Vorkommen 8 m vor dir setzen (Standard: Normal) | `SpawnNode CopperOre Pure` |
+| `UnlockTier <0–8>` | Freigeschaltete Tier setzen, ohne Pakete abzugeben | `UnlockTier 2` |
 
 ## Förderbänder
 

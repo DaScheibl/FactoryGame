@@ -8,6 +8,7 @@
 #include "FactoryRecipeDatabase.h"
 #include "FactoryMachine.h"
 #include "FactoryResourceNode.h"
+#include "FactoryHub.h"
 #include "FactoryBelt.h"
 #include "FactoryBeltComponent.h"
 #include "FactoryBuildingDatabase.h"
@@ -367,6 +368,15 @@ void UFactoryCheatManager::SpawnMachine(FName BuildingId, FName RecipeId)
 	if (GetSpawnPoint(800.0, Location, Facing))
 	{
 		SpawnMachineAt(Location, Facing, BuildingId, RecipeId);
+	}
+}
+
+void UFactoryCheatManager::UnlockTier(int32 Tier)
+{
+	if (AFactoryHub* Hub = AFactoryHub::EnsureHub(GetWorld()))
+	{
+		Hub->SetTier(Tier);
+		UE_LOG(LogFactoryGame, Log, TEXT("Unlocked tier is now %d."), Hub->GetTier());
 	}
 }
 

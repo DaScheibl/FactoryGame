@@ -80,6 +80,9 @@ enum class EFactoryWorldSaveVersion : int32
 	/** Conveyor poles and belts */
 	Belts = 4,
 
+	/** HUB with storage, unlocked tier and delivered milestone items */
+	Hub = 5,
+
 	LatestPlusOne,
 	Latest = LatestPlusOne - 1
 };
@@ -240,4 +243,22 @@ public:
 
 	UPROPERTY(SaveGame)
 	TArray<FFactorySavedCrate> Crates;
+
+	/** False for worlds saved before the HUB existed, they get a new one */
+	UPROPERTY(SaveGame)
+	bool bHasHub = false;
+
+	UPROPERTY(SaveGame)
+	FTransform HubTransform;
+
+	UPROPERTY(SaveGame)
+	TArray<FFactoryItemStack> HubStorage;
+
+	/** Highest unlocked tier */
+	UPROPERTY(SaveGame)
+	int32 UnlockedTier = 0;
+
+	/** Items already delivered for the next milestone */
+	UPROPERTY(SaveGame)
+	TArray<FFactoryItemStack> MilestoneDelivered;
 };

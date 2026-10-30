@@ -3,6 +3,8 @@
 #include "FactoryBuildMenuEntryWidget.h"
 #include "FactoryBuildMenuWidget.h"
 #include "FactoryBuildingDatabase.h"
+#include "FactoryHub.h"
+#include "FactoryLocalization.h"
 #include "FactoryGamePlayerController.h"
 #include "Blueprint/WidgetBlueprintLibrary.h"
 #include "Components/Border.h"
@@ -92,10 +94,20 @@ UWidget* UFactoryBuildMenuEntryWidget::BuildContent()
 		// Platzhalter bis zu den Gebäude-Icons: Name und Größe als Text
 		UVerticalBox* Lines = NewWidget<UVerticalBox>();
 
-		UTextBlock* NameText = MakeText(Building ? Building->GetDisplayName() : FText::FromName(Id), 14.0f, TextColor, true);
+		// gesperrte Gebäude grau mit "ab Tier N" statt der Größe
+		const bool bLocked = Building && !AFactoryHub::IsBuildingUnlocked(this, *Building);
+		UTextBlock* NameText = MakeText(Building ? Building->GetDisplayName() : FText::FromName(Id), 14.0f, bLocked ? SubtleTextColor : TextColor, true);
 		NameText->SetJustification(ETextJustify::Center);
 		NameText->SetAutoWrapText(true);
 		AddRow(Lines, NameText, FMargin(0.0f));
+
+		if (bLocked)
+		{
+			UTextBlock* LockText = MakeText(FactoryLoc::Format("Common_FromTier", { Building->Tier }), 11.0f, ErrorColor);
+			LockText->SetJustification(ETextJustify::Center);
+			AddRow(Lines, LockText, FMargin(0.0f, 4.0f, 0.0f, 0.0f));
+		}
+		else
 
 		if (Building && Building->IsMachine())
 		{

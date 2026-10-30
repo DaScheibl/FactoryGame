@@ -6,6 +6,7 @@
 #include "FactoryProductionComponent.h"
 #include "FactoryBuildingDatabase.h"
 #include "FactoryRecipeDatabase.h"
+#include "FactoryHub.h"
 #include "FactoryItemDatabase.h"
 #include "FactoryInventoryComponent.h"
 #include "FactoryGameCharacter.h"
@@ -363,8 +364,18 @@ UWidget* UFactoryMachineWidget::BuildRecipes()
 		UTextBlock* FlowText = MakeText(FText::FromString(Flow), 13.0f, SubtleTextColor);
 		AddColumn(Row, FlowText, false, FMargin(0.0f));
 
+		// gesperrte Rezepte grau mit "ab Tier N"
+		const bool bUnlocked = AFactoryHub::IsRecipeUnlocked(this, *Recipe, false);
+
+		if (!bUnlocked)
+		{
+			FlowText->SetText(FactoryLoc::Format("Common_FromTier", { FMath::Max(Recipe->Tier, AFactoryHub::GetUnlockedTier(this) + 1) }));
+		}
+
 		const EFactoryButtonType Type = Production->GetRecipeId() == RecipeId ? EFactoryButtonType::Selected : EFactoryButtonType::Normal;
-		AddRow(List, MakeFocusButton(RecipeId, Row, [this, RecipeId]() { SelectRecipe(RecipeId); }, Type, FMargin(14.0f, 9.0f)), FMargin(0.0f, 0.0f, 0.0f, 5.0f));
+		UButton* Button = MakeFocusButton(RecipeId, Row, [this, RecipeId]() { SelectRecipe(RecipeId); }, Type, FMargin(14.0f, 9.0f));
+		Button->SetIsEnabled(bUnlocked);
+		AddRow(List, Button, FMargin(0.0f, 0.0f, 0.0f, 5.0f));
 	}
 
 	UScrollBox* Scroll = NewWidget<UScrollBox>();
