@@ -1203,6 +1203,12 @@ void UFactoryBuildComponent::UpdateIdle()
 	{
 		ShowPanel(FText::GetEmpty(), {}, FText::GetEmpty(), FactoryLoc::Get(TEXT("Crate_Prompt")));
 	}
+	else if (const AFactoryMachine* Machine = Hit.bBlockingHit ? Cast<AFactoryMachine>(Hit.GetActor()) : nullptr)
+	{
+		const UFactoryBuildingDatabase* Buildings = UFactoryBuildingDatabase::Get(this);
+		const FText Name = Buildings ? Buildings->GetDisplayName(Machine->GetProduction()->GetBuildingId()) : FText::GetEmpty();
+		ShowPanel(FText::GetEmpty(), {}, FText::GetEmpty(), FactoryLoc::Format(TEXT("Machine_Prompt"), { Name }));
+	}
 	else
 	{
 		HidePanel();
@@ -1218,6 +1224,13 @@ void UFactoryBuildComponent::Interact()
 		if (AFactoryCrate* Crate = Cast<AFactoryCrate>(Hit.GetActor()))
 		{
 			Crate->TakeItems(GetPlayerController());
+		}
+		else if (AFactoryMachine* Machine = Cast<AFactoryMachine>(Hit.GetActor()))
+		{
+			if (AFactoryGamePlayerController* PlayerController = GetPlayerController())
+			{
+				PlayerController->OpenMachinePanel(Machine);
+			}
 		}
 	}
 }

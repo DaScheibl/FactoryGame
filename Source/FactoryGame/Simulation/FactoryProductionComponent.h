@@ -124,6 +124,9 @@ public:
 	/** Takes items out of the output buffers (ItemId None: any output). Returns the taken items */
 	FFactoryItemStack ExtractOutput(FName ItemId, int32 MaxCount);
 
+	/** Takes items back out of an input buffer, e.g. when the player empties it by hand. Returns the taken items */
+	FFactoryItemStack ExtractInput(FName ItemId, int32 MaxCount);
+
 	/** Speed in percent, 100 = recipe speed. Used by overclocking later */
 	int32 GetSpeedPercent() const { return SpeedPercent; }
 

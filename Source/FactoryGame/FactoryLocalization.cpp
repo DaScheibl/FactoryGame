@@ -150,6 +150,19 @@ namespace FactoryLoc
 			{ TEXT("Build_DemolishTarget"),		{ TEXT("Demolish: {0}"),				TEXT("Abreißen: {0}") } },
 			{ TEXT("Build_DemolishProgress"),	{ TEXT("Demolishing … {0} %"),			TEXT("Abreißen … {0} %") } },
 			{ TEXT("Crate_Label"),				{ TEXT("Demolition crate: {0} items"),	TEXT("Abriss-Kiste: {0} Items") } },
+			{ TEXT("Machine_Prompt"),			{ TEXT("E: Open {0}"),					TEXT("E: {0} öffnen") } },
+
+			// machine panel
+			{ TEXT("MachinePanel_Recipe"),		{ TEXT("Recipe"),						TEXT("Rezept") } },
+			{ TEXT("MachinePanel_PickRecipe"),	{ TEXT("Pick a recipe below."),			TEXT("Wähle unten ein Rezept.") } },
+			{ TEXT("MachinePanel_Inputs"),		{ TEXT("Inputs"),						TEXT("Eingänge") } },
+			{ TEXT("MachinePanel_Outputs"),		{ TEXT("Outputs"),						TEXT("Ausgänge") } },
+			{ TEXT("MachinePanel_InInventory"),	{ TEXT("{0}\nInventory: {1}"),			TEXT("{0}\nInventar: {1}") } },
+			{ TEXT("MachinePanel_TakeBack"),	{ TEXT("Take back"),					TEXT("Zurücknehmen") } },
+			{ TEXT("MachinePanel_PerMinute"),	{ TEXT("{0}/min"),						TEXT("{0}/min") } },
+			{ TEXT("MachinePanel_HintMouse"),	{ TEXT("Click an input: Fill from the inventory  ·  Click an output: Take  ·  Changing the recipe returns everything  ·  E / Esc: Close"), TEXT("Klick auf einen Eingang: Aus dem Inventar füllen  ·  Klick auf einen Ausgang: Nehmen  ·  Rezeptwechsel gibt alles zurück  ·  E / Esc: Schließen") } },
+			{ TEXT("MachinePanel_HintGamepad"),	{ TEXT("A on an input: Fill  ·  A on an output: Take  ·  B: Close"), TEXT("A auf einem Eingang: Füllen  ·  A auf einem Ausgang: Nehmen  ·  B: Schließen") } },
+
 			{ TEXT("Crate_Prompt"),				{ TEXT("E: Take items"),				TEXT("E: Items nehmen") } },
 			{ TEXT("Notify_CrateSpawned"),		{ TEXT("Inventory full – the rest is in a demolition crate"), TEXT("Inventar voll – der Rest liegt in einer Abriss-Kiste") } },
 

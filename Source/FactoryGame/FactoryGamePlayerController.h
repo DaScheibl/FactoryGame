@@ -12,6 +12,9 @@ class UPauseMenuWidget;
 class UFactoryHUDWidget;
 class UFactoryInventoryWidget;
 class UFactoryBuildMenuWidget;
+class UFactoryMachineWidget;
+class AFactoryMachine;
+struct FFactoryItemStack;
 class UFactoryBuildComponent;
 
 /**
@@ -92,6 +95,14 @@ protected:
 	UPROPERTY()
 	TObjectPtr<UFactoryBuildMenuWidget> BuildMenuWidget;
 
+	/** Machine panel widget to spawn */
+	UPROPERTY(EditAnywhere, Category="UI")
+	TSubclassOf<UFactoryMachineWidget> MachineWidgetClass;
+
+	/** Pointer to the machine panel widget */
+	UPROPERTY()
+	TObjectPtr<UFactoryMachineWidget> MachineWidget;
+
 	/** Build tool: placing, demolishing, emptying crates */
 	UPROPERTY(VisibleAnywhere, Category="Build")
 	TObjectPtr<UFactoryBuildComponent> BuildComponent;
@@ -127,6 +138,9 @@ protected:
 
 	/** Switches back to game input if no menu is open */
 	void RestoreGameInput();
+
+	/** Closes inventory, build menu and machine panel; only one of them is open at a time */
+	void CloseWindows();
 
 	/** Build keys, forwarded to the build tool */
 	void HandlePrimaryPressed();
@@ -175,6 +189,15 @@ public:
 
 	/** Closes the build menu and starts placing a building. Selects its hotbar slot if it has one */
 	void PickBuilding(FName BuildingId);
+
+	/** Shows the panel of a machine (E), replacing the other windows */
+	void OpenMachinePanel(AFactoryMachine* Machine);
+
+	/** Hides the machine panel */
+	void CloseMachinePanel();
+
+	/** Gives items to the pawn; what doesn't fit goes into a demolition crate at the location */
+	void GiveItemsOrCrate(const TArray<FFactoryItemStack>& Stacks, const FVector& CrateLocation);
 
 	/** Adds items to the pawn's inventory and shows a notification. Returns the number of items that fit */
 	int32 GiveItems(FName ItemId, int32 Count);

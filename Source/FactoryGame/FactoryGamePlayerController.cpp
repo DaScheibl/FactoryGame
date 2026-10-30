@@ -12,6 +12,8 @@
 #include "FactoryHUDWidget.h"
 #include "FactoryInventoryWidget.h"
 #include "FactoryBuildMenuWidget.h"
+#include "FactoryMachineWidget.h"
+#include "FactoryCrate.h"
 #include "FactoryInventoryComponent.h"
 #include "FactoryGameCharacter.h"
 #include "FactoryItemDatabase.h"
@@ -33,6 +35,7 @@ AFactoryGamePlayerController::AFactoryGamePlayerController()
 	HUDWidgetClass = UFactoryHUDWidget::StaticClass();
 	InventoryWidgetClass = UFactoryInventoryWidget::StaticClass();
 	BuildMenuWidgetClass = UFactoryBuildMenuWidget::StaticClass();
+	MachineWidgetClass = UFactoryMachineWidget::StaticClass();
 
 	// console commands for testing
 	CheatClass = UFactoryCheatManager::StaticClass();
@@ -213,16 +216,8 @@ void AFactoryGamePlayerController::OpenPauseMenu()
 		return;
 	}
 
-	// the pause menu replaces the inventory and the build menu
-	if (InventoryWidget && InventoryWidget->IsInViewport())
-	{
-		InventoryWidget->RemoveFromParent();
-	}
-
-	if (BuildMenuWidget && BuildMenuWidget->IsInViewport())
-	{
-		BuildMenuWidget->RemoveFromParent();
-	}
+	// the pause menu replaces the other windows
+	CloseWindows();
 
 	if (!PauseMenuWidget)
 	{
@@ -269,8 +264,9 @@ void AFactoryGamePlayerController::RestoreGameInput()
 	const bool bPauseOpen = PauseMenuWidget && PauseMenuWidget->IsInViewport();
 	const bool bInventoryOpen = InventoryWidget && InventoryWidget->IsInViewport();
 	const bool bBuildMenuOpen = BuildMenuWidget && BuildMenuWidget->IsInViewport();
+	const bool bMachineOpen = MachineWidget && MachineWidget->IsInViewport();
 
-	if (bPauseOpen || bInventoryOpen || bBuildMenuOpen)
+	if (bPauseOpen || bInventoryOpen || bBuildMenuOpen || bMachineOpen)
 	{
 		return;
 	}
@@ -305,11 +301,8 @@ void AFactoryGamePlayerController::OpenInventory()
 		return;
 	}
 
-	// the inventory replaces the build menu
-	if (BuildMenuWidget && BuildMenuWidget->IsInViewport())
-	{
-		BuildMenuWidget->RemoveFromParent();
-	}
+	// the inventory replaces the other windows
+	CloseWindows();
 
 	// Widget beim ersten Öffnen erzeugen und danach wiederverwenden
 	if (!InventoryWidget)
@@ -348,6 +341,88 @@ void AFactoryGamePlayerController::CloseInventory()
 	RestoreGameInput();
 }
 
+void AFactoryGamePlayerController::CloseWindows()
+{
+	// nur entfernen, nicht RestoreGameInput: das neue Fenster setzt gleich selbst den UI-Modus
+	for (UUserWidget* Window : { static_cast<UUserWidget*>(InventoryWidget), static_cast<UUserWidget*>(BuildMenuWidget), static_cast<UUserWidget*>(MachineWidget) })
+	{
+		if (Window && Window->IsInViewport())
+		{
+			Window->RemoveFromParent();
+		}
+	}
+}
+
+void AFactoryGamePlayerController::OpenMachinePanel(AFactoryMachine* Machine)
+{
+	if (!IsLocalPlayerController() || !MachineWidgetClass || !Machine || (PauseMenuWidget && PauseMenuWidget->IsInViewport()))
+	{
+		return;
+	}
+
+	CloseWindows();
+
+	if (!MachineWidget)
+	{
+		MachineWidget = CreateWidget<UFactoryMachineWidget>(this, MachineWidgetClass);
+
+		if (!MachineWidget)
+		{
+			UE_LOG(LogFactoryGame, Error, TEXT("Could not spawn machine widget."));
+			return;
+		}
+
+		MachineWidget->OnCloseRequested.BindUObject(this, &AFactoryGamePlayerController::CloseMachinePanel);
+	}
+
+	MachineWidget->SetMachine(Machine);
+	MachineWidget->AddToPlayerScreen(50);
+
+	// the game keeps running while the panel is open
+	FInputModeUIOnly InputMode;
+	InputMode.SetWidgetToFocus(MachineWidget->TakeWidget());
+	SetInputMode(InputMode);
+	SetShowMouseCursor(true);
+
+	MachineWidget->FocusCurrentButton();
+}
+
+void AFactoryGamePlayerController::CloseMachinePanel()
+{
+	if (MachineWidget)
+	{
+		MachineWidget->RemoveFromParent();
+	}
+
+	RestoreGameInput();
+}
+
+void AFactoryGamePlayerController::GiveItemsOrCrate(const TArray<FFactoryItemStack>& Stacks, const FVector& CrateLocation)
+{
+	TArray<FFactoryItemStack> Leftovers;
+
+	for (const FFactoryItemStack& Stack : Stacks)
+	{
+		const int32 Added = GiveItems(Stack.ItemId, Stack.Count);
+
+		if (Added < Stack.Count)
+		{
+			Leftovers.Emplace(Stack.ItemId, Stack.Count - Added);
+		}
+	}
+
+	// was nicht ins Inventar passt, geht nicht verloren, sondern landet in einer Abriss-Kiste
+	if (Leftovers.Num() > 0)
+	{
+		AFactoryCrate::SpawnCrate(GetWorld(), CrateLocation, Leftovers);
+
+		if (HUDWidget)
+		{
+			HUDWidget->ShowNotification(FactoryLoc::Get("Notify_CrateSpawned"), EFactoryNotificationType::Warning);
+		}
+	}
+}
+
 void AFactoryGamePlayerController::ToggleBuildMenu()
 {
 	if (BuildMenuWidget && BuildMenuWidget->IsInViewport())
@@ -367,11 +442,8 @@ void AFactoryGamePlayerController::OpenBuildMenu()
 		return;
 	}
 
-	// the build menu replaces the inventory
-	if (InventoryWidget && InventoryWidget->IsInViewport())
-	{
-		InventoryWidget->RemoveFromParent();
-	}
+	// the build menu replaces the other windows
+	CloseWindows();
 
 	if (!BuildMenuWidget)
 	{

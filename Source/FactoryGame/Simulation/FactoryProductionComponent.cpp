@@ -348,6 +348,22 @@ FFactoryItemStack UFactoryProductionComponent::ExtractOutput(FName ItemId, int32
 	return FFactoryItemStack();
 }
 
+FFactoryItemStack UFactoryProductionComponent::ExtractInput(FName ItemId, int32 MaxCount)
+{
+	// Zutaten eines laufenden Durchlaufs sind schon entnommen und bleiben in der Maschine
+	for (FFactoryItemStack& Input : Inputs)
+	{
+		if (Input.ItemId == ItemId && Input.Count > 0)
+		{
+			const int32 Taken = FMath::Clamp(MaxCount, 0, Input.Count);
+			Input.Count -= Taken;
+			return FFactoryItemStack(Input.ItemId, Taken);
+		}
+	}
+
+	return FFactoryItemStack();
+}
+
 void UFactoryProductionComponent::SetState(EFactoryMachineState NewState)
 {
 	if (State != NewState)
