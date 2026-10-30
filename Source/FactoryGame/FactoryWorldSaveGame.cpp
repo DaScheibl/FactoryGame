@@ -68,6 +68,14 @@ bool UFactoryWorldSaveGame::MigrateToLatest()
 		Foundations.Reset();
 	}
 
+	if (SaveVersion < static_cast<int32>(EFactoryWorldSaveVersion::Power))
+	{
+		// no power before; the machines of older worlds stand still until they get a generator
+		PowerPoles.Reset();
+		PowerCables.Reset();
+		GatheredPlants.Reset();
+	}
+
 	if (SaveVersion < Latest)
 	{
 		UE_LOG(LogFactoryGame, Log, TEXT("Migrated world '%s' from save version %d to %d."), *DisplayName, SaveVersion, Latest);

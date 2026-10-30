@@ -118,7 +118,8 @@ int32 UFactoryRecipeDatabase::Validate() const
 		const TArray<FFactoryItemStack> Inputs = Recipe->GetInputs();
 		const TArray<FFactoryItemStack> Outputs = Recipe->GetOutputs();
 
-		if (Outputs.IsEmpty())
+		// Brennstoff-Rezepte von Generatoren (RCP_Burn_) verbrennen ihre Zutat und haben kein Produkt
+		if (Outputs.IsEmpty() && !RecipeId.ToString().StartsWith(TEXT("RCP_Burn_")))
 		{
 			Report(RecipeId, TEXT("has no output"));
 		}

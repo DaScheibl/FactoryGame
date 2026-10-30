@@ -17,6 +17,9 @@
 #include "FactoryFoundation.h"
 #include "FactoryBelt.h"
 #include "FactoryBeltPole.h"
+#include "FactoryPowerPole.h"
+#include "FactoryPowerCable.h"
+#include "FactoryPlant.h"
 #include "EngineUtils.h"
 #include "Engine/World.h"
 
@@ -432,6 +435,55 @@ void UFactoryGameInstance::CaptureBuildings(UWorld* World)
 		Saved.End = SaveEnd(It->GetEndMachine(), It->GetEndPort(), It->GetEndPole());
 	}
 
+	// Strom: Kabel verweisen wie Bänder über die Position auf Maschinen und Masten
+	CurrentWorldSave->PowerPoles.Reset();
+	CurrentWorldSave->PowerCables.Reset();
+	TMap<const AActor*, int32> PowerPoleIndices;
+
+	for (TActorIterator<AFactoryPowerPole> It(World); It; ++It)
+	{
+		PowerPoleIndices.Add(*It, CurrentWorldSave->PowerPoles.Num());
+
+		FFactorySavedPowerPole& Saved = CurrentWorldSave->PowerPoles.AddDefaulted_GetRef();
+		Saved.BuildingId = It->GetBuildingId();
+		Saved.Transform = It->GetActorTransform();
+	}
+
+	auto SaveCableEnd = [&MachineIndices, &PowerPoleIndices](const AActor* Node)
+	{
+		FFactorySavedBeltEnd End;
+
+		if (const int32* MachineIndex = MachineIndices.Find(Node))
+		{
+			End.Type = 1;
+			End.Index = *MachineIndex;
+		}
+		else if (const int32* PoleIndex = PowerPoleIndices.Find(Node))
+		{
+			End.Type = 2;
+			End.Index = *PoleIndex;
+		}
+
+		return End;
+	};
+
+	for (TActorIterator<AFactoryPowerCable> It(World); It; ++It)
+	{
+		FFactorySavedPowerCable Saved;
+		Saved.EndA = SaveCableEnd(It->GetEndA());
+		Saved.EndB = SaveCableEnd(It->GetEndB());
+
+		if (Saved.EndA.Type != 0 && Saved.EndB.Type != 0)
+		{
+			CurrentWorldSave->PowerCables.Add(Saved);
+		}
+	}
+
+	if (const UFactoryPlantSubsystem* Plants = UFactoryPlantSubsystem::Get(World))
+	{
+		CurrentWorldSave->GatheredPlants = Plants->GetSaveData();
+	}
+
 	CurrentWorldSave->Foundations.Reset();
 
 	for (TActorIterator<AFactoryFoundation> It(World); It; ++It)
@@ -546,6 +598,51 @@ void UFactoryGameInstance::RestoreBuildings(UWorld* World)
 		AFactoryCrate::SpawnCrate(World, Saved.Location, Saved.Items);
 	}
 
+	TArray<AFactoryPowerPole*> PowerPoles;
+
+	for (const FFactorySavedPowerPole& Saved : CurrentWorldSave->PowerPoles)
+	{
+		AFactoryPowerPole* PowerPole = World->SpawnActor<AFactoryPowerPole>(Saved.Transform.GetLocation(), Saved.Transform.Rotator(), SpawnParams);
+
+		if (PowerPole)
+		{
+			PowerPole->InitBuilding(Saved.BuildingId);
+		}
+
+		PowerPoles.Add(PowerPole);
+	}
+
+	auto FindCableEnd = [&Machines, &PowerPoles](const FFactorySavedBeltEnd& End) -> AActor*
+	{
+		if (End.Type == 1 && Machines.IsValidIndex(End.Index))
+		{
+			return Machines[End.Index];
+		}
+
+		return End.Type == 2 && PowerPoles.IsValidIndex(End.Index) ? PowerPoles[End.Index] : nullptr;
+	};
+
+	for (const FFactorySavedPowerCable& Saved : CurrentWorldSave->PowerCables)
+	{
+		AActor* EndA = FindCableEnd(Saved.EndA);
+		AActor* EndB = FindCableEnd(Saved.EndB);
+
+		if (!EndA || !EndB)
+		{
+			continue;
+		}
+
+		if (AFactoryPowerCable* Cable = World->SpawnActor<AFactoryPowerCable>(EndA->GetActorLocation(), FRotator::ZeroRotator, SpawnParams))
+		{
+			Cable->Connect(EndA, EndB);
+		}
+	}
+
+	if (UFactoryPlantSubsystem* Plants = UFactoryPlantSubsystem::Get(World))
+	{
+		Plants->LoadSaveData(CurrentWorldSave->GatheredPlants);
+	}
+
 	for (const FFactorySavedFoundation& Saved : CurrentWorldSave->Foundations)
 	{
 		if (AFactoryFoundation* Foundation = World->SpawnActor<AFactoryFoundation>(Saved.Transform.GetLocation(), Saved.Transform.Rotator(), SpawnParams))
@@ -565,8 +662,8 @@ void UFactoryGameInstance::RestoreBuildings(UWorld* World)
 		}
 	}
 
-	UE_LOG(LogFactoryGame, Log, TEXT("Restored %d machines, %d poles, %d belts and %d crates."), CurrentWorldSave->Machines.Num(),
-		CurrentWorldSave->Poles.Num(), CurrentWorldSave->Belts.Num(), CurrentWorldSave->Crates.Num());
+	UE_LOG(LogFactoryGame, Log, TEXT("Restored %d machines, %d poles, %d belts, %d crates, %d power poles and %d power cables."), CurrentWorldSave->Machines.Num(),
+		CurrentWorldSave->Poles.Num(), CurrentWorldSave->Belts.Num(), CurrentWorldSave->Crates.Num(), CurrentWorldSave->PowerPoles.Num(), CurrentWorldSave->PowerCables.Num());
 }
 
 void UFactoryGameInstance::OpenMap(const TSoftObjectPtr<UWorld>& Map)

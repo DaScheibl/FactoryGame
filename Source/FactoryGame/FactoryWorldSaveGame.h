@@ -7,6 +7,7 @@
 #include "FactoryItemTypes.h"
 #include "FactoryProductionComponent.h"
 #include "FactoryBeltComponent.h"
+#include "FactoryPlant.h"
 #include "FactoryWorldSaveGame.generated.h"
 
 /**
@@ -85,6 +86,9 @@ enum class EFactoryWorldSaveVersion : int32
 
 	/** Foundations and ramps */
 	Foundations = 6,
+
+	/** Power poles, power cables and gathered plants */
+	Power = 7,
 
 	LatestPlusOne,
 	Latest = LatestPlusOne - 1
@@ -179,6 +183,32 @@ struct FFactorySavedFoundation
 	FTransform Transform;
 };
 
+/** A power pole */
+USTRUCT()
+struct FFactorySavedPowerPole
+{
+	GENERATED_BODY()
+
+	UPROPERTY(SaveGame)
+	FName BuildingId;
+
+	UPROPERTY(SaveGame)
+	FTransform Transform;
+};
+
+/** A power cable. Its ends use FFactorySavedBeltEnd: type 1 = index into Machines, type 2 = index into PowerPoles */
+USTRUCT()
+struct FFactorySavedPowerCable
+{
+	GENERATED_BODY()
+
+	UPROPERTY(SaveGame)
+	FFactorySavedBeltEnd EndA;
+
+	UPROPERTY(SaveGame)
+	FFactorySavedBeltEnd EndB;
+};
+
 /** A demolition crate with the items that didn't fit into the inventory */
 USTRUCT()
 struct FFactorySavedCrate
@@ -262,6 +292,17 @@ public:
 
 	UPROPERTY(SaveGame)
 	TArray<FFactorySavedFoundation> Foundations;
+
+	UPROPERTY(SaveGame)
+	TArray<FFactorySavedPowerPole> PowerPoles;
+
+	/** Cables refer to Machines and PowerPoles by index */
+	UPROPERTY(SaveGame)
+	TArray<FFactorySavedPowerCable> PowerCables;
+
+	/** Plants that were gathered and are growing back */
+	UPROPERTY(SaveGame)
+	TArray<FFactorySavedPlant> GatheredPlants;
 
 	/** False for worlds saved before the HUB existed, they get a new one */
 	UPROPERTY(SaveGame)

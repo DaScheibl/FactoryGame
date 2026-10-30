@@ -10,6 +10,11 @@ RCP_Screw,,,0,BLD_Constructor,True,6,ITM_IronRod,1,,0,,0,,0,ITM_Screw,4,,0
 RCP_CopperWire,,,0,BLD_Constructor,True,4,ITM_CopperIngot,1,,0,,0,,0,ITM_CopperWire,2,,0
 RCP_HandDrill,,,0,BLD_Workbench,True,10,ITM_IronPlate,5,ITM_IronRod,5,,0,,0,ITM_HandDrill,1,,0
 RCP_Cable,,,0,BLD_Constructor,True,2,ITM_CopperWire,2,,0,,0,,0,ITM_Cable,1,,0
+RCP_Biomass_Leaves,Biomass (Leaves),Biomasse (Blätter),0,BLD_Constructor,True,4,ITM_Leaves,10,,0,,0,,0,ITM_Biomass,5,,0
+RCP_Biomass_Wood,Biomass (Wood),Biomasse (Holz),0,BLD_Constructor,True,4,ITM_Wood,4,,0,,0,,0,ITM_Biomass,5,,0
+RCP_Burn_Leaves,Burn Leaves,Blätter verbrennen,0,BLD_GenBiomass,False,2,ITM_Leaves,1,,0,,0,,0,,0,,0
+RCP_Burn_Wood,Burn Wood,Holz verbrennen,0,BLD_GenBiomass,False,4,ITM_Wood,1,,0,,0,,0,,0,,0
+RCP_Burn_Biomass,Burn Biomass,Biomasse verbrennen,0,BLD_GenBiomass,False,8,ITM_Biomass,1,,0,,0,,0,,0,,0
 RCP_Concrete,,,1,BLD_Constructor,True,4,ITM_Limestone,3,,0,,0,,0,ITM_Concrete,1,,0
 RCP_ReinforcedIronPlate,,,1,BLD_Assembler,True,12,ITM_IronPlate,6,ITM_Screw,12,,0,,0,ITM_ReinforcedIronPlate,1,,0
 RCP_SciencePack_01,,,0,BLD_Constructor,True,8,ITM_Cable,2,,0,,0,,0,ITM_SciencePack_01,1,,0

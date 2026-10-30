@@ -34,6 +34,9 @@ enum class EFactoryBuildMode : uint8
 	/** Foundations and ramps: click places one, holding and dragging places a row or an area */
 	Foundation,
 
+	/** Drawing a power cable: first click picks a pole or machine, second click the other end */
+	Cable,
+
 	/** Holding the primary button on a building demolishes it */
 	Demolish
 };
@@ -106,6 +109,9 @@ public:
 
 	/** Highest ground difference under a building, in cm. The building sinks into the higher ground */
 	static constexpr double MaxGroundDifference = 100.0;
+
+	/** How close the view has to pass a power cable to target it for demolition, in cm */
+	static constexpr double CableAimTolerance = 40.0;
 
 	/** How long the interact key has to be held on a resource node for one ore, in seconds */
 	static constexpr float HandMiningTime = 1.0f;
@@ -181,10 +187,13 @@ private:
 	/** Finds the belt end under the crosshair and checks the path */
 	void UpdateBelt();
 
+	/** Finds the pole or machine under the crosshair and checks the cable to it */
+	void UpdateCable();
+
 	/** Finds the demolish target and advances the hold timer */
 	void UpdateDemolish(float DeltaTime);
 
-	/** Shows the prompts for crates, machines and resource nodes, mines by hand while E is held on a node */
+	/** Shows the prompts for crates, machines, plants and resource nodes, mines or gathers by hand while E is held */
 	void UpdateIdle(float DeltaTime);
 
 	/** Builds the current placement. Returns false if it isn't valid */
@@ -192,6 +201,7 @@ private:
 	bool PlacePole();
 	bool PlaceBelt();
 	bool PlaceFoundations();
+	bool PlaceCable();
 
 	/**
 	 *  Finds what a belt would connect to under the crosshair: a port or pole nearby wins over everything else,
@@ -269,10 +279,20 @@ private:
 	bool bFoundationDrag = false;
 	FTransform FoundationAnchor;
 
+	/** Pole or machine the cable being drawn starts at, valid after the first click */
+	TWeakObjectPtr<AActor> CableStart;
+
+	/** Pole or machine under the crosshair in cable mode and whether a cable can be built to it */
+	TWeakObjectPtr<AActor> CableTarget;
+	bool bCableValid = false;
+
+	/** Resource node or plant the interact key is held on; MiningTime restarts when it changes */
+	TWeakObjectPtr<AActor> HoldTarget;
+
 	/** Resource node under a drill hologram, the drill gets its recipe from it */
 	TWeakObjectPtr<AFactoryResourceNode> PlaceNode;
 
-	/** Time the interact key has been held on a resource node */
+	/** Time the interact key has been held on a resource node or plant */
 	float MiningTime = 0.0f;
 
 	/** True while the primary button is held in demolish mode */

@@ -70,6 +70,7 @@ public:
 protected:
 
 	virtual void BeginPlay() override;
+	virtual void EndPlay(const EEndPlayReason::Type EndPlayReason) override;
 
 	/** Size of the graybox cube in meters */
 	UPROPERTY(EditAnywhere, Category="Graybox")

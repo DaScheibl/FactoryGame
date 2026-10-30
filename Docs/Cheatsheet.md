@@ -58,6 +58,18 @@ Steuerung: `1`–`0` Gebäude wählen · Linksklick bauen · Mausrad drehen (`St
 | `SpawnNode <Erz> [Impure/Normal/Pure]` | Erz-Vorkommen 8 m vor dir setzen (Standard: Normal) | `SpawnNode CopperOre Pure` |
 | `UnlockTier <0–8>` | Freigeschaltete Tier setzen, ohne Pakete abzugeben | `UnlockTier 2` |
 
+## Strom
+
+Alle Maschinen brauchen Strom. Zum Testen ohne Brenner und Kabel: `FreePower`. Details: [17 Strom](Standards/17-strom.md)
+
+| Befehl | Wirkung | Beispiel |
+|---|---|---|
+| `FreePower [1/0]` | Alle Maschinen haben Strom, ohne Kabel und Generator (0 = aus) | `FreePower 0` |
+| `PowerInfo` | Alle Stromnetze mit Leistung, Verbrauch, Last und Sicherung ins Log | |
+| `GiveBuildCosts GenBiomass` | Material für einen Biomasse-Brenner | `GiveBuildCosts GenBiomass 2` |
+| `GiveBuildCosts LOG_PowerPole_S` | Material für einen Strommast Mk1 | `GiveBuildCosts LOG_PowerPole_S 4` |
+| `GiveItem Leaves` / `Wood` / `Biomass` | Brennstoff ins Inventar | `GiveItem Biomass 50` |
+
 ## Förderbänder
 
 „Band im Blick“ = das unter dem Fadenkreuz (bis 15 m), sonst das nächste im Umkreis von 20 m.
@@ -79,6 +91,8 @@ Steuerung: `1`–`0` Gebäude wählen · Linksklick bauen · Mausrad drehen (`St
 | `SimSpeed <Faktor>` | Simulation schneller/langsamer (0–100), `1` = normal, `0` = angehalten | `SimSpeed 10` |
 
 ## Schnelltests
+
+> Maschinen brauchen Strom: vor den Tests unten `FreePower` eingeben (oder Brenner + Kabel bauen).
 
 **Schmelzofen:**
 ```

@@ -7,6 +7,8 @@
 #include "FactoryBuildingDatabase.h"
 #include "FactoryRecipeDatabase.h"
 #include "FactoryHub.h"
+#include "FactoryPowerSubsystem.h"
+#include "FactoryHUDWidget.h"
 #include "FactoryItemDatabase.h"
 #include "FactoryInventoryComponent.h"
 #include "FactoryGameCharacter.h"
@@ -41,6 +43,8 @@ namespace
 		case EFactoryMachineState::WaitingForInput:	return FLinearColor(FColor(235, 200, 70));
 		case EFactoryMachineState::Working:			return FLinearColor(FColor(110, 205, 110));
 		case EFactoryMachineState::OutputFull:		return UFactoryMenuWidget::ErrorColor;
+		case EFactoryMachineState::NoPower:			return FLinearColor(FColor(120, 150, 255));
+		case EFactoryMachineState::Standby:			return FLinearColor(FColor(110, 200, 210));
 		default:									return UFactoryMenuWidget::SubtleTextColor;
 		}
 	}
@@ -136,8 +140,10 @@ FString UFactoryMachineWidget::BuildSignature() const
 		return FString();
 	}
 
-	// Rezept, Puffer und die Inventar-Mengen der Puffer-Items: ändert sich davon etwas, wird neu gebaut
+	// Rezept, Puffer und die Inventar-Mengen der Puffer-Items: ändert sich davon etwas, wird neu gebaut.
+	// Dazu die Sicherung, weil dann der Knopf "Wieder einschalten" erscheint
 	FString Signature = Production->GetRecipeId().ToString();
+	Signature += Production->IsFuseTripped() ? TEXT("|Fuse") : TEXT("");
 
 	for (const TArray<FFactoryItemStack>* Buffers : { &Production->GetInputs(), &Production->GetOutputs() })
 	{
@@ -306,11 +312,89 @@ void UFactoryMachineWidget::UpdateStatus()
 	case EFactoryMachineState::WaitingForInput:	StatusText->SetText(FactoryLoc::Get("Machine_WaitingForInput")); break;
 	case EFactoryMachineState::Working:			StatusText->SetText(FactoryLoc::Format("Machine_Working", { FMath::FloorToInt32(Progress * 100.0f) })); break;
 	case EFactoryMachineState::OutputFull:		StatusText->SetText(FactoryLoc::Get("Machine_OutputFull")); break;
+	case EFactoryMachineState::NoPower:			StatusText->SetText(FactoryLoc::Get("Machine_NoPower")); break;
+	case EFactoryMachineState::Standby:			StatusText->SetText(FactoryLoc::Get("Machine_Standby")); break;
 	default:									StatusText->SetText(FactoryLoc::Get("Machine_NoRecipe")); break;
 	}
 
 	StatusText->SetColorAndOpacity(FSlateColor(GetPanelStateColor(State)));
 	ProgressFill->SetWidthOverride(FMath::Max(1.0f, MachineProgressWidth * FMath::Clamp(Progress, 0.0f, 1.0f)));
+
+	if (PowerText)
+	{
+		FLinearColor Color = TextColor;
+		PowerText->SetText(GetPowerText(Color));
+		PowerText->SetColorAndOpacity(FSlateColor(Color));
+	}
+}
+
+FText UFactoryMachineWidget::GetPowerText(FLinearColor& OutColor) const
+{
+	const AFactoryMachine* CurrentMachine = Machine.Get();
+	const UFactoryProductionComponent* Production = CurrentMachine ? CurrentMachine->GetProduction() : nullptr;
+	const UFactoryPowerSubsystem* Power = UFactoryPowerSubsystem::Get(this);
+
+	if (!Production || !Power)
+	{
+		return FText::GetEmpty();
+	}
+
+	OutColor = SubtleTextColor;
+
+	if (Power->IsFreePower())
+	{
+		return FactoryLoc::Format("MachinePanel_PowerFree", { Production->GetPowerMW() });
+	}
+
+	FFactoryPowerStats Stats;
+
+	if (!Power->GetStats(CurrentMachine, Stats))
+	{
+		OutColor = ErrorColor;
+		return FactoryLoc::Format(Production->IsGenerator() ? "MachinePanel_GeneratorNoCable" : "MachinePanel_PowerNoCable", { Production->GetPowerMW() });
+	}
+
+	if (Stats.bTripped)
+	{
+		OutColor = ErrorColor;
+		return FactoryLoc::Format("MachinePanel_PowerTripped", { Stats.Demand, Stats.Capacity });
+	}
+
+	if (Production->IsGenerator())
+	{
+		// "Leistung 30 MW · Netz: 12 / 30 MW (40 %)"
+		return FactoryLoc::Format("MachinePanel_GeneratorPower", { Production->GetPowerMW(), Stats.Demand, Stats.Capacity, Stats.LoadPermille / 10 });
+	}
+
+	if (Stats.Capacity <= 0)
+	{
+		OutColor = ErrorColor;
+	}
+
+	return FactoryLoc::Format("MachinePanel_Power", { Production->GetPowerMW(), Stats.Demand, Stats.Capacity });
+}
+
+void UFactoryMachineWidget::ResetFuse()
+{
+	UFactoryPowerSubsystem* Power = UFactoryPowerSubsystem::Get(this);
+	const AFactoryGamePlayerController* PlayerController = Cast<AFactoryGamePlayerController>(GetOwningPlayer());
+	FFactoryPowerStats Stats;
+
+	if (!Power || !Machine.IsValid())
+	{
+		return;
+	}
+
+	// geht nur mit genug Leistung, sonst ein Hinweis mit den Zahlen
+	if (!Power->ResetFuse(Machine.Get()) && Power->GetStats(Machine.Get(), Stats))
+	{
+		if (UFactoryHUDWidget* HUD = PlayerController ? PlayerController->GetHUDWidget() : nullptr)
+		{
+			HUD->ShowHint(FactoryLoc::Format("Power_ResetFailed", { Stats.Demand, Stats.Capacity }));
+		}
+	}
+
+	Refresh();
 }
 
 void UFactoryMachineWidget::UpdateHint()
@@ -358,8 +442,11 @@ UWidget* UFactoryMachineWidget::BuildRecipes()
 		NameText->SetColorAndOpacity(FSlateColor::UseForeground());
 		AddColumn(Row, NameText, true);
 
-		const FString Flow = FString::Printf(TEXT("%s  →  %s   ·   %s"), *DescribeStacks(Recipe->GetInputs()), *DescribeStacks(Outputs),
-			*FactoryLoc::Format("MachinePanel_PerMinute", { FText::AsNumber(Outputs.Num() > 0 ? Recipe->GetPerMinute(Outputs[0].Count) : 0.0f) }).ToString());
+		// Brennstoff ohne Produkt: "1 Biomasse · brennt 8 s"
+		const FString Flow = Outputs.IsEmpty()
+			? FString::Printf(TEXT("%s   ·   %s"), *DescribeStacks(Recipe->GetInputs()), *FactoryLoc::Format("MachinePanel_BurnTime", { FText::AsNumber(Recipe->Duration) }).ToString())
+			: FString::Printf(TEXT("%s  →  %s   ·   %s"), *DescribeStacks(Recipe->GetInputs()), *DescribeStacks(Outputs),
+				*FactoryLoc::Format("MachinePanel_PerMinute", { FText::AsNumber(Recipe->GetPerMinute(Outputs[0].Count)) }).ToString());
 
 		UTextBlock* FlowText = MakeText(FText::FromString(Flow), 13.0f, SubtleTextColor);
 		AddColumn(Row, FlowText, false, FMargin(0.0f));
@@ -480,6 +567,12 @@ UWidget* UFactoryMachineWidget::BuildBuffers()
 		InputSlot->SetVerticalAlignment(VAlign_Top);
 	}
 
+	// Generatoren verbrennen nur, sie haben keinen Ausgang
+	if (Production->GetOutputs().IsEmpty())
+	{
+		return Row;
+	}
+
 	AddColumn(Row, MakeText(FText::FromString(TEXT("→")), 30.0f, AccentColor, true), false, FMargin(12.0f, 0.0f, 22.0f, 30.0f));
 
 	UVerticalBox* OutputColumn = NewWidget<UVerticalBox>();
@@ -506,6 +599,7 @@ UWidget* UFactoryMachineWidget::BuildContent()
 	FocusButtons.Reset();
 	StatusText = nullptr;
 	ProgressFill = nullptr;
+	PowerText = nullptr;
 
 	UOverlay* Root = NewWidget<UOverlay>();
 
@@ -551,7 +645,31 @@ UWidget* UFactoryMachineWidget::BuildContent()
 	}
 
 	AddColumn(StatusRow, Bar, false, FMargin(0.0f));
-	AddRow(Content, StatusRow, FMargin(0.0f, 0.0f, 0.0f, 16.0f));
+	AddRow(Content, StatusRow, FMargin(0.0f, 0.0f, 0.0f, 6.0f));
+
+	// Strom: Verbrauch oder Leistung, Netz, Sicherung (Text kommt jedes Bild aus UpdateStatus)
+	const UFactoryProductionComponent* Production = CurrentMachine->GetProduction();
+
+	if (Production->GetPowerMW() > 0)
+	{
+		UHorizontalBox* PowerRow = NewWidget<UHorizontalBox>();
+		PowerText = MakeText(FText::GetEmpty(), 14.0f, SubtleTextColor);
+		PowerText->SetAutoWrapText(true);
+		AddColumn(PowerRow, PowerText, true);
+
+		if (Production->IsGenerator() && Production->IsFuseTripped())
+		{
+			UTextBlock* ResetText = MakeText(FactoryLoc::Get("MachinePanel_ResetFuse"), 14.0f, TextColor, true);
+			ResetText->SetColorAndOpacity(FSlateColor::UseForeground());
+			AddColumn(PowerRow, MakeFocusButton(TEXT("Fuse"), ResetText, [this]() { ResetFuse(); }, EFactoryButtonType::Primary, FMargin(14.0f, 6.0f)), false, FMargin(10.0f, 0.0f, 0.0f, 0.0f));
+		}
+
+		AddRow(Content, PowerRow, FMargin(0.0f, 0.0f, 0.0f, 16.0f));
+	}
+	else
+	{
+		AddRow(Content, MakeColorBlock(FLinearColor::Transparent, 0.0f, 10.0f), FMargin(0.0f));
+	}
 
 	AddRow(Content, BuildBuffers(), FMargin(0.0f, 0.0f, 0.0f, 18.0f));
 
@@ -564,7 +682,8 @@ UWidget* UFactoryMachineWidget::BuildContent()
 	}
 	else
 	{
-		AddRow(Content, MakeText(FactoryLoc::Get("MachinePanel_Recipe"), 14.0f, SubtleTextColor), FMargin(0.0f, 0.0f, 0.0f, 6.0f));
+		const bool bGenerator = Building && Building->Type == EFactoryBuildingType::Generator;
+		AddRow(Content, MakeText(FactoryLoc::Get(bGenerator ? "MachinePanel_Fuel" : "MachinePanel_Recipe"), 14.0f, SubtleTextColor), FMargin(0.0f, 0.0f, 0.0f, 6.0f));
 		AddRow(Content, BuildRecipes(), FMargin(0.0f));
 	}
 

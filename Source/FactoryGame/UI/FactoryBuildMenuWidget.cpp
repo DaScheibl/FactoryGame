@@ -516,6 +516,20 @@ void UFactoryBuildMenuWidget::ShowDetails(FName BuildingId)
 			*FactoryLoc::Format("BuildMenu_Ports", { FText::AsNumber(Building->Inputs), FText::AsNumber(Building->Outputs) }).ToString());
 	}
 
+	// Strom: "4 MW" Verbrauch, "erzeugt 30 MW", Masten "4 Anschlüsse"
+	if (Building->Type == EFactoryBuildingType::Generator)
+	{
+		Info += TEXT("  ·  ") + FactoryLoc::Format("BuildMenu_PowerOut", { Building->PowerMW }).ToString();
+	}
+	else if (Building->PowerMW > 0)
+	{
+		Info += TEXT("  ·  ") + FactoryLoc::Format("BuildMenu_PowerUse", { Building->PowerMW }).ToString();
+	}
+	else if (Building->Type == EFactoryBuildingType::PowerPole)
+	{
+		Info += TEXT("  ·  ") + FactoryLoc::Format("BuildMenu_Connections", { Building->PowerConnections }).ToString();
+	}
+
 	AddColumn(Title, MakeText(FText::FromString(Info), 14.0f, AccentColor, true), false, FMargin(0.0f));
 	AddRow(DetailsBox, Title, FMargin(0.0f));
 
@@ -525,7 +539,8 @@ void UFactoryBuildMenuWidget::ShowDetails(FName BuildingId)
 	const UFactoryItemDatabase* Items = UFactoryItemDatabase::Get(this);
 
 	UHorizontalBox* Costs = NewWidget<UHorizontalBox>();
-	AddColumn(Costs, MakeText(FactoryLoc::Get(Building->Type == EFactoryBuildingType::Belt ? "BuildMenu_CostPer2m" : "BuildMenu_Cost"), 14.0f, SubtleTextColor), false, FMargin(0.0f, 0.0f, 12.0f, 0.0f));
+	const TCHAR* CostKey = Building->Type == EFactoryBuildingType::Belt ? TEXT("BuildMenu_CostPer2m") : Building->Type == EFactoryBuildingType::PowerCable ? TEXT("BuildMenu_CostPer5m") : TEXT("BuildMenu_Cost");
+	AddColumn(Costs, MakeText(FactoryLoc::Get(CostKey), 14.0f, SubtleTextColor), false, FMargin(0.0f, 0.0f, 12.0f, 0.0f));
 
 	for (const FFactoryItemStack& Cost : Building->GetCosts())
 	{

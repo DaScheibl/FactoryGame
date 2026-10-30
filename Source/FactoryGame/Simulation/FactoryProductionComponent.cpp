@@ -49,6 +49,19 @@ void UFactoryProductionComponent::SimTick(int64 Tick)
 		return;
 	}
 
+	if (bGenerator)
+	{
+		SimTickGenerator();
+		return;
+	}
+
+	// ohne Strom steht die Maschine; sie zählt aber als Verbraucher, solange sie arbeiten könnte
+	if (NeedsPower() && !bPowered && WantsToRun())
+	{
+		SetState(EFactoryMachineState::NoPower);
+		return;
+	}
+
 	// Zutaten werden beim Start entnommen; fehlen sie, wartet die Maschine
 	if (!bCycleRunning && !TryStartCycle())
 	{
@@ -140,12 +153,58 @@ void UFactoryProductionComponent::ResetBuffers()
 	}
 }
 
-bool UFactoryProductionComponent::TryStartCycle()
+void UFactoryProductionComponent::SimTickGenerator()
+{
+	// Last 0: niemand braucht Strom (oder die Sicherung ist raus), dann wird nichts verbrannt
+	if (GeneratorLoadPermille <= 0)
+	{
+		SetState(CanGenerate() ? EFactoryMachineState::Standby : EFactoryMachineState::WaitingForInput);
+		return;
+	}
+
+	if (!bCycleRunning && !TryStartCycle())
+	{
+		SetState(EFactoryMachineState::WaitingForInput);
+		return;
+	}
+
+	// der Brennstoff hält bei halber Last doppelt so lange
+	Progress += FMath::Max(1, SpeedPercent * GeneratorLoadPermille / 1000);
+
+	if (Progress >= CycleLength)
+	{
+		TryFinishCycle();
+	}
+
+	SetState(EFactoryMachineState::Working);
+}
+
+bool UFactoryProductionComponent::WantsToRun() const
+{
+	if (RecipeId.IsNone() || bGenerator)
+	{
+		return false;
+	}
+
+	if (bCycleRunning)
+	{
+		return Progress < CycleLength || HasOutputRoom();
+	}
+
+	return HasInputsForCycle() && HasOutputRoom();
+}
+
+bool UFactoryProductionComponent::CanGenerate() const
+{
+	return bGenerator && !RecipeId.IsNone() && (bCycleRunning || HasInputsForCycle());
+}
+
+bool UFactoryProductionComponent::HasInputsForCycle() const
 {
 	const UFactoryRecipeDatabase* Recipes = UFactoryRecipeDatabase::Get(this);
 	const FFactoryRecipeDefinition* Recipe = Recipes ? Recipes->FindRecipe(RecipeId) : nullptr;
 
-	if (!Recipe || !HasOutputRoom())
+	if (!Recipe)
 	{
 		return false;
 	}
@@ -165,6 +224,21 @@ bool UFactoryProductionComponent::TryStartCycle()
 			return false;
 		}
 	}
+
+	return true;
+}
+
+bool UFactoryProductionComponent::TryStartCycle()
+{
+	const UFactoryRecipeDatabase* Recipes = UFactoryRecipeDatabase::Get(this);
+	const FFactoryRecipeDefinition* Recipe = Recipes ? Recipes->FindRecipe(RecipeId) : nullptr;
+
+	if (!Recipe || !HasOutputRoom() || !HasInputsForCycle())
+	{
+		return false;
+	}
+
+	const TArray<FFactoryItemStack> Needed = Recipe->GetInputs();
 
 	for (int32 Index = 0; Index < Needed.Num(); ++Index)
 	{
@@ -282,6 +356,7 @@ FFactoryProductionSaveData UFactoryProductionComponent::GetSaveData() const
 	Data.bCycleRunning = bCycleRunning;
 	Data.CyclesCompleted = CyclesCompleted;
 	Data.SpeedPercent = SpeedPercent;
+	Data.bFuseTripped = bFuseTripped;
 	return Data;
 }
 
@@ -324,6 +399,7 @@ void UFactoryProductionComponent::LoadSaveData(const FFactoryProductionSaveData&
 
 	CyclesCompleted = Data.CyclesCompleted;
 	SetSpeedPercent(Data.SpeedPercent);
+	bFuseTripped = Data.bFuseTripped;
 	SetState(bCycleRunning ? EFactoryMachineState::Working : EFactoryMachineState::WaitingForInput);
 }
 

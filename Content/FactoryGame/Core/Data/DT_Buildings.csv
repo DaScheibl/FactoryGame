@@ -1,15 +1,20 @@
----,NameEN,NameDE,Tier,Category,Type,SizeX,SizeY,SizeZ,Inputs,Outputs,Cost1,Cost1Amount,Cost2,Cost2Amount,Cost3,Cost3Amount,Cost4,Cost4Amount
-BLD_Drill_Mk1,Miner Mk1,Bergbaubohrer Mk1,0,Production,Drill,4,4,6,0,1,ITM_IronPlate,12,ITM_IronRod,6,,0,,0
-BLD_Smelter,Smelter,Schmelzofen,0,Production,Machine,4,4,5,1,1,ITM_IronPlate,10,,0,,0,,0
-BLD_Constructor,Constructor,Konstruktor,0,Production,Machine,8,4,4,1,1,ITM_IronPlate,8,ITM_CopperWire,8,,0,,0
-BLD_Assembler,Assembler,Assembler,1,Production,Machine,8,8,5,2,1,ITM_ReinforcedIronPlate,6,ITM_Rotor,4,,0,,0
-BLD_Foundry,Foundry,Gießerei,2,Production,Machine,8,4,6,2,1,ITM_Gear,10,ITM_Concrete,10,,0,,0
-LOG_Belt_Mk1,Conveyor Belt Mk1,Förderband Mk1,0,Logistics,Belt,1,1,1,0,0,ITM_IronPlate,1,,0,,0,,0
-LOG_BeltPole,Conveyor Pole,Bandstütze,0,Logistics,Pole,1,1,1,0,0,ITM_IronRod,1,ITM_IronPlate,1,,0,,0
-BLD_Hub,HUB,HUB,0,Misc,Hub,8,8,6,0,0,,0,,0,,0,,0
-STR_Foundation_1m,Foundation 1 m,Fundament 1 m,1,Structure,Foundation,8,8,1,0,0,ITM_Concrete,3,,0,,0,,0
-STR_Foundation_2m,Foundation 2 m,Fundament 2 m,1,Structure,Foundation,8,8,2,0,0,ITM_Concrete,5,,0,,0,,0
-STR_Foundation_4m,Foundation 4 m,Fundament 4 m,1,Structure,Foundation,8,8,4,0,0,ITM_Concrete,8,,0,,0,,0
-STR_Ramp_1m,Ramp 1 m,Rampe 1 m,1,Structure,Ramp,8,8,1,0,0,ITM_Concrete,3,,0,,0,,0
-STR_Ramp_2m,Ramp 2 m,Rampe 2 m,1,Structure,Ramp,8,8,2,0,0,ITM_Concrete,5,,0,,0,,0
-STR_Ramp_4m,Ramp 4 m,Rampe 4 m,1,Structure,Ramp,8,8,4,0,0,ITM_Concrete,8,,0,,0,,0
+---,NameEN,NameDE,Tier,Category,Type,SizeX,SizeY,SizeZ,Inputs,Outputs,Cost1,Cost1Amount,Cost2,Cost2Amount,Cost3,Cost3Amount,Cost4,Cost4Amount,PowerMW,PowerConnections
+BLD_Drill_Mk1,Miner Mk1,Bergbaubohrer Mk1,0,Production,Drill,4,4,6,0,1,ITM_IronPlate,12,ITM_IronRod,6,,0,,0,5,1
+BLD_Smelter,Smelter,Schmelzofen,0,Production,Machine,4,4,5,1,1,ITM_IronPlate,10,,0,,0,,0,4,1
+BLD_Constructor,Constructor,Konstruktor,0,Production,Machine,8,4,4,1,1,ITM_IronPlate,8,ITM_CopperWire,8,,0,,0,4,1
+BLD_Assembler,Assembler,Assembler,1,Production,Machine,8,8,5,2,1,ITM_ReinforcedIronPlate,6,ITM_Rotor,4,,0,,0,15,1
+BLD_Foundry,Foundry,Gießerei,2,Production,Machine,8,4,6,2,1,ITM_Gear,10,ITM_Concrete,10,,0,,0,16,1
+LOG_Belt_Mk1,Conveyor Belt Mk1,Förderband Mk1,0,Logistics,Belt,1,1,1,0,0,ITM_IronPlate,1,,0,,0,,0,0,0
+LOG_BeltPole,Conveyor Pole,Bandstütze,0,Logistics,Pole,1,1,1,0,0,ITM_IronRod,1,ITM_IronPlate,1,,0,,0,0,0
+BLD_Hub,HUB,HUB,0,Misc,Hub,8,8,6,0,0,,0,,0,,0,,0,0,0
+STR_Foundation_1m,Foundation 1 m,Fundament 1 m,1,Structure,Foundation,8,8,1,0,0,ITM_Concrete,3,,0,,0,,0,0,0
+STR_Foundation_2m,Foundation 2 m,Fundament 2 m,1,Structure,Foundation,8,8,2,0,0,ITM_Concrete,5,,0,,0,,0,0,0
+STR_Foundation_4m,Foundation 4 m,Fundament 4 m,1,Structure,Foundation,8,8,4,0,0,ITM_Concrete,8,,0,,0,,0,0,0
+STR_Ramp_1m,Ramp 1 m,Rampe 1 m,1,Structure,Ramp,8,8,1,0,0,ITM_Concrete,3,,0,,0,,0,0,0
+STR_Ramp_2m,Ramp 2 m,Rampe 2 m,1,Structure,Ramp,8,8,2,0,0,ITM_Concrete,5,,0,,0,,0,0,0
+STR_Ramp_4m,Ramp 4 m,Rampe 4 m,1,Structure,Ramp,8,8,4,0,0,ITM_Concrete,8,,0,,0,,0,0,0
+BLD_GenBiomass,Biomass Burner,Biomasse-Brenner,0,Power,Generator,4,4,5,1,0,ITM_IronPlate,12,ITM_IronRod,8,ITM_Cable,4,,0,30,1
+LOG_PowerPole_S,Power Pole Mk1,Strommast Mk1,0,Power,PowerPole,1,1,5,0,0,ITM_IronRod,2,ITM_Cable,1,,0,,0,0,4
+LOG_PowerPole_M,Power Pole Mk2,Strommast Mk2,2,Power,PowerPole,1,1,6,0,0,ITM_SteelBeam,1,ITM_Cable,2,,0,,0,0,8
+LOG_PowerPole_L,Power Pole Mk3,Strommast Mk3,3,Power,PowerPole,1,1,7,0,0,ITM_SteelBeam,2,ITM_Plastic,1,,0,,0,0,12
+LOG_PowerCable,Power Cable,Stromkabel,0,Power,PowerCable,1,1,1,0,0,ITM_Cable,1,,0,,0,,0,0,0

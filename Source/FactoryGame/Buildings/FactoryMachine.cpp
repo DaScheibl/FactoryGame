@@ -5,6 +5,7 @@
 #include "FactoryRecipeDatabase.h"
 #include "FactoryBuildingDatabase.h"
 #include "FactoryBelt.h"
+#include "FactoryPowerSubsystem.h"
 #include "FactoryLocalization.h"
 #include "Components/StaticMeshComponent.h"
 #include "Components/TextRenderComponent.h"
@@ -26,6 +27,8 @@ namespace
 		case EFactoryMachineState::WaitingForInput:	return FLinearColor(0.8f, 0.6f, 0.05f);
 		case EFactoryMachineState::Working:			return FLinearColor(0.1f, 0.6f, 0.15f);
 		case EFactoryMachineState::OutputFull:		return FLinearColor(0.75f, 0.1f, 0.08f);
+		case EFactoryMachineState::NoPower:			return FLinearColor(0.15f, 0.2f, 0.75f);
+		case EFactoryMachineState::Standby:			return FLinearColor(0.1f, 0.45f, 0.5f);
 		default:									return FLinearColor(0.35f, 0.35f, 0.35f);
 		}
 	}
@@ -106,6 +109,7 @@ void AFactoryMachine::InitBuilding(FName BuildingId)
 	}
 
 	SetGrayboxSize(FVector(Building->SizeX, Building->SizeY, Building->SizeZ));
+	Production->SetPower(Building->PowerMW, Building->Type == EFactoryBuildingType::Generator);
 	Ports = Building->GetPorts();
 	PortBelts.SetNum(Ports.Num());
 	CreatePortMarkers();
@@ -250,6 +254,21 @@ void AFactoryMachine::BeginPlay()
 	Material = Mesh->CreateAndSetMaterialInstanceDynamic(0);
 	Production->OnStateChanged.AddUObject(this, &AFactoryMachine::HandleStateChanged);
 	HandleStateChanged(Production->GetState());
+
+	if (UFactoryPowerSubsystem* Power = UFactoryPowerSubsystem::Get(this))
+	{
+		Power->MarkDirty();
+	}
+}
+
+void AFactoryMachine::EndPlay(const EEndPlayReason::Type EndPlayReason)
+{
+	if (UFactoryPowerSubsystem* Power = UFactoryPowerSubsystem::Get(this))
+	{
+		Power->MarkDirty();
+	}
+
+	Super::EndPlay(EndPlayReason);
 }
 
 void AFactoryMachine::HandleStateChanged(EFactoryMachineState NewState)
@@ -284,6 +303,8 @@ void AFactoryMachine::UpdateLabel()
 	case EFactoryMachineState::WaitingForInput:	StateText = FactoryLoc::Get(TEXT("Machine_WaitingForInput")); break;
 	case EFactoryMachineState::Working:			StateText = FactoryLoc::Format(TEXT("Machine_Working"), { FMath::FloorToInt32(Production->GetDisplayProgress() * 100.0f) }); break;
 	case EFactoryMachineState::OutputFull:		StateText = FactoryLoc::Get(TEXT("Machine_OutputFull")); break;
+	case EFactoryMachineState::NoPower:			StateText = FactoryLoc::Get(TEXT("Machine_NoPower")); break;
+	case EFactoryMachineState::Standby:			StateText = FactoryLoc::Get(TEXT("Machine_Standby")); break;
 	default:									StateText = FactoryLoc::Get(TEXT("Machine_NoRecipe")); break;
 	}
 

@@ -135,6 +135,14 @@ public:
 	UFUNCTION(Exec)
 	void SpawnNode(FName ItemId, FName Purity);
 
+	/** Every machine has power without cables or generators (1 = on, 0 = off) */
+	UFUNCTION(Exec)
+	void FreePower(int32 bEnabled = 1);
+
+	/** Prints all power networks to the log */
+	UFUNCTION(Exec)
+	void PowerInfo();
+
 	/** Prints the state of the belt in view to the log */
 	UFUNCTION(Exec)
 	void BeltInfo();

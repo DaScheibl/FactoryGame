@@ -109,7 +109,7 @@ _Pro Ressource: Vorkommen-Mesh in 3 Varianten + Reinheitsstufen (unrein/normal/r
 
 - [ ] **Kabel** · `ITM_Cable` · `VS`
 - [ ] **Beton** · `ITM_Concrete` · `VS`
-- [ ] **Biomasse** · `ITM_Biomass` · `VS`
+- [ ] **Biomasse** · `ITM_Biomass` · `VS` — _jetzt Tier 0: aus Blättern/Holz (Konstruktor, Werkbank), neu dazu `ITM_Leaves` + `ITM_Wood` von Büschen/Bäumen ([17 Strom](../../Standards/17-strom.md))_
 - [ ] **Verstärkte Eisenplatte** · `ITM_ReinforcedIronPlate` · `VS`
 - [ ] **Forschungspaket I (Rot)** · `ITM_SciencePack_01` · `VS`
 

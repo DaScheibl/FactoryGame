@@ -23,7 +23,13 @@ enum class EFactoryMachineState : uint8
 	Working,
 
 	/** The output buffer has no room for the result */
-	OutputFull
+	OutputFull,
+
+	/** Could work, but its power network has no power (no generator, not enough power or the fuse tripped) */
+	NoPower,
+
+	/** Generator with fuel, but nothing in its network uses power */
+	Standby
 };
 
 DECLARE_MULTICAST_DELEGATE_OneParam(FOnFactoryMachineStateChanged, EFactoryMachineState);
@@ -54,6 +60,10 @@ struct FACTORYGAME_API FFactoryProductionSaveData
 
 	UPROPERTY(SaveGame)
 	int32 SpeedPercent = 100;
+
+	/** Generators: the fuse of the network tripped and has to be switched on again */
+	UPROPERTY(SaveGame)
+	bool bFuseTripped = false;
 };
 
 /**
@@ -132,6 +142,37 @@ public:
 
 	void SetSpeedPercent(int32 NewSpeedPercent) { SpeedPercent = FMath::Clamp(NewSpeedPercent, 1, 250); }
 
+	/** Sets power use (machines) or power output (generators) in MW, from the building table */
+	void SetPower(int32 InPowerMW, bool bInGenerator) { PowerMW = InPowerMW; bGenerator = bInGenerator; }
+
+	int32 GetPowerMW() const { return PowerMW; }
+
+	bool IsGenerator() const { return bGenerator; }
+
+	/** True for machines that only work with power */
+	bool NeedsPower() const { return !bGenerator && PowerMW > 0; }
+
+	/** Set by UFactoryPowerSubsystem before every simulation tick */
+	void SetPowered(bool bInPowered) { bPowered = bInPowered; }
+
+	bool IsPowered() const { return bPowered; }
+
+	/** True if the machine would run a cycle this tick when it has power. Counts as power use of its network */
+	bool WantsToRun() const;
+
+	/** Generators: true if a cycle is running or there is fuel for the next one */
+	bool CanGenerate() const;
+
+	/** Generators: how much of the output the network uses, in per mille (0 = standby). Burns fuel at that rate */
+	void SetGeneratorLoad(int32 InLoadPermille) { GeneratorLoadPermille = FMath::Clamp(InLoadPermille, 0, 1000); }
+
+	int32 GetGeneratorLoad() const { return GeneratorLoadPermille; }
+
+	/** Generators: the fuse of the network tripped. Set and cleared by UFactoryPowerSubsystem */
+	bool IsFuseTripped() const { return bFuseTripped; }
+
+	void SetFuseTripped(bool bTripped) { bFuseTripped = bTripped; }
+
 	/** Returns the state for the world save */
 	FFactoryProductionSaveData GetSaveData() const;
 
@@ -162,6 +203,12 @@ private:
 
 	/** Tries to start a new cycle. Returns true if it started */
 	bool TryStartCycle();
+
+	/** Returns true if the input buffers hold the ingredients of one cycle */
+	bool HasInputsForCycle() const;
+
+	/** SimTick of a generator: burns fuel at the load the power network asks for */
+	void SimTickGenerator();
 
 	/** Puts the result of the finished cycle into the output buffers. Returns false if there is no room */
 	bool TryFinishCycle();
@@ -196,6 +243,17 @@ private:
 
 	/** Recipe duration in ticks x 100, cached when the recipe is set */
 	int32 CycleLength = 0;
+
+	/** Power use or output in MW */
+	int32 PowerMW = 0;
+
+	bool bGenerator = false;
+
+	bool bPowered = false;
+
+	int32 GeneratorLoadPermille = 0;
+
+	bool bFuseTripped = false;
 
 	EFactoryMachineState State = EFactoryMachineState::NoRecipe;
 };

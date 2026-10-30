@@ -87,6 +87,12 @@ private:
 
 	void UpdateStatus();
 
+	/** Power line: use or output, network load, fuse */
+	FText GetPowerText(FLinearColor& OutColor) const;
+
+	/** Switches the tripped fuse of the generator's network on again */
+	void ResetFuse();
+
 	void UpdateHint();
 
 	UFactoryInventoryComponent* GetPlayerInventory() const;
@@ -112,4 +118,7 @@ private:
 
 	UPROPERTY()
 	TObjectPtr<UTextBlock> HintText;
+
+	UPROPERTY()
+	TObjectPtr<UTextBlock> PowerText;
 };

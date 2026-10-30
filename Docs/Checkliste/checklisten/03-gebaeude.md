@@ -173,8 +173,8 @@ _Erste Automatisierung, Strom, Forschungspaket I_
   - [ ] Icon (256 px) + Bau-Hologramm/Vorschau
   - [ ] UI-Panel (Rezeptwahl, Status, Ein-/Ausgabe-Slots)
   - [ ] Ingame integriert, Rezepte verknüpft, Performance geprüft
-- [ ] **Biomasse-Brenner** · `BLD_GenBiomass` · `VS`
-  - [ ] Blockout (Graybox, Footprint im Raster, Ein-/Ausgänge markiert)
+- [ ] **Biomasse-Brenner** · `BLD_GenBiomass` · `VS` · [Doku](../../Standards/17-strom.md) — _Funktion steht (30 MW, Brennstoff je nach Last, Sicherung wieder einschalten im Panel), Test offen; Brennstoff-Wahl + Kosten = Entwurf_
+  - [x] Blockout (Graybox, Footprint im Raster, Ein-/Ausgänge markiert)
   - [ ] Konzept/Paintover & Silhouette freigegeben
   - [ ] High-Detail-Mesh (Nanite, Fallback-Mesh geprüft)
   - [ ] Kollision, Snap-Punkte & Port-Sockets (Band/Rohr/Strom)

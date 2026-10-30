@@ -2,6 +2,7 @@
 
 #include "FactorySimulationSubsystem.h"
 #include "FactorySimulated.h"
+#include "FactoryPowerSubsystem.h"
 #include "Engine/World.h"
 #include "HAL/PlatformTime.h"
 
@@ -65,6 +66,12 @@ void UFactorySimulationSubsystem::RunTick()
 {
 	++TickCount;
 	bTicking = true;
+
+	// Strom zuerst: entscheidet, welche Maschinen in diesem Tick laufen dürfen
+	if (UFactoryPowerSubsystem* Power = GetWorld()->GetSubsystem<UFactoryPowerSubsystem>())
+	{
+		Power->SimTick(TickCount);
+	}
 
 	// Objekte, die während des Ticks dazukommen, sind erst im nächsten Tick dran
 	const int32 NumToTick = Simulated.Num();

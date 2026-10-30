@@ -11,6 +11,9 @@
 #include "FactoryResourceNode.h"
 #include "FactoryHub.h"
 #include "FactoryFoundation.h"
+#include "FactoryPowerPole.h"
+#include "FactoryPowerCable.h"
+#include "FactoryPlant.h"
 #include "FactoryGamePlayerController.h"
 #include "FactoryGameCharacter.h"
 #include "FactoryInventoryComponent.h"
@@ -33,7 +36,14 @@ namespace
 	// Gebäude-Actors, die sich nie überlappen dürfen
 	bool IsFactoryActor(const AActor* Actor)
 	{
-		return Actor && (Actor->IsA<AFactoryMachine>() || Actor->IsA<AFactoryBelt>() || Actor->IsA<AFactoryBeltPole>() || Actor->IsA<AFactoryCrate>() || Actor->IsA<AFactoryHub>() || Actor->IsA<AFactoryFoundation>() || Actor->IsA<APawn>());
+		return Actor && (Actor->IsA<AFactoryMachine>() || Actor->IsA<AFactoryBelt>() || Actor->IsA<AFactoryBeltPole>() || Actor->IsA<AFactoryCrate>() || Actor->IsA<AFactoryHub>()
+			|| Actor->IsA<AFactoryFoundation>() || Actor->IsA<AFactoryPowerPole>() || Actor->IsA<AFactoryPlant>() || Actor->IsA<APawn>());
+	}
+
+	// alle Kabel-Anschlüsse eines Masts oder einer Maschine belegt
+	bool IsPowerNodeFull(const AActor* Node)
+	{
+		return AFactoryPowerCable::GetCables(Node).Num() >= AFactoryPowerCable::GetMaxConnections(Node);
 	}
 
 	// gleiche Items zusammenfassen, damit die Meldungen "+10 Eisenplatte" statt zweimal "+5" zeigen
@@ -151,6 +161,7 @@ void UFactoryBuildComponent::TickComponent(float DeltaTime, ELevelTick TickType,
 	case EFactoryBuildMode::Pole:		UpdatePole(); break;
 	case EFactoryBuildMode::Belt:		UpdateBelt(); break;
 	case EFactoryBuildMode::Foundation:	UpdateFoundation(); break;
+	case EFactoryBuildMode::Cable:		UpdateCable(); break;
 	case EFactoryBuildMode::Demolish:	UpdateDemolish(DeltaTime); break;
 	default:							UpdateIdle(DeltaTime); break;
 	}
@@ -210,6 +221,11 @@ void UFactoryBuildComponent::BeginPlacing(FName NewBuildingId)
 		bFoundationDrag = false;
 		break;
 
+	case EFactoryBuildingType::PowerCable:
+		Mode = EFactoryBuildMode::Cable;
+		CableStart.Reset();
+		break;
+
 	default:
 		Mode = EFactoryBuildMode::Place;
 		Hologram->SetBuilding(*Building);
@@ -236,6 +252,8 @@ void UFactoryBuildComponent::StopBuilding()
 	bHasBeltStart = false;
 	bFoundationDrag = false;
 	FoundationCells.Reset();
+	CableStart.Reset();
+	CableTarget.Reset();
 	bHoldingPrimary = false;
 	HoldTime = 0.0f;
 	SetDemolishTarget(nullptr);
@@ -264,6 +282,12 @@ bool UFactoryBuildComponent::Cancel()
 		return false;
 	}
 
+	if (Mode == EFactoryBuildMode::Cable && CableStart.IsValid())
+	{
+		CableStart.Reset();
+		return false;
+	}
+
 	StopBuilding();
 	return true;
 }
@@ -275,6 +299,7 @@ void UFactoryBuildComponent::PrimaryPressed()
 	case EFactoryBuildMode::Place:		PlaceBuilding(); break;
 	case EFactoryBuildMode::Pole:		PlacePole(); break;
 	case EFactoryBuildMode::Belt:		PlaceBelt(); break;
+	case EFactoryBuildMode::Cable:		PlaceCable(); break;
 
 	// Fundamente bauen erst beim Loslassen; bis dahin spannt Ziehen eine Fläche auf
 	case EFactoryBuildMode::Foundation:
@@ -635,6 +660,16 @@ bool UFactoryBuildComponent::PlaceBuilding()
 
 	FActorSpawnParameters SpawnParams;
 	SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
+
+	if (Building->Type == EFactoryBuildingType::PowerPole)
+	{
+		if (AFactoryPowerPole* PowerPole = GetWorld()->SpawnActor<AFactoryPowerPole>(PlaceTransform.GetLocation(), PlaceTransform.Rotator(), SpawnParams))
+		{
+			PowerPole->InitBuilding(BuildingId);
+		}
+
+		return true;
+	}
 
 	if (AFactoryMachine* Machine = GetWorld()->SpawnActor<AFactoryMachine>(PlaceTransform.GetLocation(), PlaceTransform.Rotator(), SpawnParams))
 	{
@@ -1283,6 +1318,127 @@ bool UFactoryBuildComponent::PlaceBelt()
 	return true;
 }
 
+void UFactoryBuildComponent::UpdateCable()
+{
+	const FFactoryBuildingDefinition* Building = GetBuilding();
+
+	if (!Building || !Hologram)
+	{
+		StopBuilding();
+		return;
+	}
+
+	// das Hologramm zeigt das Kabel in Weltkoordinaten
+	Hologram->SetActorTransform(FTransform::Identity);
+	Hologram->SetActorHiddenInGame(false);
+	bCableValid = false;
+
+	FHitResult Hit;
+	AActor* Node = TraceView(BuildRange, Hit) && AFactoryPowerCable::IsPowerNode(Hit.GetActor()) ? Hit.GetActor() : nullptr;
+	CableTarget = Node;
+
+	const AActor* Start = CableStart.Get();
+	TArray<TPair<FText, bool>> Lines;
+	FText Error;
+
+	// 1. Klick: Mast oder Maschine mit freiem Anschluss, markiert mit einem Würfel am Anschluss
+	if (!Start)
+	{
+		if (!Node)
+		{
+			Error = FactoryLoc::Get(TEXT("Build_Error_NoPowerNode"));
+		}
+		else if (IsPowerNodeFull(Node))
+		{
+			Error = FactoryLoc::Get(TEXT("Build_Error_NoConnection"));
+		}
+
+		TArray<FTransform> Boxes;
+
+		if (Node)
+		{
+			Boxes.Emplace(FQuat::Identity, AFactoryPowerCable::GetConnectionPoint(Node), FVector(0.4));
+		}
+
+		Hologram->SetBoxes(Boxes);
+		bCableValid = Error.IsEmpty();
+		Hologram->SetValid(bCableValid);
+		ShowPanel(Building->GetDisplayName(), Lines, Error, FactoryLoc::Get(TEXT("Build_Controls_CableStart")));
+		return;
+	}
+
+	// 2. Klick: Kabel vom Start zum Ziel, höchstens 25 m, beide Seiten brauchen einen freien Anschluss
+	const FVector From = AFactoryPowerCable::GetConnectionPoint(Start);
+	const FVector To = Node ? AFactoryPowerCable::GetConnectionPoint(Node) : (Hit.bBlockingHit ? Hit.ImpactPoint : From);
+	const double Length = FVector::Dist(From, To);
+
+	Lines.Emplace(FactoryLoc::Format(TEXT("Build_CableLength"), { FMath::CeilToInt32(Length / 100.0), FMath::RoundToInt32(AFactoryPowerCable::MaxLength / 100.0) }), Length <= AFactoryPowerCable::MaxLength);
+	const bool bEnoughMaterial = CheckCosts(AFactoryPowerCable::GetCosts(this, Length), Lines);
+
+	if (!Node)
+	{
+		Error = FactoryLoc::Get(TEXT("Build_Error_NoPowerNode"));
+	}
+	else if (Node == Start)
+	{
+		Error = FactoryLoc::Get(TEXT("Build_Error_SameNode"));
+	}
+	else if (AFactoryPowerCable::AreConnected(Start, Node))
+	{
+		Error = FactoryLoc::Get(TEXT("Build_Error_AlreadyConnected"));
+	}
+	else if (IsPowerNodeFull(Node) || IsPowerNodeFull(Start))
+	{
+		Error = FactoryLoc::Get(TEXT("Build_Error_NoConnection"));
+	}
+	else if (Length > AFactoryPowerCable::MaxLength)
+	{
+		Error = FactoryLoc::Get(TEXT("Build_Error_CableTooLong"));
+	}
+	else if (!bEnoughMaterial)
+	{
+		Error = FactoryLoc::Get(TEXT("Build_Error_Materials"));
+	}
+
+	Hologram->SetBoxes({ AFactoryPowerCable::GetCableTransform(From, To, 10.0) });
+	bCableValid = Error.IsEmpty();
+	Hologram->SetValid(bCableValid);
+	ShowPanel(Building->GetDisplayName(), Lines, Error, FactoryLoc::Get(TEXT("Build_Controls_CableEnd")));
+}
+
+bool UFactoryBuildComponent::PlaceCable()
+{
+	UpdateCable();
+
+	AActor* Node = CableTarget.Get();
+
+	if (!bCableValid || !Node)
+	{
+		return false;
+	}
+
+	if (!CableStart.IsValid())
+	{
+		CableStart = Node;
+		return true;
+	}
+
+	AActor* Start = CableStart.Get();
+	PayCosts(AFactoryPowerCable::GetCosts(this, FVector::Dist(AFactoryPowerCable::GetConnectionPoint(Start), AFactoryPowerCable::GetConnectionPoint(Node))));
+
+	FActorSpawnParameters SpawnParams;
+	SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
+
+	if (AFactoryPowerCable* Cable = GetWorld()->SpawnActor<AFactoryPowerCable>(AFactoryPowerCable::GetConnectionPoint(Start), FRotator::ZeroRotator, SpawnParams))
+	{
+		Cable->Connect(Start, Node);
+	}
+
+	// wie beim Band geht es vom Ende aus weiter; ist es voll, beginnt das nächste Kabel mit einem neuen Klick
+	CableStart = IsPowerNodeFull(Node) ? nullptr : Node;
+	return true;
+}
+
 void UFactoryBuildComponent::PayCosts(const TArray<FFactoryItemStack>& Costs) const
 {
 	const AFactoryGamePlayerController* PlayerController = GetPlayerController();
@@ -1310,9 +1466,26 @@ void UFactoryBuildComponent::UpdateDemolish(float DeltaTime)
 	FHitResult Hit;
 	AActor* Target = nullptr;
 
-	if (TraceView(BuildRange, Hit) && (Hit.GetActor() && (Hit.GetActor()->IsA<AFactoryMachine>() || Hit.GetActor()->IsA<AFactoryBelt>() || Hit.GetActor()->IsA<AFactoryBeltPole>() || Hit.GetActor()->IsA<AFactoryFoundation>())))
+	if (TraceView(BuildRange, Hit) && (Hit.GetActor() && (Hit.GetActor()->IsA<AFactoryMachine>() || Hit.GetActor()->IsA<AFactoryBelt>() || Hit.GetActor()->IsA<AFactoryBeltPole>()
+		|| Hit.GetActor()->IsA<AFactoryFoundation>() || Hit.GetActor()->IsA<AFactoryPowerPole>())))
 	{
 		Target = Hit.GetActor();
+	}
+
+	// Kabel haben keine Kollision: das Kabel am nächsten zum Blickstrahl, wenn es vor dem getroffenen Ding hängt
+	if (const AFactoryGamePlayerController* PlayerController = GetPlayerController())
+	{
+		FVector ViewLocation;
+		FRotator ViewRotation;
+		PlayerController->GetPlayerViewPoint(ViewLocation, ViewRotation);
+
+		double CableDistance = 0.0;
+		AFactoryPowerCable* Cable = AFactoryPowerCable::FindCableNearRay(GetWorld(), ViewLocation, ViewRotation.Vector(), BuildRange, CableAimTolerance, CableDistance);
+
+		if (Cable && CableDistance < (Hit.bBlockingHit ? Hit.Distance : BuildRange))
+		{
+			Target = Cable;
+		}
 	}
 
 	// neues Ziel: Halten beginnt von vorn
@@ -1344,6 +1517,14 @@ void UFactoryBuildComponent::UpdateDemolish(float DeltaTime)
 	else if (const AFactoryFoundation* Foundation = Cast<AFactoryFoundation>(Target))
 	{
 		TargetName = Buildings ? Buildings->GetDisplayName(Foundation->GetBuildingId()) : FText::GetEmpty();
+	}
+	else if (const AFactoryPowerPole* PowerPole = Cast<AFactoryPowerPole>(Target))
+	{
+		TargetName = Buildings ? Buildings->GetDisplayName(PowerPole->GetBuildingId()) : FText::GetEmpty();
+	}
+	else if (Target->IsA<AFactoryPowerCable>())
+	{
+		TargetName = Buildings ? Buildings->GetDisplayName(AFactoryPowerCable::CableId) : FText::GetEmpty();
 	}
 	else
 	{
@@ -1444,6 +1625,28 @@ void UFactoryBuildComponent::Demolish(AActor* Target)
 		}
 	}
 
+	// Strom: ein Mast oder eine Maschine nimmt ihre Kabel mit
+	if (const AFactoryPowerCable* Cable = Cast<AFactoryPowerCable>(Target))
+	{
+		AddStacks(Refund, Cable->GetBuildCosts());
+	}
+	else
+	{
+		if (const AFactoryPowerPole* PowerPole = Cast<AFactoryPowerPole>(Target))
+		{
+			if (const FFactoryBuildingDefinition* Building = Buildings ? Buildings->FindBuilding(PowerPole->GetBuildingId()) : nullptr)
+			{
+				AddStacks(Refund, Building->GetCosts());
+			}
+		}
+
+		for (AFactoryPowerCable* AttachedCable : AFactoryPowerCable::GetCables(Target))
+		{
+			AddStacks(Refund, AttachedCable->GetBuildCosts());
+			ToDestroy.Add(AttachedCable);
+		}
+	}
+
 	TArray<FFactoryItemStack> Leftovers;
 
 	for (const FFactoryItemStack& Stack : Refund)
@@ -1489,6 +1692,14 @@ void UFactoryBuildComponent::SetDemolishTarget(AActor* NewTarget)
 		{
 			Foundation->SetDemolishHighlight(bOn);
 		}
+		else if (AFactoryPowerPole* PowerPole = Cast<AFactoryPowerPole>(Actor))
+		{
+			PowerPole->SetDemolishHighlight(bOn);
+		}
+		else if (AFactoryPowerCable* Cable = Cast<AFactoryPowerCable>(Actor))
+		{
+			Cable->SetDemolishHighlight(bOn);
+		}
 		else if (AFactoryBeltPole* Pole = Cast<AFactoryBeltPole>(Actor))
 		{
 			Pole->SetDemolishHighlight(bOn);
@@ -1504,9 +1715,23 @@ void UFactoryBuildComponent::SetDemolishTarget(AActor* NewTarget)
 		}
 	};
 
-	Highlight(DemolishTarget.Get(), false);
+	// Kabel an Masten und Maschinen werden mit abgerissen, also auch markieren
+	auto HighlightWithCables = [&Highlight](AActor* Actor, bool bOn)
+	{
+		Highlight(Actor, bOn);
+
+		if (Actor && !Actor->IsA<AFactoryPowerCable>())
+		{
+			for (AFactoryPowerCable* Cable : AFactoryPowerCable::GetCables(Actor))
+			{
+				Cable->SetDemolishHighlight(bOn);
+			}
+		}
+	};
+
+	HighlightWithCables(DemolishTarget.Get(), false);
 	DemolishTarget = NewTarget;
-	Highlight(NewTarget, true);
+	HighlightWithCables(NewTarget, true);
 }
 
 void UFactoryBuildComponent::UpdateIdle(float DeltaTime)
@@ -1520,7 +1745,23 @@ void UFactoryBuildComponent::UpdateIdle(float DeltaTime)
 	AFactoryGamePlayerController* PlayerController = GetPlayerController();
 	const bool bHoldingInteract = PlayerController && (PlayerController->IsInputKeyDown(EKeys::E) || PlayerController->IsInputKeyDown(EKeys::Gamepad_FaceButton_Left));
 
-	if (!Node || !bHoldingInteract)
+	// Pflanzen sammeln geht genauso, nur dauert es länger und es gibt alles auf einmal
+	AFactoryPlant* Plant = bHit ? Cast<AFactoryPlant>(Hit.GetActor()) : nullptr;
+
+	if (Plant && Plant->IsHarvested())
+	{
+		Plant = nullptr;
+	}
+
+	AActor* HoldActor = Node ? static_cast<AActor*>(Node) : static_cast<AActor*>(Plant);
+
+	if (HoldActor != HoldTarget.Get())
+	{
+		HoldTarget = HoldActor;
+		MiningTime = 0.0f;
+	}
+
+	if (!HoldActor || !bHoldingInteract)
 	{
 		MiningTime = 0.0f;
 	}
@@ -1545,6 +1786,31 @@ void UFactoryBuildComponent::UpdateIdle(float DeltaTime)
 		else
 		{
 			ShowPanel(FText::GetEmpty(), {}, FText::GetEmpty(), FactoryLoc::Format(TEXT("Node_Prompt"), { Name, AFactoryResourceNode::GetPurityText(Node->GetPurity()) }));
+		}
+	}
+	else if (Plant)
+	{
+		const UFactoryItemDatabase* Items = UFactoryItemDatabase::Get(this);
+		const FText ItemName = Items ? Items->GetDisplayName(Plant->GetItemId()) : FText::FromName(Plant->GetItemId());
+
+		if (bHoldingInteract)
+		{
+			MiningTime += DeltaTime;
+
+			if (MiningTime >= Plant->GetHarvestTime())
+			{
+				MiningTime = 0.0f;
+				PlayerController->GiveItemsOrCrate({ FFactoryItemStack(Plant->GetItemId(), Plant->GetHarvestAmount()) }, Plant->GetActorLocation());
+				Plant->Harvest();
+				HidePanel();
+				return;
+			}
+
+			ShowPanel(FText::GetEmpty(), {}, FText::GetEmpty(), FactoryLoc::Format(TEXT("Plant_Gathering"), { Plant->GetDisplayName(), FMath::FloorToInt32(MiningTime / Plant->GetHarvestTime() * 100.0f) }));
+		}
+		else
+		{
+			ShowPanel(FText::GetEmpty(), {}, FText::GetEmpty(), FactoryLoc::Format(TEXT("Plant_Prompt"), { Plant->GetDisplayName(), Plant->GetHarvestAmount(), ItemName }));
 		}
 	}
 	else if (bHit && Cast<AFactoryCrate>(Hit.GetActor()))

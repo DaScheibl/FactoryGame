@@ -36,7 +36,16 @@ enum class EFactoryBuildingType : uint8
 	Foundation,
 
 	/** Ramp of foundation size, rising towards the front (AFactoryFoundation) */
-	Ramp
+	Ramp,
+
+	/** Power generator: a machine that burns its recipe input and feeds PowerMW into its network (AFactoryMachine) */
+	Generator,
+
+	/** Power pole with PowerConnections cable slots (AFactoryPowerPole) */
+	PowerPole,
+
+	/** Power cable, drawn between poles and machines. Costs are per started 5 m (AFactoryPowerCable) */
+	PowerCable
 };
 
 /** Where in a building a belt port sits */
@@ -74,7 +83,7 @@ struct FACTORYGAME_API FFactoryBuildingDefinition : public FTableRowBase
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category="Building")
 	FName Category;
 
-	/** Machine, belt, pole or drill */
+	/** Machine, belt, pole, drill, generator ... */
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category="Building")
 	EFactoryBuildingType Type = EFactoryBuildingType::Machine;
 
@@ -122,6 +131,14 @@ struct FACTORYGAME_API FFactoryBuildingDefinition : public FTableRowBase
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category="Building")
 	int32 Cost4Amount = 0;
 
+	/** Machines: power use while working, generators: power output, in MW. 0 = needs no power */
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category="Building", meta=(ClampMin=0))
+	int32 PowerMW = 0;
+
+	/** How many power cables can be attached (poles 4 / 8 / 12, machines 1) */
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category="Building", meta=(ClampMin=0))
+	int32 PowerConnections = 0;
+
 	/** Returns the build costs (only used columns) */
 	TArray<FFactoryItemStack> GetCosts() const;
 
@@ -138,7 +155,7 @@ struct FACTORYGAME_API FFactoryBuildingDefinition : public FTableRowBase
 	FText GetDisplayName() const;
 
 	/** True for everything that is an AFactoryMachine (machines and drills) */
-	bool IsMachine() const { return Type == EFactoryBuildingType::Machine || Type == EFactoryBuildingType::Drill; }
+	bool IsMachine() const { return Type == EFactoryBuildingType::Machine || Type == EFactoryBuildingType::Drill || Type == EFactoryBuildingType::Generator; }
 
 	/** True for foundations and ramps */
 	bool IsFoundation() const { return Type == EFactoryBuildingType::Foundation || Type == EFactoryBuildingType::Ramp; }

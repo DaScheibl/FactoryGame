@@ -43,6 +43,8 @@ Beim Laden prüft das Spiel jedes Rezept und schreibt Fehler ins Output-Log (`Lo
 | 0 | Kupferdraht | Konstruktor | ✔ | 4 s | 1 Kupferbarren | 2 Kupferdraht | 30 |
 | 0 | Handbohrer | nur Werkbank | ✔ | 10 s | 5 Eisenplatten, 5 Eisenstangen | 1 Handbohrer | – |
 | 0 | Kabel | Konstruktor | ✔ | 2 s | 2 Kupferdraht | 1 Kabel | 30 |
+| 0 | Biomasse (Blätter) | Konstruktor | ✔ | 4 s | 10 Blätter | 5 Biomasse | 75 |
+| 0 | Biomasse (Holz) | Konstruktor | ✔ | 4 s | 4 Holz | 5 Biomasse | 75 |
 | 1 | Beton | Konstruktor | ✔ | 4 s | 3 Kalkstein | 1 Beton | 15 |
 | 1 | Verstärkte Eisenplatte | Assembler | ✔ | 12 s | 6 Eisenplatten, 12 Schrauben | 1 Verst. Eisenplatte | 5 |
 | 0 | Forschungspaket I | Konstruktor | ✔ | 8 s | 2 Kabel | 1 Forschungspaket I | 7,5 |
@@ -61,7 +63,9 @@ Beim Laden prüft das Spiel jedes Rezept und schreibt Fehler ins Output-Log (`Lo
 | 2 | Kettensäge | Ausrüstungswerkstatt | – | 20 s | 5 Verst. Eisenplatten, 20 Eisenstangen, 100 Schrauben | 1 Kettensäge | – |
 | 2 | Gleiter | Ausrüstungswerkstatt | – | 20 s | 10 Stahlrohre, 20 Kabel, 20 Eisenplatten | 1 Gleiter | – |
 
-Ohne Rezept (werden abgebaut bzw. gesammelt): Eisenerz, Kupfererz, Kalkstein, Kohle, Rohquarz, Biomasse.
+Ohne Rezept (werden abgebaut bzw. gesammelt): Eisenerz, Kupfererz, Kalkstein, Kohle, Rohquarz, Blätter, Holz.
+
+Brennstoffe im Biomasse-Brenner sind Rezepte ohne Produkt (`RCP_Burn_Leaves` 2 s, `RCP_Burn_Wood` 4 s, `RCP_Burn_Biomass` 8 s, je 1 Stück), siehe [17 Strom](17-strom.md).
 
 ## Offene Punkte
 

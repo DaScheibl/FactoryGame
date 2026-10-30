@@ -13,6 +13,7 @@
 #include "FactoryBeltComponent.h"
 #include "FactoryBuildingDatabase.h"
 #include "FactorySimulationSubsystem.h"
+#include "FactoryPowerSubsystem.h"
 #include "FactoryGame.h"
 #include "GameFramework/Pawn.h"
 #include "Engine/World.h"
@@ -377,6 +378,23 @@ void UFactoryCheatManager::UnlockTier(int32 Tier)
 	{
 		Hub->SetTier(Tier);
 		UE_LOG(LogFactoryGame, Log, TEXT("Unlocked tier is now %d."), Hub->GetTier());
+	}
+}
+
+void UFactoryCheatManager::FreePower(int32 bEnabled)
+{
+	if (UFactoryPowerSubsystem* Power = UFactoryPowerSubsystem::Get(GetWorld()))
+	{
+		Power->SetFreePower(bEnabled != 0);
+		UE_LOG(LogFactoryGame, Log, TEXT("FreePower is now %s."), Power->IsFreePower() ? TEXT("on") : TEXT("off"));
+	}
+}
+
+void UFactoryCheatManager::PowerInfo()
+{
+	if (const UFactoryPowerSubsystem* Power = UFactoryPowerSubsystem::Get(GetWorld()))
+	{
+		Power->LogNetworks();
 	}
 }
 

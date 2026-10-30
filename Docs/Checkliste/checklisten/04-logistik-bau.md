@@ -45,10 +45,10 @@ Legende: `PT` Prototyp · `VS` Vertical Slice · `EA` Early Access · `1.0` Rele
 
 ## Strom
 
-- [ ] **Strommast klein** · `LOG_PowerPole_S` · `PT`
+- [ ] **Strommast klein** · `LOG_PowerPole_S` · `PT` · [Doku](../../Standards/17-strom.md) — _Funktion steht (Graybox Mk1 4 Anschlüsse, Mk2 8 / Mk3 12 in der Tabelle, Netze + Sicherung, Speichern), Test offen; Kosten = Entwurf; Mesh fehlt_
 - [ ] **Strommast groß / Überlandmast** · `LOG_PowerPole_L` · `EA`
 - [ ] **Wandsteckdose** · `LOG_PowerWall` · `VS`
-- [ ] **Kabel-Rendering (Durchhang)** · `LOG_PowerCable` · `PT`
+- [ ] **Kabel-Rendering (Durchhang)** · `LOG_PowerCable` · `PT` · [Doku](../../Standards/17-strom.md) — _Kabel ziehen, max. 25 m, Abriss über Zielen steht (gerade Graybox-Leitung); Durchhang fehlt noch_
 - [ ] **Stromschalter** · `LOG_PowerSwitch` · `VS`
 - [ ] **Priorität-Schalter** · `LOG_PowerPriority` · `EA`
 
