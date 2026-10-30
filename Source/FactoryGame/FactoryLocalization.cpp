@@ -88,7 +88,26 @@ namespace FactoryLoc
 			{ TEXT("Inv_Unknown"),				{ TEXT("Unknown item"),					TEXT("Unbekanntes Item") } },
 
 			// hud
-			{ TEXT("Hotbar_Empty"),				{ TEXT("Hotbar slot {0} is empty. Buildings from the build menu can be placed here."), TEXT("Hotbar-Slot {0} ist leer. Hier kommen Gebäude aus dem Baumenü hin.") } },
+			{ TEXT("Hotbar_Empty"),				{ TEXT("Hotbar slot {0} is empty. Q opens the build menu, where you can put buildings here."), TEXT("Hotbar-Slot {0} ist leer. Q öffnet das Baumenü, dort kannst du Gebäude hierher legen.") } },
+
+			// build menu
+			{ TEXT("BuildMenu_Header"),			{ TEXT("Build"),						TEXT("Bauen") } },
+			{ TEXT("BuildMenu_Search"),			{ TEXT("Search …"),						TEXT("Suchen …") } },
+			{ TEXT("BuildMenu_Hotbar"),			{ TEXT("Hotbar"),						TEXT("Hotbar") } },
+			{ TEXT("BuildMenu_Ports"),			{ TEXT("{0} in → {1} out"),				TEXT("{0} rein → {1} raus") } },
+			{ TEXT("BuildMenu_Cost"),			{ TEXT("Costs:"),						TEXT("Kosten:") } },
+			{ TEXT("BuildMenu_CostPer2m"),		{ TEXT("Costs per 2 m:"),				TEXT("Kosten pro 2 m:") } },
+			{ TEXT("BuildMenu_EmptyCategory"),	{ TEXT("Nothing to build here yet."),	TEXT("Hier gibt es noch nichts zu bauen.") } },
+			{ TEXT("BuildMenu_NoResults"),		{ TEXT("No building found."),			TEXT("Kein Gebäude gefunden.") } },
+			{ TEXT("BuildMenu_HintMouse"),		{ TEXT("Click: Build  ·  Drag onto the hotbar or press 1–0 on a tile: Put on the hotbar  ·  Right click on the hotbar: Clear  ·  Q / Esc: Close"), TEXT("Klick: Bauen  ·  Auf die Hotbar ziehen oder 1–0 über einer Kachel: Auf die Hotbar legen  ·  Rechtsklick auf die Hotbar: Leeren  ·  Q / Esc: Schließen") } },
+			{ TEXT("BuildMenu_HintGamepad"),	{ TEXT("A: Build  ·  Y: Put on the hotbar  ·  X on the hotbar: Clear  ·  LB / RB: Category  ·  B: Close"), TEXT("A: Bauen  ·  Y: Auf die Hotbar legen  ·  X auf der Hotbar: Leeren  ·  LB / RB: Kategorie  ·  B: Schließen") } },
+			{ TEXT("BuildMenu_HintHeld"),		{ TEXT("{0}: choose a hotbar slot and press A  ·  B: Cancel"), TEXT("{0}: Hotbar-Slot wählen und A drücken  ·  B: Abbrechen") } },
+			{ TEXT("Category_Production"),		{ TEXT("Production"),					TEXT("Produktion") } },
+			{ TEXT("Category_Logistics"),		{ TEXT("Logistics"),					TEXT("Logistik") } },
+			{ TEXT("Category_Power"),			{ TEXT("Power"),						TEXT("Strom") } },
+			{ TEXT("Category_Storage"),			{ TEXT("Storage"),						TEXT("Lager") } },
+			{ TEXT("Category_Structure"),		{ TEXT("Structure"),					TEXT("Struktur") } },
+			{ TEXT("Category_Misc"),			{ TEXT("Other"),						TEXT("Sonstiges") } },
 			{ TEXT("Notify_InventoryFull"),		{ TEXT("Inventory full"),				TEXT("Inventar voll") } },
 			{ TEXT("Notify_ItemsAdded"),		{ TEXT("+{0} {1}"),						TEXT("+{0} {1}") } },
 			{ TEXT("Notify_ItemsRemoved"),		{ TEXT("-{0} {1}"),						TEXT("-{0} {1}") } },

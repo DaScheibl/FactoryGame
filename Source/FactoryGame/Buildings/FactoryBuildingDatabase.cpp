@@ -88,6 +88,11 @@ int32 UFactoryBuildingDatabase::Validate() const
 			Report(BuildingId, TEXT("size must be at least 1 m in every direction"));
 		}
 
+		if (!FFactoryBuildingDefinition::GetMenuCategories().Contains(Building->Category))
+		{
+			Report(BuildingId, FString::Printf(TEXT("unknown category '%s', the build menu shows it under Misc"), *Building->Category.ToString()));
+		}
+
 		// Ports müssen nebeneinander auf die Kante passen (mindestens 1 m pro Port)
 		if (Building->Type == EFactoryBuildingType::Machine && (Building->Inputs > Building->SizeY || Building->Outputs > Building->SizeY))
 		{

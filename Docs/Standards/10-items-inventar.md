@@ -15,7 +15,7 @@ Gehört zu `SYS_Recipes`, `UI_Inventory`, `UI_HUD` und den Ausrüstungs-Items (`
 | Crafting | **Kein Handcrafting im Inventar**, nur an einer Werkbank (Gebäude) |
 | Items loswerden | **Recycler-Gebäude** (`BLD_Recycler`), kein Mülleimer-Slot im Inventar |
 | Stapelgrößen | **Nach Item-Klasse** (Tabelle unten) |
-| Hotbar | **10 Slots mit Bau-Shortcuts** (Tasten 1–9, 0), wie Satisfactory. Ein Gebäude-Slot startet das Platzieren ([13 Bauen](13-bauen.md)). Bis es das Baumenü gibt, bekommt eine leere Hotbar automatisch alle Gebäude. |
+| Hotbar | **10 Slots mit Bau-Shortcuts** (Tasten 1–9, 0), wie Satisfactory. Ein Gebäude-Slot startet das Platzieren ([13 Bauen](13-bauen.md)). Belegt wird sie im Baumenü (`Q`); neue Welten starten mit den ersten Gebäuden der Tabelle. |
 
 ## Stapel-Klassen
 

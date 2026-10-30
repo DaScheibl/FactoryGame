@@ -11,6 +11,7 @@ class UUserWidget;
 class UPauseMenuWidget;
 class UFactoryHUDWidget;
 class UFactoryInventoryWidget;
+class UFactoryBuildMenuWidget;
 class UFactoryBuildComponent;
 
 /**
@@ -19,8 +20,8 @@ class UFactoryBuildComponent;
  *  Overrides the Player Camera Manager class.
  *
  *  Zentrale Stelle für alles, was der Spieler im Spiel bedient:
- *  - erzeugt HUD, Pausemenü und Inventarfenster (C++-Widgets, kein Widget Blueprint)
- *  - bindet die festen Tasten: Esc/P = Pause, Tab/I = Inventar, 1-0 = Hotbar,
+ *  - erzeugt HUD, Pausemenü, Inventar und Baumenü (C++-Widgets, kein Widget Blueprint)
+ *  - bindet die festen Tasten: Esc/P = Pause, Tab/I = Inventar, Q = Baumenü, 1-0 = Hotbar,
  *    Bauen: Linksklick, Mausrad, R (Band-Modus), Rechtsklick, F (Abriss), E (Kiste leeren), siehe Docs/Standards/13-bauen.md
  *  - besitzt das Bauwerkzeug (UFactoryBuildComponent); ein Gebäude auf der Hotbar wählen startet das Platzieren
  *  - verwaltet die Hotbar (10 Slots mit Bau-Shortcuts), die mit der Welt gespeichert wird
@@ -83,6 +84,14 @@ protected:
 	UPROPERTY()
 	TObjectPtr<UFactoryInventoryWidget> InventoryWidget;
 
+	/** Build menu widget to spawn */
+	UPROPERTY(EditAnywhere, Category="UI")
+	TSubclassOf<UFactoryBuildMenuWidget> BuildMenuWidgetClass;
+
+	/** Pointer to the build menu widget */
+	UPROPERTY()
+	TObjectPtr<UFactoryBuildMenuWidget> BuildMenuWidget;
+
 	/** Build tool: placing, demolishing, emptying crates */
 	UPROPERTY(VisibleAnywhere, Category="Build")
 	TObjectPtr<UFactoryBuildComponent> BuildComponent;
@@ -132,7 +141,7 @@ protected:
 	/** Escape/P: leaves the build mode first, opens the pause menu otherwise */
 	void HandlePauseKey();
 
-	/** Puts every building that isn't on the hotbar yet into a free slot, as long as there is no build menu */
+	/** Puts the first buildings of the table on an empty hotbar (new worlds) */
 	void FillDefaultHotbar();
 
 public:
@@ -154,6 +163,18 @@ public:
 
 	/** Hides the inventory */
 	void CloseInventory();
+
+	/** Opens or closes the build menu */
+	void ToggleBuildMenu();
+
+	/** Shows the build menu, replacing the inventory */
+	void OpenBuildMenu();
+
+	/** Hides the build menu */
+	void CloseBuildMenu();
+
+	/** Closes the build menu and starts placing a building. Selects its hotbar slot if it has one */
+	void PickBuilding(FName BuildingId);
 
 	/** Adds items to the pawn's inventory and shows a notification. Returns the number of items that fit */
 	int32 GiveItems(FName ItemId, int32 Count);

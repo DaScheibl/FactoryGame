@@ -11,6 +11,7 @@
 #include "PauseMenuWidget.h"
 #include "FactoryHUDWidget.h"
 #include "FactoryInventoryWidget.h"
+#include "FactoryBuildMenuWidget.h"
 #include "FactoryInventoryComponent.h"
 #include "FactoryGameCharacter.h"
 #include "FactoryItemDatabase.h"
@@ -31,6 +32,7 @@ AFactoryGamePlayerController::AFactoryGamePlayerController()
 	PauseMenuWidgetClass = UPauseMenuWidget::StaticClass();
 	HUDWidgetClass = UFactoryHUDWidget::StaticClass();
 	InventoryWidgetClass = UFactoryInventoryWidget::StaticClass();
+	BuildMenuWidgetClass = UFactoryBuildMenuWidget::StaticClass();
 
 	// console commands for testing
 	CheatClass = UFactoryCheatManager::StaticClass();
@@ -52,7 +54,7 @@ void AFactoryGamePlayerController::BeginPlay()
 		SetShowMouseCursor(false);
 	}
 
-	// HUD auf Z-Order 0; Inventar (50) und Pausemenü (100) liegen darüber
+	// HUD auf Z-Order 0; Inventar und Baumenü (50) und Pausemenü (100) liegen darüber
 	if (IsLocalPlayerController() && HUDWidgetClass)
 	{
 		HUDWidget = CreateWidget<UFactoryHUDWidget>(this, HUDWidgetClass);
@@ -131,6 +133,10 @@ void AFactoryGamePlayerController::SetupInputComponent()
 	InputComponent->BindKey(EKeys::I, IE_Pressed, this, &AFactoryGamePlayerController::ToggleInventory);
 	InputComponent->BindKey(EKeys::Gamepad_Special_Left, IE_Pressed, this, &AFactoryGamePlayerController::ToggleInventory);
 
+	// build menu
+	InputComponent->BindKey(EKeys::Q, IE_Pressed, this, &AFactoryGamePlayerController::ToggleBuildMenu);
+	InputComponent->BindKey(EKeys::Gamepad_DPad_Up, IE_Pressed, this, &AFactoryGamePlayerController::ToggleBuildMenu);
+
 	// hotbar: number keys and d-pad
 	for (const FKey& Key : { EKeys::One, EKeys::Two, EKeys::Three, EKeys::Four, EKeys::Five, EKeys::Six, EKeys::Seven, EKeys::Eight, EKeys::Nine, EKeys::Zero })
 	{
@@ -207,10 +213,15 @@ void AFactoryGamePlayerController::OpenPauseMenu()
 		return;
 	}
 
-	// the pause menu replaces the inventory
+	// the pause menu replaces the inventory and the build menu
 	if (InventoryWidget && InventoryWidget->IsInViewport())
 	{
 		InventoryWidget->RemoveFromParent();
+	}
+
+	if (BuildMenuWidget && BuildMenuWidget->IsInViewport())
+	{
+		BuildMenuWidget->RemoveFromParent();
 	}
 
 	if (!PauseMenuWidget)
@@ -257,8 +268,9 @@ void AFactoryGamePlayerController::RestoreGameInput()
 	// nur in den Spielmodus zurück, wenn kein anderes Fenster mehr offen ist
 	const bool bPauseOpen = PauseMenuWidget && PauseMenuWidget->IsInViewport();
 	const bool bInventoryOpen = InventoryWidget && InventoryWidget->IsInViewport();
+	const bool bBuildMenuOpen = BuildMenuWidget && BuildMenuWidget->IsInViewport();
 
-	if (bPauseOpen || bInventoryOpen)
+	if (bPauseOpen || bInventoryOpen || bBuildMenuOpen)
 	{
 		return;
 	}
@@ -291,6 +303,12 @@ void AFactoryGamePlayerController::OpenInventory()
 	if (!FactoryCharacter)
 	{
 		return;
+	}
+
+	// the inventory replaces the build menu
+	if (BuildMenuWidget && BuildMenuWidget->IsInViewport())
+	{
+		BuildMenuWidget->RemoveFromParent();
 	}
 
 	// Widget beim ersten Öffnen erzeugen und danach wiederverwenden
@@ -328,6 +346,83 @@ void AFactoryGamePlayerController::CloseInventory()
 	}
 
 	RestoreGameInput();
+}
+
+void AFactoryGamePlayerController::ToggleBuildMenu()
+{
+	if (BuildMenuWidget && BuildMenuWidget->IsInViewport())
+	{
+		CloseBuildMenu();
+	}
+	else
+	{
+		OpenBuildMenu();
+	}
+}
+
+void AFactoryGamePlayerController::OpenBuildMenu()
+{
+	if (!IsLocalPlayerController() || !BuildMenuWidgetClass || (PauseMenuWidget && PauseMenuWidget->IsInViewport()))
+	{
+		return;
+	}
+
+	// the build menu replaces the inventory
+	if (InventoryWidget && InventoryWidget->IsInViewport())
+	{
+		InventoryWidget->RemoveFromParent();
+	}
+
+	if (!BuildMenuWidget)
+	{
+		BuildMenuWidget = CreateWidget<UFactoryBuildMenuWidget>(this, BuildMenuWidgetClass);
+
+		if (!BuildMenuWidget)
+		{
+			UE_LOG(LogFactoryGame, Error, TEXT("Could not spawn build menu widget."));
+			return;
+		}
+
+		BuildMenuWidget->OnCloseRequested.BindUObject(this, &AFactoryGamePlayerController::CloseBuildMenu);
+	}
+
+	BuildMenuWidget->AddToPlayerScreen(50);
+
+	// the game keeps running while the build menu is open (Docs/Standards/13-bauen.md)
+	FInputModeUIOnly InputMode;
+	InputMode.SetWidgetToFocus(BuildMenuWidget->TakeWidget());
+	SetInputMode(InputMode);
+	SetShowMouseCursor(true);
+
+	BuildMenuWidget->FocusCurrentEntry();
+}
+
+void AFactoryGamePlayerController::CloseBuildMenu()
+{
+	if (BuildMenuWidget)
+	{
+		BuildMenuWidget->RemoveFromParent();
+	}
+
+	RestoreGameInput();
+}
+
+void AFactoryGamePlayerController::PickBuilding(FName BuildingId)
+{
+	CloseBuildMenu();
+
+	// liegt das Gebäude auf der Hotbar, wird sein Slot mit ausgewählt, sonst keiner
+	SelectedHotbarSlot = HotbarSlots.IndexOfByKey(BuildingId);
+
+	if (BuildComponent)
+	{
+		BuildComponent->BeginPlacing(BuildingId);
+	}
+
+	if (HUDWidget)
+	{
+		HUDWidget->RebuildMenu();
+	}
 }
 
 int32 AFactoryGamePlayerController::GiveItems(FName ItemId, int32 Count)
@@ -415,7 +510,7 @@ void AFactoryGamePlayerController::SelectHotbarSlot(int32 Index)
 		return;
 	}
 
-	// Hinweis für leere Slots, solange es noch kein Baumenü gibt, das sie füllt.
+	// Hinweis für leere Slots: sie werden im Baumenü belegt.
 	// (Index + 1) % 10 ergibt die Tastenbeschriftung: Slot 10 liegt auf der 0.
 	if (SelectedHotbarSlot != INDEX_NONE && HotbarSlots[SelectedHotbarSlot].IsNone())
 	{
@@ -550,9 +645,11 @@ void AFactoryGamePlayerController::HandleInteract()
 
 void AFactoryGamePlayerController::FillDefaultHotbar()
 {
-	// Übergangslösung bis zum Baumenü (UI_BuildMenu): jedes Gebäude der Tabelle, das noch nicht auf der
-	// Hotbar liegt, kommt in den ersten freien Slot (so tauchen neue Gebäude auch in alten Welten auf)
-	if (const UFactoryBuildingDatabase* Buildings = UFactoryBuildingDatabase::Get(this))
+	// Startbelegung für neue Welten: die ersten Gebäude der Tabelle. Danach belegt der Spieler die Hotbar
+	// im Baumenü (Q) selbst, eine belegte Hotbar wird nicht mehr angefasst
+	const bool bHotbarEmpty = !HotbarSlots.ContainsByPredicate([](const FName& Shortcut) { return !Shortcut.IsNone(); });
+
+	if (const UFactoryBuildingDatabase* Buildings = bHotbarEmpty ? UFactoryBuildingDatabase::Get(this) : nullptr)
 	{
 		for (const FName& Id : Buildings->GetAllBuildingIds())
 		{

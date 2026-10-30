@@ -124,4 +124,13 @@ struct FACTORYGAME_API FFactoryBuildingDefinition : public FTableRowBase
 
 	/** Returns the display name in the current UI language */
 	FText GetDisplayName() const;
+
+	/** Returns the build menu category: the Category column if it is one of GetMenuCategories(), Misc otherwise */
+	FName GetMenuCategory() const;
+
+	/** The fixed build menu categories in menu order: Production, Logistics, Power, Storage, Structure, Misc */
+	static const TArray<FName>& GetMenuCategories();
+
+	/** Returns the display name of a build menu category */
+	static FText GetCategoryDisplayName(FName MenuCategory);
 };

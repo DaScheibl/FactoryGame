@@ -6,7 +6,7 @@ Das Bausystem kommt in drei Schritten:
 
 1. **Gebäude platzieren** (Hologramm, Drehen, Kosten, Abriss, Speichern) ✅ im Spiel getestet
 2. **Bänder bauen** (zwischen Ports ziehen, Modi, Bandstützen) ✅ im Spiel getestet
-3. **Baumenü** (`UI_BuildMenu`, Kategorien & Suche)
+3. **Baumenü** (`UI_BuildMenu`, Kategorien & Suche) – gebaut, Test im Spiel offen
 
 ## Entscheidungen
 
@@ -46,13 +46,14 @@ Das Bausystem kommt in drei Schritten:
 
 Jeder Port ist ein **schwarzer Anschlusskasten** in der Wand (1,1 m breit, 0,3–1,5 m hoch, Band dockt auf 1 m an). Darüber ragt ein flacher **Pfeil in Fluss-Richtung** 0,6 m aus der Wand: **blau = Eingang** (zeigt in die Maschine), **orange = Ausgang** (zeigt heraus). Das Hologramm zeigt dieselben Kästen und Pfeile.
 - **Abriss:** Eine Stütze reißt die Bänder an ihr mit ab (alles wird erstattet). Eine Maschine lässt ihre Bänder stehen, deren Ende ist dann offen.
-- Bänder prüfen noch **keine Kollision** mit Gebäuden auf ihrer Strecke, nur an den Enden.
+- **Kollision:** Läuft ein Band durch eine Maschine, eine Kiste, den Boden oder einen Felsen, wird es rot („Etwas ist im Weg“). Andere Bänder und Stützen dürfen gekreuzt werden. Die ersten und letzten 75 cm werden nicht geprüft, dort liegt das Band am Port bzw. auf der Stütze an.
 
 ## Steuerung (Schema A)
 
 | Aktion | Maus/Tastatur | Gamepad |
 |---|---|---|
-| Gebäude wählen | `1`–`0` (Hotbar), später `Q` = Baumenü | Steuerkreuz links/rechts |
+| Gebäude wählen | `1`–`0` (Hotbar) | Steuerkreuz links/rechts |
+| Baumenü auf/zu | `Q` | Steuerkreuz hoch |
 | Platzieren | Linksklick | RT |
 | Drehen | Mausrad (90°), `Strg` + Mausrad (15°) | LB / RB |
 | Modus wechseln (Bänder) | `R` | Y |
@@ -63,6 +64,22 @@ Jeder Port ist ein **schwarzer Anschlusskasten** in der Wand (1,1 m breit, 0,3�
 
 `E` / Gamepad X ist die allgemeine Interaktions-Taste (bisher Kisten, später auch Maschinen-Fenster).
 
+## Baumenü (Schritt 3)
+
+| Thema | Entscheidung |
+|---|---|
+| Aussehen | **Vollbild-Fenster**, das Spiel läuft weiter. Oben Titel + Suchfeld, links die Kategorien, rechts die Kacheln (5 pro Reihe), darunter Details zum markierten Gebäude und die Hotbar |
+| Auswahl | **Klick = Menü zu, Gebäude ist sofort im Bau-Werkzeug.** Kacheln lassen sich auf die Hotbar ziehen, oder man drückt `1`–`0`, während die Maus über einer Kachel ist |
+| Kategorien | **6 feste:** Produktion, Logistik, Strom, Lager, Struktur, Sonstiges. Leere Kategorien sind ausgeblendet. Ein unbekannter Wert in der Spalte `Category` landet unter Sonstiges (mit Warnung im Log) |
+
+- **Suche** über alle Kategorien, findet deutsche und englische Namen (Groß-/Kleinschreibung egal). Enter springt auf den ersten Treffer. Ein Klick auf eine Kategorie beendet die Suche.
+- **Details:** Name, Kategorie, Tier, Größe, Ports (`1 rein → 1 raus`) und Kosten als `hast / brauchst` (rot, wenn es fehlt). Bänder zeigen die Kosten pro 2 m.
+- **Hotbar im Menü:** Ziehen von Slot zu Slot tauscht die beiden, Rechtsklick leert einen Slot, Klick auf einen belegten Slot wählt das Gebäude. Jedes Gebäude liegt höchstens einmal auf der Hotbar.
+- Neue Welten starten mit den ersten Gebäuden der Tabelle auf der Hotbar, danach wird sie nicht mehr automatisch gefüllt.
+- Gesperrte Gebäude (Tier) gibt es noch nicht, alle Gebäude sind sichtbar. Das kommt mit der Forschung.
+
+> ✏️ **Entwurf, von dir freizugeben:** Gamepad im Baumenü: **Steuerkreuz hoch** öffnet, **LB / RB** = Kategorie, **A** = bauen, **Y** = Gebäude aufnehmen und mit **A** auf einen Hotbar-Slot legen, **X** auf einem Hotbar-Slot = leeren, **B** = zurück/schließen.
+
 ## Gebäude-Tabelle
 
 **Datei:** `Content/FactoryGame/Core/Data/DT_Buildings.csv`. Gleiches Prinzip wie Items und Rezepte: wird beim Start gelesen, im Spiel mit `ReloadBuildings` neu laden.
@@ -72,7 +89,7 @@ Jeder Port ist ein **schwarzer Anschlusskasten** in der Wand (1,1 m breit, 0,3�
 | `---` | Gebäude-ID (`BLD_…`) |
 | `NameEN` / `NameDE` | Anzeigename |
 | `Tier` | 0–8, Freischalt-Tier (wird noch nicht geprüft) |
-| `Category` | Kategorie fürs Baumenü, z. B. `Production`, `Logistics` |
+| `Category` | Kategorie fürs Baumenü: `Production`, `Logistics`, `Power`, `Storage`, `Structure` oder `Misc` |
 | `Type` | `Machine` (Gebäude), `Belt` (Kosten gelten pro angefangene 2 m) oder `Pole` |
 | `SizeX` | Länge in Fluss-Richtung (hinten → vorn) in m |
 | `SizeY` | Breite in m |
@@ -143,4 +160,6 @@ Alle Befehle auf einen Blick: [Cheatsheet](../Cheatsheet.md)
 | `AFactoryCrate` (Abriss-Kiste) | `Source/FactoryGame/Buildings/FactoryCrate.h` |
 | `FactoryBeltPath` (Kurven der drei Band-Modi, Grenzen) | `Source/FactoryGame/Buildings/FactoryBeltPath.h` |
 | `AFactoryBeltPole` (Bandstütze) | `Source/FactoryGame/Buildings/FactoryBeltPole.h` |
+| `UFactoryBuildMenuWidget` (Baumenü) | `Source/FactoryGame/UI/FactoryBuildMenuWidget.h` |
+| `UFactoryBuildMenuEntryWidget` (Kachel / Hotbar-Slot im Baumenü) | `Source/FactoryGame/UI/FactoryBuildMenuEntryWidget.h` |
 | `AFactoryBelt` (Band: Kurve, Anschlüsse, Optik) | `Source/FactoryGame/Buildings/FactoryBelt.h` |

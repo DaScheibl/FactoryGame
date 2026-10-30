@@ -325,6 +325,87 @@ bool UFactoryBuildComponent::IsFree(const FVector& Center, const FQuat& Rotation
 	return !Overlaps.ContainsByPredicate([](const FOverlapResult& Overlap) { return IsFactoryActor(Overlap.GetActor()); });
 }
 
+bool UFactoryBuildComponent::IsBeltPathFree(const FFactoryBeltPath& Path) const
+{
+	// die Enden sitzen an Port-Kästen bzw. auf Stützen, dort darf das Band anliegen
+	constexpr double EndMargin = 75.0;
+	constexpr double BoxSpacing = 50.0;
+	constexpr int32 CollisionSamplesPerSegment = 16;
+
+	// Bandkörper unter der Oberfläche, etwas schmaler als das Band (80 × 10 cm), damit Nachbarn anliegen dürfen
+	const FVector HalfSize(BoxSpacing * 0.5, 36.0, 4.0);
+
+	UWorld* World = GetWorld();
+
+	if (!World || Path.Points.Num() < 2)
+	{
+		return true;
+	}
+
+	TArray<FVector> Samples;
+
+	for (int32 Segment = 0; Segment + 1 < Path.Points.Num(); ++Segment)
+	{
+		for (int32 Step = (Segment == 0 ? 0 : 1); Step <= CollisionSamplesPerSegment; ++Step)
+		{
+			Samples.Add(Path.Evaluate(Segment + double(Step) / CollisionSamplesPerSegment));
+		}
+	}
+
+	double TotalLength = 0.0;
+
+	for (int32 Index = 1; Index < Samples.Num(); ++Index)
+	{
+		TotalLength += FVector::Dist(Samples[Index - 1], Samples[Index]);
+	}
+
+	FCollisionQueryParams Params(TEXT("BeltPathOverlap"), false);
+
+	if (Hologram)
+	{
+		Params.AddIgnoredActor(Hologram);
+	}
+
+	// alle 50 cm eine Box entlang der Kurve, gedreht in Bandrichtung (mit Steigung)
+	double Walked = 0.0;
+	double NextBox = EndMargin;
+
+	for (int32 Index = 1; Index < Samples.Num() && NextBox <= TotalLength - EndMargin; ++Index)
+	{
+		const FVector A = Samples[Index - 1];
+		const FVector B = Samples[Index];
+		const double StepLength = FVector::Dist(A, B);
+
+		while (StepLength > UE_KINDA_SMALL_NUMBER && NextBox <= Walked + StepLength && NextBox <= TotalLength - EndMargin)
+		{
+			const FVector Direction = (B - A) / StepLength;
+			const FVector Center = FMath::Lerp(A, B, (NextBox - Walked) / StepLength) - FVector(0.0, 0.0, HalfSize.Z + 1.0);
+			const FQuat Rotation = Direction.Rotation().Quaternion();
+
+			TArray<FOverlapResult> Overlaps;
+			World->OverlapMultiByObjectType(Overlaps, Center, Rotation, GetBlockingObjectTypes(), FCollisionShape::MakeBox(HalfSize), Params);
+
+			// Bänder und Stützen dürfen gekreuzt werden, der Spieler stört auch nicht
+			const bool bBlocked = Overlaps.ContainsByPredicate([](const FOverlapResult& Overlap)
+			{
+				const AActor* Actor = Overlap.GetActor();
+				return !(Actor && (Actor->IsA<AFactoryBelt>() || Actor->IsA<AFactoryBeltPole>() || Actor->IsA<APawn>()));
+			});
+
+			if (bBlocked)
+			{
+				return false;
+			}
+
+			NextBox += BoxSpacing;
+		}
+
+		Walked += StepLength;
+	}
+
+	return true;
+}
+
 void UFactoryBuildComponent::UpdatePlacement()
 {
 	const FFactoryBuildingDefinition* Building = GetBuilding();
@@ -773,6 +854,11 @@ void UFactoryBuildComponent::UpdateBelt()
 	{
 		Problem = FactoryBeltPath::Build(BeltMode, From.Location, From.Direction, To.Location, To.Direction, BeltPath);
 		Error = GetPathProblemText(Problem);
+
+		if (Error.IsEmpty() && !IsBeltPathFree(BeltPath))
+		{
+			Error = FactoryLoc::Get(TEXT("Build_Error_Blocked"));
+		}
 
 		AddStacks(Costs, AFactoryBelt::GetBuildCostsForLength(this, BeltPath.Length, 1));
 		AddNewPole(From, BeltPath.StartDirection);

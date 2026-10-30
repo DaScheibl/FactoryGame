@@ -53,3 +53,20 @@ FText FFactoryBuildingDefinition::GetDisplayName() const
 	// fehlt die deutsche Übersetzung, wird der englische Name angezeigt
 	return FText::FromString(FactoryLoc::IsGerman() && !NameDE.IsEmpty() ? NameDE : NameEN);
 }
+
+FName FFactoryBuildingDefinition::GetMenuCategory() const
+{
+	return GetMenuCategories().Contains(Category) ? Category : FName(TEXT("Misc"));
+}
+
+const TArray<FName>& FFactoryBuildingDefinition::GetMenuCategories()
+{
+	// feste Reiter des Baumenüs (Docs/Standards/13-bauen.md), unbekannte Werte landen unter Misc
+	static const TArray<FName> Categories = { TEXT("Production"), TEXT("Logistics"), TEXT("Power"), TEXT("Storage"), TEXT("Structure"), TEXT("Misc") };
+	return Categories;
+}
+
+FText FFactoryBuildingDefinition::GetCategoryDisplayName(FName MenuCategory)
+{
+	return FactoryLoc::Get(FName(*FString::Printf(TEXT("Category_%s"), *MenuCategory.ToString())));
+}

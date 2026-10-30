@@ -188,6 +188,12 @@ private:
 	/** Returns true if nothing (other buildings, belts, the player) is in a box. Used for poles */
 	bool IsFree(const FVector& Center, const FQuat& Rotation, const FVector& HalfSize) const;
 
+	/**
+	 *  Returns true if the belt path doesn't run through a machine, crate, the ground or a rock.
+	 *  Other belts and poles may be crossed, the first and last 75 cm are skipped because they touch the ends
+	 */
+	bool IsBeltPathFree(const FFactoryBeltPath& Path) const;
+
 	/** Takes the costs from the inventory and shows "-N item" */
 	void PayCosts(const TArray<FFactoryItemStack>& Costs) const;
 
