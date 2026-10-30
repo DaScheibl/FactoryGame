@@ -10,6 +10,7 @@
 #include "FactoryCrate.h"
 #include "FactoryResourceNode.h"
 #include "FactoryHub.h"
+#include "FactoryFoundation.h"
 #include "FactoryGamePlayerController.h"
 #include "FactoryGameCharacter.h"
 #include "FactoryInventoryComponent.h"
@@ -32,7 +33,7 @@ namespace
 	// Gebäude-Actors, die sich nie überlappen dürfen
 	bool IsFactoryActor(const AActor* Actor)
 	{
-		return Actor && (Actor->IsA<AFactoryMachine>() || Actor->IsA<AFactoryBelt>() || Actor->IsA<AFactoryBeltPole>() || Actor->IsA<AFactoryCrate>() || Actor->IsA<AFactoryHub>() || Actor->IsA<APawn>());
+		return Actor && (Actor->IsA<AFactoryMachine>() || Actor->IsA<AFactoryBelt>() || Actor->IsA<AFactoryBeltPole>() || Actor->IsA<AFactoryCrate>() || Actor->IsA<AFactoryHub>() || Actor->IsA<AFactoryFoundation>() || Actor->IsA<APawn>());
 	}
 
 	// gleiche Items zusammenfassen, damit die Meldungen "+10 Eisenplatte" statt zweimal "+5" zeigen
@@ -149,6 +150,7 @@ void UFactoryBuildComponent::TickComponent(float DeltaTime, ELevelTick TickType,
 	case EFactoryBuildMode::Place:		UpdatePlacement(); break;
 	case EFactoryBuildMode::Pole:		UpdatePole(); break;
 	case EFactoryBuildMode::Belt:		UpdateBelt(); break;
+	case EFactoryBuildMode::Foundation:	UpdateFoundation(); break;
 	case EFactoryBuildMode::Demolish:	UpdateDemolish(DeltaTime); break;
 	default:							UpdateIdle(DeltaTime); break;
 	}
@@ -202,6 +204,12 @@ void UFactoryBuildComponent::BeginPlacing(FName NewBuildingId)
 		bHasBeltStart = false;
 		break;
 
+	case EFactoryBuildingType::Foundation:
+	case EFactoryBuildingType::Ramp:
+		Mode = EFactoryBuildMode::Foundation;
+		bFoundationDrag = false;
+		break;
+
 	default:
 		Mode = EFactoryBuildMode::Place;
 		Hologram->SetBuilding(*Building);
@@ -226,6 +234,8 @@ void UFactoryBuildComponent::StopBuilding()
 	Mode = EFactoryBuildMode::None;
 	BuildingId = NAME_None;
 	bHasBeltStart = false;
+	bFoundationDrag = false;
+	FoundationCells.Reset();
 	bHoldingPrimary = false;
 	HoldTime = 0.0f;
 	SetDemolishTarget(nullptr);
@@ -241,10 +251,16 @@ void UFactoryBuildComponent::StopBuilding()
 
 bool UFactoryBuildComponent::Cancel()
 {
-	// beim Band zuerst nur den gewählten Start verwerfen
+	// beim Band zuerst nur den gewählten Start verwerfen, beim Fundament das Ziehen
 	if (Mode == EFactoryBuildMode::Belt && bHasBeltStart)
 	{
 		bHasBeltStart = false;
+		return false;
+	}
+
+	if (Mode == EFactoryBuildMode::Foundation && bFoundationDrag)
+	{
+		bFoundationDrag = false;
 		return false;
 	}
 
@@ -260,6 +276,15 @@ void UFactoryBuildComponent::PrimaryPressed()
 	case EFactoryBuildMode::Pole:		PlacePole(); break;
 	case EFactoryBuildMode::Belt:		PlaceBelt(); break;
 
+	// Fundamente bauen erst beim Loslassen; bis dahin spannt Ziehen eine Fläche auf
+	case EFactoryBuildMode::Foundation:
+		if (FoundationCells.Num() > 0)
+		{
+			bFoundationDrag = true;
+			FoundationAnchor = FoundationCells[0];
+		}
+		break;
+
 	case EFactoryBuildMode::Demolish:
 		bHoldingPrimary = true;
 		HoldTime = 0.0f;
@@ -272,6 +297,13 @@ void UFactoryBuildComponent::PrimaryPressed()
 
 void UFactoryBuildComponent::PrimaryReleased()
 {
+	if (Mode == EFactoryBuildMode::Foundation && bFoundationDrag)
+	{
+		UpdateFoundation();
+		PlaceFoundations();
+		bFoundationDrag = false;
+	}
+
 	bHoldingPrimary = false;
 	HoldTime = 0.0f;
 }
@@ -291,7 +323,7 @@ void UFactoryBuildComponent::Scroll(int32 Direction, bool bFine)
 		return;
 	}
 
-	if (Mode == EFactoryBuildMode::Place || Mode == EFactoryBuildMode::Pole)
+	if (Mode == EFactoryBuildMode::Place || Mode == EFactoryBuildMode::Pole || (Mode == EFactoryBuildMode::Foundation && !bFoundationDrag))
 	{
 		PlaceYaw = FRotator::NormalizeAxis(PlaceYaw + Direction * (bFine ? 15.0 : 90.0));
 	}
@@ -453,19 +485,32 @@ void UFactoryBuildComponent::UpdatePlacement()
 	Hologram->SetActorHiddenInGame(false);
 
 	const FVector Size = Building->GetSize();
-	const FQuat Rotation = FRotator(0.0, PlaceYaw, 0.0).Quaternion();
+
+	// Auf einem Fundament gelten dessen 1-m-Raster und Drehung (in 90°-Schritten dazu), sonst das Weltraster
+	const AFactoryFoundation* Floor = Cast<AFactoryFoundation>(Hit.GetActor());
+
+	if (Floor && (Floor->IsRamp() || Hit.ImpactNormal.Z < 0.7))
+	{
+		Floor = nullptr;
+	}
+
+	const double GridYaw = Floor ? Floor->GetActorRotation().Yaw : 0.0;
+	const double RelativeYaw = Floor ? FMath::GridSnap(FRotator::NormalizeAxis(PlaceYaw - GridYaw), 90.0) : PlaceYaw;
+	const FQuat Rotation = FRotator(0.0, GridYaw + RelativeYaw, 0.0).Quaternion();
+	const FTransform Grid(FRotator(0.0, GridYaw, 0.0), Floor ? Floor->GetActorLocation() : FVector::ZeroVector);
 
 	// aufs 1-m-Raster rasten. Bei ungerader Kantenlänge liegt die Mitte auf einer Zellmitte statt auf einer
 	// Rasterlinie, damit die Kanten trotzdem auf dem Raster liegen (nur bei 90°-Drehungen sinnvoll)
-	FVector Location = Hit.ImpactPoint;
-	const bool bRightAngle = FMath::IsNearlyZero(FMath::Fmod(FMath::Abs(PlaceYaw), 90.0), 0.01);
-	const bool bSideways = bRightAngle && FMath::IsNearlyEqual(FMath::Abs(FMath::Fmod(PlaceYaw, 180.0)), 90.0, 0.01);
+	FVector Location = Grid.InverseTransformPositionNoScale(Hit.ImpactPoint);
+	const bool bRightAngle = FMath::IsNearlyZero(FMath::Fmod(FMath::Abs(RelativeYaw), 90.0), 0.01);
+	const bool bSideways = bRightAngle && FMath::IsNearlyEqual(FMath::Abs(FMath::Fmod(RelativeYaw, 180.0)), 90.0, 0.01);
 	const int32 WorldSizeX = bSideways ? Building->SizeY : Building->SizeX;
 	const int32 WorldSizeY = bSideways ? Building->SizeX : Building->SizeY;
 	const double OffsetX = bRightAngle && WorldSizeX % 2 == 1 ? 50.0 : 0.0;
 	const double OffsetY = bRightAngle && WorldSizeY % 2 == 1 ? 50.0 : 0.0;
 	Location.X = FMath::GridSnap(Location.X - OffsetX, 100.0) + OffsetX;
 	Location.Y = FMath::GridSnap(Location.Y - OffsetY, 100.0) + OffsetY;
+	Location = Grid.TransformPositionNoScale(Location);
 
 	// Bohrer rasten mittig auf ein freies Vorkommen in der Nähe des Fadenkreuzes statt aufs Raster
 	AFactoryResourceNode* Node = nullptr;
@@ -603,6 +648,200 @@ bool UFactoryBuildComponent::PlaceBuilding()
 			TArray<FFactoryItemStack> Ignored;
 			Machine->GetProduction()->SetRecipe(Node->GetMiningRecipe(), Ignored);
 			Machine->GetProduction()->SetSpeedPercent(AFactoryResourceNode::GetSpeedPercent(Node->GetPurity()));
+		}
+	}
+
+	return true;
+}
+
+FTransform UFactoryBuildComponent::ComputeFoundationCell(const FHitResult& Hit, const FFactoryBuildingDefinition& Building) const
+{
+	const double Tile = AFactoryFoundation::TileSize;
+	const double NewHeight = Building.GetSize().Z;
+
+	// Nachbar: das getroffene Fundament, sonst das nächste in der Nähe des Fadenkreuzes
+	const AFactoryFoundation* Neighbor = Cast<AFactoryFoundation>(Hit.GetActor());
+
+	if (!Neighbor)
+	{
+		double BestDistance = Tile * 1.25;
+
+		for (TActorIterator<AFactoryFoundation> It(GetWorld()); It; ++It)
+		{
+			const double Distance = FVector::Dist2D(It->GetActorLocation(), Hit.ImpactPoint);
+
+			if (Distance < BestDistance)
+			{
+				Neighbor = *It;
+				BestDistance = Distance;
+			}
+		}
+	}
+
+	// frei: 1-m-Raster, Drehung mit dem Mausrad, Unterkante auf dem Boden
+	if (!Neighbor)
+	{
+		const FVector Location(FMath::GridSnap(Hit.ImpactPoint.X, 100.0), FMath::GridSnap(Hit.ImpactPoint.Y, 100.0), Hit.ImpactPoint.Z);
+		return FTransform(FRotator(0.0, PlaceYaw, 0.0), Location);
+	}
+
+	// am Nachbarn: im 8-m-Raster des Nachbarn, Oberkanten bündig. Zielt man auf dessen Oberseite, kommt das neue obendrauf
+	const FTransform NeighborTransform = Neighbor->GetActorTransform();
+	const FVector Local = NeighborTransform.InverseTransformPositionNoScale(Hit.ImpactPoint);
+	int32 CellX = FMath::RoundToInt32(Local.X / Tile);
+	int32 CellY = FMath::RoundToInt32(Local.Y / Tile);
+	bool bStack = false;
+
+	if (CellX == 0 && CellY == 0)
+	{
+		if (Hit.GetActor() == Neighbor && Hit.ImpactNormal.Z > 0.7 && !Neighbor->IsRamp())
+		{
+			bStack = true;
+		}
+		else if (FMath::Abs(Local.X) >= FMath::Abs(Local.Y))
+		{
+			CellX = Local.X >= 0.0 ? 1 : -1;
+		}
+		else
+		{
+			CellY = Local.Y >= 0.0 ? 1 : -1;
+		}
+	}
+
+	// Rampen lassen sich am Nachbarn in 90°-Schritten drehen
+	const double RelativeYaw = FMath::GridSnap(FRotator::NormalizeAxis(PlaceYaw - NeighborTransform.Rotator().Yaw), 90.0);
+	const FQuat Rotation = NeighborTransform.GetRotation() * FRotator(0.0, RelativeYaw, 0.0).Quaternion();
+
+	FVector Location = NeighborTransform.TransformPositionNoScale(FVector(CellX * Tile, CellY * Tile, 0.0));
+	Location.Z = bStack ? Neighbor->GetTopZ() : Neighbor->GetTopZ() - NewHeight;
+	return FTransform(Rotation, Location);
+}
+
+void UFactoryBuildComponent::UpdateFoundation()
+{
+	const FFactoryBuildingDefinition* Building = GetBuilding();
+
+	if (!Building || !Hologram)
+	{
+		StopBuilding();
+		return;
+	}
+
+	const FText Controls = FactoryLoc::Get(TEXT("Build_Controls_Foundation"));
+	bPlaceValid = false;
+	FoundationCells.Reset();
+
+	FHitResult Hit;
+
+	if (!TraceView(BuildRange, Hit))
+	{
+		Hologram->SetActorHiddenInGame(true);
+		TArray<TPair<FText, bool>> CostLines;
+		CheckCosts(Building->GetCosts(), CostLines);
+		ShowPanel(Building->GetDisplayName(), CostLines, FactoryLoc::Get(TEXT("Build_Error_NoGround")), Controls);
+		return;
+	}
+
+	const double Tile = AFactoryFoundation::TileSize;
+
+	if (bFoundationDrag)
+	{
+		// Fläche vom ersten Fundament bis zum Fadenkreuz, im Raster des ersten (max. 10 × 10)
+		constexpr int32 MaxSteps = 9;
+		const FVector Local = FoundationAnchor.InverseTransformPositionNoScale(Hit.ImpactPoint);
+		const int32 StepsX = FMath::Clamp(FMath::RoundToInt32(Local.X / Tile), -MaxSteps, MaxSteps);
+		const int32 StepsY = FMath::Clamp(FMath::RoundToInt32(Local.Y / Tile), -MaxSteps, MaxSteps);
+
+		for (int32 X = 0; X <= FMath::Abs(StepsX); ++X)
+		{
+			for (int32 Y = 0; Y <= FMath::Abs(StepsY); ++Y)
+			{
+				const FVector Offset(X * Tile * FMath::Sign(double(StepsX)), Y * Tile * FMath::Sign(double(StepsY)), 0.0);
+				FoundationCells.Emplace(FoundationAnchor.GetRotation(), FoundationAnchor.TransformPositionNoScale(Offset));
+			}
+		}
+	}
+	else
+	{
+		FoundationCells.Add(ComputeFoundationCell(Hit, *Building));
+	}
+
+	// Kosten für alle Zellen zusammen
+	TArray<FFactoryItemStack> Costs;
+
+	for (int32 Index = 0; Index < FoundationCells.Num(); ++Index)
+	{
+		AddStacks(Costs, Building->GetCosts());
+	}
+
+	TArray<TPair<FText, bool>> CostLines;
+	const bool bEnoughMaterial = CheckCosts(Costs, CostLines);
+
+	// keine Maschine, kein Band, kein Fundament im Weg (5 cm Luft, damit Nachbarn bündig anliegen); Gelände ist egal
+	const FVector Size = Building->GetSize();
+	const FVector HalfSize = Size * 0.5 - FVector(5.0);
+	bool bBlocked = false;
+	TArray<FTransform> Boxes;
+	const TArray<FTransform> Pieces = AFactoryFoundation::GetPieces(*Building);
+
+	for (const FTransform& Cell : FoundationCells)
+	{
+		bBlocked |= !IsFree(Cell.TransformPositionNoScale(FVector(0.0, 0.0, Size.Z * 0.5)), Cell.GetRotation(), HalfSize);
+
+		for (const FTransform& Piece : Pieces)
+		{
+			Boxes.Add(Piece * Cell);
+		}
+	}
+
+	Hologram->SetActorTransform(FTransform::Identity);
+	Hologram->SetActorHiddenInGame(false);
+	Hologram->SetBoxes(Boxes);
+
+	FText Error;
+
+	if (bBlocked)
+	{
+		Error = FactoryLoc::Get(TEXT("Build_Error_Blocked"));
+	}
+	else if (!bEnoughMaterial)
+	{
+		Error = FactoryLoc::Get(TEXT("Build_Error_Materials"));
+	}
+
+	bPlaceValid = Error.IsEmpty();
+	Hologram->SetValid(bPlaceValid);
+
+	const FText Title = FoundationCells.Num() > 1 ? FactoryLoc::Format(TEXT("Build_FoundationCount"), { FoundationCells.Num(), Building->GetDisplayName() }) : Building->GetDisplayName();
+	ShowPanel(Title, CostLines, Error, Controls);
+}
+
+bool UFactoryBuildComponent::PlaceFoundations()
+{
+	const FFactoryBuildingDefinition* Building = GetBuilding();
+
+	if (!Building || !bPlaceValid || FoundationCells.Num() == 0)
+	{
+		return false;
+	}
+
+	TArray<FFactoryItemStack> Costs;
+
+	for (int32 Index = 0; Index < FoundationCells.Num(); ++Index)
+	{
+		AddStacks(Costs, Building->GetCosts());
+	}
+
+	PayCosts(Costs);
+
+	FActorSpawnParameters SpawnParams;
+	SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
+
+	for (const FTransform& Cell : FoundationCells)
+	{
+		if (AFactoryFoundation* Foundation = GetWorld()->SpawnActor<AFactoryFoundation>(Cell.GetLocation(), Cell.Rotator(), SpawnParams))
+		{
+			Foundation->InitBuilding(BuildingId);
 		}
 	}
 
@@ -1071,7 +1310,7 @@ void UFactoryBuildComponent::UpdateDemolish(float DeltaTime)
 	FHitResult Hit;
 	AActor* Target = nullptr;
 
-	if (TraceView(BuildRange, Hit) && (Hit.GetActor() && (Hit.GetActor()->IsA<AFactoryMachine>() || Hit.GetActor()->IsA<AFactoryBelt>() || Hit.GetActor()->IsA<AFactoryBeltPole>())))
+	if (TraceView(BuildRange, Hit) && (Hit.GetActor() && (Hit.GetActor()->IsA<AFactoryMachine>() || Hit.GetActor()->IsA<AFactoryBelt>() || Hit.GetActor()->IsA<AFactoryBeltPole>() || Hit.GetActor()->IsA<AFactoryFoundation>())))
 	{
 		Target = Hit.GetActor();
 	}
@@ -1101,6 +1340,10 @@ void UFactoryBuildComponent::UpdateDemolish(float DeltaTime)
 	else if (const AFactoryBelt* Belt = Cast<AFactoryBelt>(Target))
 	{
 		TargetName = FactoryLoc::Format(TEXT("Belt_Name"), { Belt->GetBelt()->GetTier() });
+	}
+	else if (const AFactoryFoundation* Foundation = Cast<AFactoryFoundation>(Target))
+	{
+		TargetName = Buildings ? Buildings->GetDisplayName(Foundation->GetBuildingId()) : FText::GetEmpty();
 	}
 	else
 	{
@@ -1175,6 +1418,14 @@ void UFactoryBuildComponent::Demolish(AActor* Target)
 	{
 		RefundBelt(Belt);
 	}
+	else if (AFactoryFoundation* Foundation = Cast<AFactoryFoundation>(Target))
+	{
+		// was darauf steht, bleibt stehen (Entwurf, siehe 13-bauen.md)
+		if (const FFactoryBuildingDefinition* Building = Buildings ? Buildings->FindBuilding(Foundation->GetBuildingId()) : nullptr)
+		{
+			AddStacks(Refund, Building->GetCosts());
+		}
+	}
 	else if (AFactoryBeltPole* Pole = Cast<AFactoryBeltPole>(Target))
 	{
 		if (const FFactoryBuildingDefinition* PoleBuilding = Buildings ? Buildings->FindBuilding(PoleId) : nullptr)
@@ -1233,6 +1484,10 @@ void UFactoryBuildComponent::SetDemolishTarget(AActor* NewTarget)
 		else if (AFactoryBelt* Belt = Cast<AFactoryBelt>(Actor))
 		{
 			Belt->SetDemolishHighlight(bOn);
+		}
+		else if (AFactoryFoundation* Foundation = Cast<AFactoryFoundation>(Actor))
+		{
+			Foundation->SetDemolishHighlight(bOn);
 		}
 		else if (AFactoryBeltPole* Pole = Cast<AFactoryBeltPole>(Actor))
 		{

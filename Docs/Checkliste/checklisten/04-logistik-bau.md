@@ -72,7 +72,7 @@ Legende: `PT` Prototyp · `VS` Vertical Slice · `EA` Early Access · `1.0` Rele
 
 ## Bauteile & Struktur
 
-- [ ] **Fundamente (1, 2, 4 m) + Rampen** · `STR_Foundation` · `PT`
+- [ ] **Fundamente (1, 2, 4 m) + Rampen** · `STR_Foundation` · `PT` · [Doku](../../Standards/13-bauen.md#fundamente) — _Funktion steht (Graybox, Einrasten an Nachbarn, Ziehen bis 10 × 10, Maschinen auf Fundament-Raster, Speichern), Test offen. Tier 1 + Abriss-Regel = Entwurf; Mesh/Material fehlen_
 - [ ] **Wände (glatt, Fenster, Tür, Durchführung)** · `STR_Wall` · `VS`
 - [ ] **Laufstege & Treppen** · `STR_Walkway` · `VS`
 - [ ] **Geländer** · `STR_Railing` · `VS`

@@ -62,6 +62,12 @@ bool UFactoryWorldSaveGame::MigrateToLatest()
 		MilestoneDelivered.Reset();
 	}
 
+	if (SaveVersion < static_cast<int32>(EFactoryWorldSaveVersion::Foundations))
+	{
+		// no foundations before
+		Foundations.Reset();
+	}
+
 	if (SaveVersion < Latest)
 	{
 		UE_LOG(LogFactoryGame, Log, TEXT("Migrated world '%s' from save version %d to %d."), *DisplayName, SaveVersion, Latest);

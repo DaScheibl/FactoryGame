@@ -69,6 +69,30 @@ void AFactoryHologram::HideAll()
 	{
 		Piece->SetVisibility(false);
 	}
+
+	for (UStaticMeshComponent* Box : BoxMeshes)
+	{
+		Box->SetVisibility(false);
+	}
+}
+
+void AFactoryHologram::SetBoxes(const TArray<FTransform>& Boxes)
+{
+	HideAll();
+
+	// Würfel werden wiederverwendet, damit beim Ziehen nicht jedes Bild neue Komponenten entstehen
+	while (BoxMeshes.Num() < Boxes.Num())
+	{
+		UStaticMeshComponent* Part = CreatePart();
+		Part->SetMaterial(0, Material);
+		BoxMeshes.Add(Part);
+	}
+
+	for (int32 Index = 0; Index < Boxes.Num(); ++Index)
+	{
+		BoxMeshes[Index]->SetRelativeTransform(Boxes[Index]);
+		BoxMeshes[Index]->SetVisibility(true);
+	}
 }
 
 void AFactoryHologram::SetBuilding(const FFactoryBuildingDefinition& Building)

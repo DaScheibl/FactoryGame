@@ -159,6 +159,8 @@ namespace FactoryLoc
 			{ TEXT("Build_Error_NodeTaken"),	{ TEXT("This node already has a drill"), TEXT("Auf diesem Vorkommen steht schon ein Bohrer") } },
 			{ TEXT("MachinePanel_Mining"),		{ TEXT("Mines {0}  ·  {1}/min ({2} % from the node purity)"), TEXT("Baut {0} ab  ·  {1}/min ({2} % durch die Reinheit)") } },
 			{ TEXT("MachinePanel_NoNode"),		{ TEXT("Not standing on a resource node."), TEXT("Steht auf keinem Erzvorkommen.") } },
+			{ TEXT("Build_Controls_Foundation"),{ TEXT("LMB: Build  ·  Hold LMB and drag: Row / area  ·  Wheel: Rotate  ·  RMB: Cancel"), TEXT("Linksklick: Bauen  ·  Gedrückt halten und ziehen: Reihe / Fläche  ·  Mausrad: Drehen  ·  Rechtsklick: Abbrechen") } },
+			{ TEXT("Build_FoundationCount"),	{ TEXT("{0} × {1}"),					TEXT("{0} × {1}") } },
 			{ TEXT("Hub_Prompt"),				{ TEXT("E: Open HUB"),					TEXT("E: HUB öffnen") } },
 			{ TEXT("Hub_Header"),				{ TEXT("HUB  ·  Tier {0}"),				TEXT("HUB  ·  Tier {0}") } },
 			{ TEXT("Hub_TabWorkbench"),			{ TEXT("Workbench"),					TEXT("Werkbank") } },

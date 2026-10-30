@@ -80,7 +80,9 @@ Jeder Port ist ein **schwarzer Anschlusskasten** in der Wand (1,1 m breit, 0,3�
 
 > ✏️ **Entwurf, von dir freizugeben:** Gamepad im Baumenü: **Steuerkreuz hoch** öffnet, **LB / RB** = Kategorie, **A** = bauen, **Y** = Gebäude aufnehmen und mit **A** auf einen Hotbar-Slot legen, **X** auf einem Hotbar-Slot = leeren, **B** = zurück/schließen.
 
-## Fundamente (geplant, noch nicht gebaut)
+## Fundamente
+
+Stand: gebaut, Test im Spiel offen.
 
 | Thema | Entscheidung |
 |---|---|
@@ -88,6 +90,14 @@ Jeder Port ist ein **schwarzer Anschlusskasten** in der Wand (1,1 m breit, 0,3�
 | Bauweise | **Klicken + Ziehen:** Klick setzt eins, Linksklick halten und ziehen setzt eine Reihe oder Fläche (max. 10 × 10), das Hologramm zeigt alle und die Gesamtkosten |
 | Kosten | **Beton nach Höhe:** 1 m = 3, 2 m = 5, 4 m = 8 Beton. Rampen kosten wie das Fundament gleicher Höhe |
 | Größe | 8 × 8 m, Höhen 1 / 2 / 4 m ([03 Raster](03-raster.md)) |
+
+- **So rastet es:** Ohne Fundament in der Nähe steht das neue frei (1-m-Raster, Unterkante auf dem Boden, Gelände darf durchragen). Zielt man neben ein Fundament (bis 10 m von dessen Mitte), sitzt das neue bündig im 8-m-Raster daneben, mit gleicher Oberkante. Zielt man auf die Oberseite, kommt es obendrauf.
+- **Ziehen:** Linksklick halten, zum Fadenkreuz entsteht eine Reihe oder Fläche im Raster des ersten (bis 10 × 10). Gebaut wird beim Loslassen, Rechtsklick bricht das Ziehen ab. Ist eine Zelle blockiert oder fehlt Material, wird nichts gebaut.
+- **Rampen:** gleich groß, steigen nach vorn (Pfeilrichtung beim Drehen) von 0 auf die volle Höhe. Am Nachbarn ist die hohe Kante bündig mit dessen Oberkante.
+- **Maschinen auf Fundamenten** rasten auf dessen 1-m-Raster und drehen in 90°-Schritten zu ihm, auch wenn das Fundament schräg zur Welt steht. Auf Rampen gibt es kein Raster.
+- Fundamente blockieren Maschinen, Bänder und andere Fundamente, nicht das Gelände.
+
+> ✏️ **Entwurf, von dir freizugeben:** Fundamente und Rampen sind **Tier 1** (Beton kommt erst mit Tier 1). **Abriss** geht immer, auch wenn etwas darauf steht (das bleibt dann in der Luft). Graybox-Rampe ist eine schräge 20-cm-Platte.
 
 ## Gebäude-Tabelle
 
@@ -99,7 +109,7 @@ Jeder Port ist ein **schwarzer Anschlusskasten** in der Wand (1,1 m breit, 0,3�
 | `NameEN` / `NameDE` | Anzeigename |
 | `Tier` | 0–8, Freischalt-Tier (Meilensteine im HUB, [16 HUB](16-hub.md)) |
 | `Category` | Kategorie fürs Baumenü: `Production`, `Logistics`, `Power`, `Storage`, `Structure` oder `Misc` |
-| `Type` | `Machine` (Gebäude), `Drill` (Bohrer, nur auf Vorkommen), `Belt` (Kosten gelten pro angefangene 2 m), `Pole` oder `Hub` (Startgebäude, nicht im Baumenü) |
+| `Type` | `Machine` (Gebäude), `Drill` (Bohrer, nur auf Vorkommen), `Belt` (Kosten gelten pro angefangene 2 m), `Pole`, `Foundation`, `Ramp` oder `Hub` (Startgebäude, nicht im Baumenü). IDs: `BLD_`, `LOG_` oder `STR_` |
 | `SizeX` | Länge in Fluss-Richtung (hinten → vorn) in m |
 | `SizeY` | Breite in m |
 | `SizeZ` | Höhe in m |
@@ -114,7 +124,7 @@ Beim Laden wird jede Zeile geprüft (unbekannte oder nicht tragbare Kosten-Items
 |---|---|---|---|---|
 | Schmelzofen | 0 | 4 × 4 × 5 m | 1 → 1 | 10 Eisenplatten |
 | Konstruktor | 0 | 8 × 4 × 4 m | 1 → 1 | 8 Eisenplatten, 8 Kupferdraht |
-| Assembler | 2 | 8 × 8 × 5 m | 2 → 1 | 6 Verst. Eisenplatten, 4 Rotoren |
+| Assembler | 1 | 8 × 8 × 5 m | 2 → 1 | 6 Verst. Eisenplatten, 4 Rotoren |
 | Gießerei | 2 | 8 × 4 × 6 m | 2 → 1 | 10 Zahnräder, 10 Beton |
 | Förderband Mk1 | 0 | – | – | 1 Eisenplatte pro 2 m |
 | Bandstütze | 0 | 1–7 m hoch | – | 1 Eisenstange, 1 Eisenplatte |
@@ -170,6 +180,7 @@ Alle Befehle auf einen Blick: [Cheatsheet](../Cheatsheet.md)
 | `AFactoryCrate` (Abriss-Kiste) | `Source/FactoryGame/Buildings/FactoryCrate.h` |
 | `FactoryBeltPath` (Kurven der drei Band-Modi, Grenzen) | `Source/FactoryGame/Buildings/FactoryBeltPath.h` |
 | `AFactoryBeltPole` (Bandstütze) | `Source/FactoryGame/Buildings/FactoryBeltPole.h` |
+| `AFactoryFoundation` (Fundament, Rampe) | `Source/FactoryGame/Buildings/FactoryFoundation.h` |
 | `UFactoryBuildMenuWidget` (Baumenü) | `Source/FactoryGame/UI/FactoryBuildMenuWidget.h` |
 | `UFactoryBuildMenuEntryWidget` (Kachel / Hotbar-Slot im Baumenü) | `Source/FactoryGame/UI/FactoryBuildMenuEntryWidget.h` |
 | `AFactoryBelt` (Band: Kurve, Anschlüsse, Optik) | `Source/FactoryGame/Buildings/FactoryBelt.h` |

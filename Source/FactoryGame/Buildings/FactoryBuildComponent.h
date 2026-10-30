@@ -31,6 +31,9 @@ enum class EFactoryBuildMode : uint8
 	/** Drawing a belt: first click picks the start, second click the end */
 	Belt,
 
+	/** Foundations and ramps: click places one, holding and dragging places a row or an area */
+	Foundation,
+
 	/** Holding the primary button on a building demolishes it */
 	Demolish
 };
@@ -169,6 +172,12 @@ private:
 	/** Same for a single pole */
 	void UpdatePole();
 
+	/** Finds the foundation cells under the crosshair (one, or the dragged area) and checks them */
+	void UpdateFoundation();
+
+	/** Where a single foundation goes for this hit: flush next to or on top of a foundation nearby, else free on the 1 m grid */
+	FTransform ComputeFoundationCell(const FHitResult& Hit, const FFactoryBuildingDefinition& Building) const;
+
 	/** Finds the belt end under the crosshair and checks the path */
 	void UpdateBelt();
 
@@ -182,6 +191,7 @@ private:
 	bool PlaceBuilding();
 	bool PlacePole();
 	bool PlaceBelt();
+	bool PlaceFoundations();
 
 	/**
 	 *  Finds what a belt would connect to under the crosshair: a port or pole nearby wins over everything else,
@@ -251,6 +261,13 @@ private:
 
 	UPROPERTY()
 	TWeakObjectPtr<AActor> DemolishTarget;
+
+	/** Foundation cells of the current placement (world transforms of the foundation origins) */
+	TArray<FTransform> FoundationCells;
+
+	/** True while the primary button is held in foundation mode; the area is spanned from FoundationAnchor */
+	bool bFoundationDrag = false;
+	FTransform FoundationAnchor;
 
 	/** Resource node under a drill hologram, the drill gets its recipe from it */
 	TWeakObjectPtr<AFactoryResourceNode> PlaceNode;

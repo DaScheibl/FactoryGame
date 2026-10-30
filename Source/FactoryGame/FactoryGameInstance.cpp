@@ -14,6 +14,7 @@
 #include "FactoryMachine.h"
 #include "FactoryCrate.h"
 #include "FactoryHub.h"
+#include "FactoryFoundation.h"
 #include "FactoryBelt.h"
 #include "FactoryBeltPole.h"
 #include "EngineUtils.h"
@@ -431,6 +432,15 @@ void UFactoryGameInstance::CaptureBuildings(UWorld* World)
 		Saved.End = SaveEnd(It->GetEndMachine(), It->GetEndPort(), It->GetEndPole());
 	}
 
+	CurrentWorldSave->Foundations.Reset();
+
+	for (TActorIterator<AFactoryFoundation> It(World); It; ++It)
+	{
+		FFactorySavedFoundation& Saved = CurrentWorldSave->Foundations.AddDefaulted_GetRef();
+		Saved.BuildingId = It->GetBuildingId();
+		Saved.Transform = It->GetActorTransform();
+	}
+
 	CurrentWorldSave->bHasHub = false;
 
 	if (const AFactoryHub* Hub = AFactoryHub::Get(World))
@@ -534,6 +544,14 @@ void UFactoryGameInstance::RestoreBuildings(UWorld* World)
 	for (const FFactorySavedCrate& Saved : CurrentWorldSave->Crates)
 	{
 		AFactoryCrate::SpawnCrate(World, Saved.Location, Saved.Items);
+	}
+
+	for (const FFactorySavedFoundation& Saved : CurrentWorldSave->Foundations)
+	{
+		if (AFactoryFoundation* Foundation = World->SpawnActor<AFactoryFoundation>(Saved.Transform.GetLocation(), Saved.Transform.Rotator(), SpawnParams))
+		{
+			Foundation->InitBuilding(Saved.BuildingId);
+		}
 	}
 
 	// ohne gespeicherten HUB setzt der Player Controller danach einen neuen (EnsureHub)

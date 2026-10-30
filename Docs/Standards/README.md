@@ -62,3 +62,4 @@ Alle Konsolenbefehle zum Testen: [Cheatsheet](../Cheatsheet.md)
 | 2026-10-30 | 13 Bauen: Baumenü und Band-Kollision; 14 Maschinen-Panel ergänzt |
 | 2026-10-30 | 15 Abbau ergänzt (Vorkommen, Bohrer Mk1, Abbau von Hand) |
 | 2026-10-30 | 16 HUB ergänzt; Schmelzofen + Konstruktor auf Tier 0, Barren an der Werkbank; 13 Bauen: Fundament-Entscheidungen; 17 Strom angelegt |
+| 2026-10-30 | 13 Bauen: Fundamente + Rampen gebaut; Assembler, Rotor, Zahnrad, Paket II auf Tier 1, Kabel + Paket I auf Tier 0 |

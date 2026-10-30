@@ -46,6 +46,9 @@ public:
 	 */
 	void SetBelt(const FFactoryBeltPath* Path, const TArray<FTransform>& NewPoles);
 
+	/** Shows unit cubes at the given world transforms (scale in meters), e.g. foundations. The actor must be at the world origin */
+	void SetBoxes(const TArray<FTransform>& Boxes);
+
 	/** Green when it can be built, red when not */
 	void SetValid(bool bValid);
 
@@ -77,6 +80,10 @@ private:
 
 	UPROPERTY()
 	TArray<TObjectPtr<USplineMeshComponent>> BeltMeshes;
+
+	/** Boxes shown by SetBoxes */
+	UPROPERTY()
+	TArray<TObjectPtr<UStaticMeshComponent>> BoxMeshes;
 
 	UPROPERTY()
 	TObjectPtr<UStaticMesh> CubeMesh;

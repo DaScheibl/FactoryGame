@@ -83,6 +83,9 @@ enum class EFactoryWorldSaveVersion : int32
 	/** HUB with storage, unlocked tier and delivered milestone items */
 	Hub = 5,
 
+	/** Foundations and ramps */
+	Foundations = 6,
+
 	LatestPlusOne,
 	Latest = LatestPlusOne - 1
 };
@@ -161,6 +164,19 @@ struct FFactorySavedBelt
 
 	UPROPERTY(SaveGame)
 	FFactorySavedBeltEnd End;
+};
+
+/** A foundation or ramp */
+USTRUCT()
+struct FFactorySavedFoundation
+{
+	GENERATED_BODY()
+
+	UPROPERTY(SaveGame)
+	FName BuildingId;
+
+	UPROPERTY(SaveGame)
+	FTransform Transform;
 };
 
 /** A demolition crate with the items that didn't fit into the inventory */
@@ -243,6 +259,9 @@ public:
 
 	UPROPERTY(SaveGame)
 	TArray<FFactorySavedCrate> Crates;
+
+	UPROPERTY(SaveGame)
+	TArray<FFactorySavedFoundation> Foundations;
 
 	/** False for worlds saved before the HUB existed, they get a new one */
 	UPROPERTY(SaveGame)

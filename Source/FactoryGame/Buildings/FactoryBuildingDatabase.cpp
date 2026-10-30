@@ -77,10 +77,10 @@ int32 UFactoryBuildingDatabase::Validate() const
 	{
 		const FFactoryBuildingDefinition* Building = FindBuilding(BuildingId);
 
-		// Gebäude heißen BLD_, Logistik-Teile (Bänder, Stützen) LOG_
-		if (!BuildingId.ToString().StartsWith(TEXT("BLD_")) && !BuildingId.ToString().StartsWith(TEXT("LOG_")))
+		// Gebäude heißen BLD_, Logistik-Teile (Bänder, Stützen) LOG_, Bauteile (Fundamente, Rampen) STR_
+		if (!BuildingId.ToString().StartsWith(TEXT("BLD_")) && !BuildingId.ToString().StartsWith(TEXT("LOG_")) && !BuildingId.ToString().StartsWith(TEXT("STR_")))
 		{
-			Report(BuildingId, TEXT("id should start with BLD_ or LOG_"));
+			Report(BuildingId, TEXT("id should start with BLD_, LOG_ or STR_"));
 		}
 
 		if (Building->SizeX <= 0 || Building->SizeY <= 0 || Building->SizeZ <= 0)

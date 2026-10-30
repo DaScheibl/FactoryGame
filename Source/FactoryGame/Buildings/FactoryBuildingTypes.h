@@ -30,7 +30,13 @@ enum class EFactoryBuildingType : uint8
 	Drill,
 
 	/** The start building (AFactoryHub). Every world has exactly one, it can't be built from the menu */
-	Hub
+	Hub,
+
+	/** Foundation tile, 8 x 8 m (AFactoryFoundation) */
+	Foundation,
+
+	/** Ramp of foundation size, rising towards the front (AFactoryFoundation) */
+	Ramp
 };
 
 /** Where in a building a belt port sits */
@@ -133,6 +139,9 @@ struct FACTORYGAME_API FFactoryBuildingDefinition : public FTableRowBase
 
 	/** True for everything that is an AFactoryMachine (machines and drills) */
 	bool IsMachine() const { return Type == EFactoryBuildingType::Machine || Type == EFactoryBuildingType::Drill; }
+
+	/** True for foundations and ramps */
+	bool IsFoundation() const { return Type == EFactoryBuildingType::Foundation || Type == EFactoryBuildingType::Ramp; }
 
 	/** Returns the build menu category: the Category column if it is one of GetMenuCategories(), Misc otherwise */
 	FName GetMenuCategory() const;

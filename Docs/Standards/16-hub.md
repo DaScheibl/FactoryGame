@@ -20,7 +20,7 @@ Stand: gebaut, Test im Spiel offen.
 > - Fertige Teile gehen ins Inventar, ist es voll, ins HUB-Lager, danach in eine Abriss-Kiste.
 > - Die Meilenstein-Mengen (20 / 50 + 20) gelten bis zum Balancing.
 
-> ⚠️ **Offen:** Forschungspaket II wird im Assembler hergestellt, der Assembler ist aber erst ab Tier 2 da. Tier 2 lässt sich so nicht freischalten. Lösung steht noch aus.
+Damit jede Stufe erreichbar ist, gibt es das Rezept für Paket N (und alles, was es braucht) schon eine Tier vorher. Deshalb sind Kabel und Paket I Tier 0, Zahnrad, Rotor, Paket II und der **Assembler Tier 1** ([11 Rezepte](11-rezepte.md)).
 
 ## Tier-Regeln
 
