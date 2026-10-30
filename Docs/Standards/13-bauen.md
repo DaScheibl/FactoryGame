@@ -60,7 +60,7 @@ Jeder Port ist ein **schwarzer Anschlusskasten** in der Wand (1,1 m breit, 0,3�
 | Stützenhöhe (Stütze/Band) | Mausrad (1–7 m) | LB / RB |
 | Abbrechen | Rechtsklick oder `Esc` | B |
 | Abriss-Modus an/aus | `F`, dann Linksklick **halten** | Steuerkreuz runter, RT halten |
-| Abriss-Kiste leeren | `E` | X |
+| Abriss-Kiste leeren / Maschine öffnen | `E` | X |
 
 `E` / Gamepad X ist die allgemeine Interaktions-Taste (bisher Kisten, später auch Maschinen-Fenster).
 

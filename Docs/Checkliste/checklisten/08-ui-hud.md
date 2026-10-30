@@ -30,7 +30,7 @@ Legende: `PT` Prototyp · `VS` Vertical Slice · `EA` Early Access · `1.0` Rele
 - [ ] **HUD: Fadenkreuz, Hotbar, Hinweise** · `UI_HUD` · `PT` · [Doku](../../Standards/10-items-inventar.md) — _Umgesetzt: Fadenkreuz, 10er-Hotbar, Hinweiszeile. Layout = Entwurf, Freigabe offen_
 - [ ] **Inventar** · `UI_Inventory` · `PT` · [Doku](../../Standards/10-items-inventar.md) — _Umgesetzt: Ausrüstung (Kopf/Körper/Rücken/Hand) + 20er-Raster (bis 60 über Forschung), Stapel am Cursor, Rechtsklick halb/einzeln, Shift-/Strg-Klick, Drag & Drop, Sortieren, Maus + Gamepad. Tasten/Layout = Entwurf, Freigabe offen; Icons kommen mit `TOOL_IconRig`_
 - [ ] **Baumenü mit Kategorien & Suche** · `UI_BuildMenu` · `PT` · [Doku](../../Standards/13-bauen.md#baumenü-schritt-3) — _Gebaut, Test im Spiel offen: Q öffnet, 6 Kategorien, Suche, Details mit Kosten, Hotbar per Ziehen / 1–0 belegen. Gamepad-Belegung = Entwurf, Freigabe offen; Icons fehlen (`UI_IconSet`)_
-- [ ] **Maschinen-Panel (Rezept, Status, Overclock)** · `UI_MachinePanel` · `PT`
+- [ ] **Maschinen-Panel (Rezept, Status, Overclock)** · `UI_MachinePanel` · `PT` · [Doku](../../Standards/14-maschinen-panel.md) — _Gebaut, Test offen: E öffnet, Rezeptliste, Puffer per Klick füllen/nehmen, Zustand + Fortschritt. Puffer-Bedienung = Entwurf, Freigabe offen; Overclock kommt mit Strom_
 - [ ] **Tech-Tree / Forschung** · `UI_Research` · `VS`
 - [ ] **Karte + Markierungen** · `UI_Map` · `EA`
 - [ ] **Produktionsstatistik (Graphen)** · `UI_Stats` · `EA`

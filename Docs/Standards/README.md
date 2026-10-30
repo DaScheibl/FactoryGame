@@ -17,7 +17,8 @@ Wenn ein Standard geändert wird: hier anpassen **und** im Änderungsprotokoll u
 | [10 Items, Inventar & Hotbar](10-items-inventar.md) | Item-IDs, Stapelgrößen, Item-Tabelle, Inventar/HUD-Bedienung, Speicherformat | `SYS_Recipes`, `UI_Inventory`, `UI_HUD` |
 | [11 Rezepte](11-rezepte.md) | Rezept-Tabelle, Format, Werte Tier 0–2 | `SYS_Recipes` |
 | [12 Simulation](12-simulation.md) | Fester Takt, Maschinen-Ablauf, Puffer, Graybox-Maschine, Förderbänder | `SYS_Sim`, `SYS_BeltSim` |
-| [13 Bauen](13-bauen.md) | Gebäude-Tabelle, Platzieren, Abriss, Steuerung, Band-Regeln, Testwelt | `SYS_Build`, `EQP_BuildGun` |
+| [13 Bauen](13-bauen.md) | Gebäude-Tabelle, Platzieren, Abriss, Steuerung, Band-Regeln, Baumenü, Testwelt | `SYS_Build`, `EQP_BuildGun`, `UI_BuildMenu` |
+| [14 Maschinen-Panel](14-maschinen-panel.md) | Rezept wählen, Puffer füllen/leeren, Zustand | `UI_MachinePanel` |
 
 Alle Konsolenbefehle zum Testen: [Cheatsheet](../Cheatsheet.md)
 
@@ -55,3 +56,4 @@ Alle Konsolenbefehle zum Testen: [Cheatsheet](../Cheatsheet.md)
 | 2026-10-27 | 12 Simulation ergänzt |
 | 2026-10-28 | 12 Simulation: Förderbänder (`SYS_BeltSim`) ergänzt |
 | 2026-10-28 | 13 Bauen ergänzt (Gebäude-Tabelle, Platzieren, Abriss, Band-Regeln); Rotor an der Werkbank |
+| 2026-10-30 | 13 Bauen: Baumenü und Band-Kollision; 14 Maschinen-Panel ergänzt |
